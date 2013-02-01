@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 
 import Crocodile.Pe as PE
 import Crocodile.Resources.IOMethods as IOM
+import Crocodile.Resources.LegacyFunctions as LF
+import Crocodile.Resources.Constants as CONST
 
 reload(PE)
 reload(IOM)
@@ -16,6 +18,8 @@ reload(IOM)
 class pe_tw(PE.pe):
     """
     pe_tw: implementation class for photo echo time-frequency. This includes all importing functions.
+    
+    the VB6-stuff is found in resources/Pe_tw_vb6.py. Good riddance! 
     
     """
 
@@ -35,7 +39,9 @@ class pe_tw(PE.pe):
         
         # somewhere else? 
         self.n_pixels = 32
-
+        self.reference = numpy.ones(self.n_pixels)
+        self.data_type_version = 0
+        
         self.n_shots = 0
         self.n_steps = 0
         self.n_scans = 0
@@ -87,9 +93,14 @@ class pe_LV(pe_tw):
         
         return True
         
-        
-        
-        
-                
+
+
+
+
+
+
+
+  
+
 
 
