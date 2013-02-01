@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 
 import Crocodile.Pe as PE
 import Crocodile.Resources.IOMethods as IOM
-import Crocodile.Resources.LegacyFunctions as LF
 import Crocodile.Resources.Constants as CONST
 
 reload(PE)

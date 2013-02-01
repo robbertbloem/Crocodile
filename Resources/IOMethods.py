@@ -8,7 +8,7 @@ import numpy
 import matplotlib 
 import matplotlib.pyplot as plt
 
-import Crocodile.Resources.Debug as DEBUG
+import PythonTools.Debug as DEBUG
 import Crocodile.Resources.Constants as CONST
 
 def import_data_LV(path, base_filename):

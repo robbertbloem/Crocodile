@@ -21,7 +21,7 @@ from scipy.optimize.minpack import leastsq
 import itertools
 
 import Crocodile.Resources.Constants as CONST
-import Crocodile.Resources.Debug as DEBUG
+import PythonTools.Debug as DEBUG
 
 
 def square_formula(a, b, c):

@@ -9,7 +9,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 import Crocodile
-import Crocodile.Resources.ClassTools as CT
+import PythonTools.ClassTools as CT
 
 class dataclass(CT.ClassTools):
     """

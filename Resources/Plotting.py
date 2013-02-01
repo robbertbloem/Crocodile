@@ -7,7 +7,7 @@ import numpy
 import matplotlib 
 import matplotlib.pyplot as plt
 
-import Crocodile.Resources.Debug as DEBUG
+import PythonTools.Debug as DEBUG
 
 reload(DEBUG)
 
