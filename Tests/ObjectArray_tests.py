@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import Crocodile.Resources.ObjectArray as OA
 import Crocodile.Resources.DataClass as DC
 
-
+import Crocodile.Resources.Debug as DEBUG
 
 reload(OA)
 reload(DC)
@@ -76,6 +76,32 @@ class Test_ObjectArray(unittest.TestCase):
         oa = OA.objectarray("test_new")
         oa.load_objectarray(self.path_and_filename, obj_id_array_in = obj_id_array, flag_verbose = self.flag_verbose) 
         self.assertTrue(["a", "b"] ==  oa.obj_id_array)
+
+    def test_object_with_sub_type_1(self):
+        """
+        Test if objects with sub_type 'power' are found. 
+        """
+        oa = OA.objectarray("test_new")
+        oa.import_db(self.path_and_filename, flag_verbose = self.flag_verbose)
+        sub_type = "power"
+        array = oa.object_with_sub_type(sub_type = sub_type, flag_verbose = self.flag_verbose)        
+        self.assertTrue(oa.obj_array[array[0]].sub_type == sub_type and oa.obj_array[array[1]].sub_type == sub_type)
+        
+    def test_object_with_sub_type_2(self):
+        """
+        Test if objects with sub_type 'x' are found - there should be none. This raises a warning
+        """
+        oa = OA.objectarray("test_new")
+        oa.import_db(self.path_and_filename, flag_verbose = self.flag_verbose)
+        sub_type = "x"
+        DEBUG.verbose("\nWarning is intentional", True) 
+        array = oa.object_with_sub_type(sub_type = sub_type, flag_verbose = self.flag_verbose)       
+        self.assertTrue(len(array) == 0)        
+        
+
+    
+
+
 
 if __name__ == '__main__':
 

@@ -173,6 +173,25 @@ class objectarray(CT.ClassTools):
             print(i)
 
 
+    def object_with_sub_type(self, sub_type, flag_verbose = False):
+        """
+        Return an array with the indices of objects that have a certain sub_type. 
+        """
+        sub_type_array = []
+        
+        
+        
+        for i in range(len(self.obj_array)):
+            if self.obj_array[i].sub_type == sub_type:
+                sub_type_array.append(i) 
+        
+        if len(sub_type_array) == 0:
+            self.printWarning("sub_type_array is empty", inspect.stack())
+            
+        return sub_type_array
+
+
+
 class testobject(CT.ClassTools):
     """
     Lightweight object to test the tools with.
@@ -188,6 +207,8 @@ class testobject(CT.ClassTools):
         self.name = name
         self.obj_id = obj_id
         self.sub_type = sub_type
+        
+        self.variable = 0
 
 
 
