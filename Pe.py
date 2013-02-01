@@ -1,6 +1,8 @@
 from __future__ import print_function
 from __future__ import division
 
+import inspect
+
 import numpy
 import matplotlib 
 import matplotlib.pyplot as plt
@@ -10,7 +12,9 @@ import Crocodile.Resources.DataClass as DC
 import Crocodile.Resources.Plotting as PL
 import Crocodile.Resources.Mathematics as MATH
 
+reload(DC)
 reload(PL)
+reload(MATH)
 
 class pe(DC.dataclass):
     
@@ -86,7 +90,7 @@ class pe(DC.dataclass):
 
 
 
-    def super_absorptive(self, axes, window_function = "none", window_length = 0):
+    def super_absorptive(self, axes, window_function = "none", window_length = 0, flag_verbose = False):
         """
         Calculate the absorptive spectrum.
         
@@ -108,12 +112,16 @@ class pe(DC.dataclass):
         
         """
         
+        self.verbose("Super absorptive", flag_verbose)
+        
         try: 
             for i in range(len(self.r)):
                 self.f[i] = self.absorptive_helper(array = numpy.copy(self.r[i]), axes = axes, window_function = window_function, window_length = window_length)
         except ValueError:
             self.printError("Problem with the Fourier Transforms. Are r[0] and r[1] assigned?", inspect.stack())
             return False          
+        
+        self.verbose("  done with FFT", flag_verbose)
         
         # phase the spectrum
         self.s = numpy.real(numpy.exp(1j * self.phase_rad) * self.f[0] + numpy.exp(-1j * self.phase_rad) * self.f[1])
@@ -131,7 +139,7 @@ class pe(DC.dataclass):
                 self.s = self.s[(len(self.s)/2):][:]  
                 
             try:
-                self.s_axis[0] = M.make_ft_axis(length = 2*numpy.shape(self.s)[0], dt = self.r_axis[0][1]-self.r_axis[0][0], undersampling = self.undersampling)
+                self.s_axis[0] = MATH.make_ft_axis(length = 2*numpy.shape(self.s)[0], dt = self.r_axis[0][1]-self.r_axis[0][0], undersampling = self.undersampling)
                 self.s_axis[0] = self.s_axis[0][0:len(self.s_axis[0])/2]
             except TypeError:
                 self.printWarning("Problem with making the Fourier Transformed axis. Is r_axis[0] assigned?", inspect.stack())
@@ -147,7 +155,7 @@ class pe(DC.dataclass):
                 self.s = self.s[:][(len(self.s)/2):]
             
             try:
-                self.s_axis[2] = M.make_ft_axis(length = 2*numpy.shape(self.s)[0], dt = self.r_axis[2][1]-self.r_axis[2][0], undersampling = self.undersampling)
+                self.s_axis[2] = MATH.make_ft_axis(length = 2*numpy.shape(self.s)[0], dt = self.r_axis[2][1]-self.r_axis[2][0], undersampling = self.undersampling)
                 self.s_axis[2] = self.s_axis[2][0:len(self.s_axis[0])/2]
             except TypeError:
                 self.printWarning("Problem with making the Fourier Transformed axis. Is r_axis[2] assigned?", inspect.stack())
@@ -225,6 +233,8 @@ class pe(DC.dataclass):
         
         """
 
+        self.verbose("Plot", flag_verbose)
+
         if plot_type == "S":
             data = self.s
         elif plot_type == "R":
@@ -234,7 +244,13 @@ class pe(DC.dataclass):
         elif plot_type == "T":
             data = numpy.concatenate((numpy.flipud(self.r[1]), self.r[0])).T
         
-        if pixel >= 0 and pixel < len(self.s_axis[2]):
+        if pixel < 0 or pixel > len(self.s_axis[2]):
+            
+            self.verbose("  -> contourplot", flag_verbose)
+            
+            # S, R and NR are freq-freq, T is time-freq
+            # flipxy will change the xy-axis
+            # the labels and range may be changed, if they are not at the defaults
             
             if plot_type == "S" or plot_type == "R" or plot_type == "NR":
                 if flipxy:
@@ -253,7 +269,7 @@ class pe(DC.dataclass):
                         x_label = r"$\omega_3 (cm^{-1})$"
                     if y_label == "":
                         y_label = r"$\omega_1 (cm^{-1})$"         
-            else: 
+            else: # time domain
                 if flipxy:
                     # not the normal way
                     data = data.T    
@@ -262,18 +278,25 @@ class pe(DC.dataclass):
                     if x_label == "":
                         x_label = r"$\omega_3 (cm^{-1})$" 
                     if y_label == "":
-                        y_label = r"$\t_1 (fs)$"   
+                        y_label = r"$t_1 (fs)$" 
+                    if y_range == [0,-1]: 
+                        y_range = [0,0]
                 else:     
                     x_axis = numpy.concatenate((-numpy.flipud(self.r_axis[0]), self.r_axis[0]))
                     y_axis = self.r_axis[2]
                     if x_label == "":
-                        x_label = r"$\t_1 (fs)$" 
+                        x_label = r"$t_1 (fs)$" 
                     if y_label == "":
-                        y_label = r"$\omega_3 (cm^{-1})$"             
+                        y_label = r"$\omega_3 (cm^{-1})$" 
+                    if y_range == [0,1]:
+                        y_range = [0,0]            
                
             PL.contourplot(data, x_axis, y_axis, ax = ax, x_range = x_range, y_range = y_range, zlimit = zlimit, contours = contours, filled = True, black_contour = True, x_label = x_label, y_label = y_label, title = title, diagonal_line = True,  invert_colors = invert_colors, linewidth = 1, flag_verbose = flag_verbose)
 
         else:
+            
+            self.verbose("  -> linear plot", flag_verbose)
+            
             if plot_type == "S" or plot_type == "R" or plot_type == "NR":
                 x_axis = self.s_axis[0]
                 x_label = r"$\omega_1 (cm^{-1})$"

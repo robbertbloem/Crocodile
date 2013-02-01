@@ -226,7 +226,7 @@ def contourplot(data, x_axis, y_axis,
     
     # the diagonal line
     if diagonal_line:
-        ax.plot([x_axis[0]-100,x_axis[0]+100], [x_axis[0]-100,x_axis[0]+100], "k", linewidth = linewidth)
+        ax.plot([x_axis[0]-100,x_axis[-1]+100], [x_axis[0]-100,x_axis[-1]+100], "k", linewidth = linewidth)
 
     # we only want to see a certain part of the spectrum   
     ax.set_xlim(x_min, x_max)

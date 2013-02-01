@@ -244,7 +244,7 @@ def make_ft_axis(length, dt, undersampling = 0, normalized_to_period = 0, zero_i
     """
     DEBUG.verbose("make FT axis", flag_verbose)
     if normalized_to_period == 0:   
-        resolution = 1 / ( CONST.c_cmfs * length * dt)
+        resolution = 1 / ( CONST.wavenumberToInvFs * length * dt)
     else:
         resolution = normalized_to_period / (length * dt)
 

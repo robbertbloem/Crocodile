@@ -12,7 +12,7 @@ reload(PE)
 
 flag_verbose = True
 
-a = PE.pe_tw("Fiets", flag_verbose)
+a = PE.pe("Fiets", flag_verbose)
 
 x = numpy.arange(10)
 y = numpy.arange(10)

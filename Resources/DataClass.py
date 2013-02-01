@@ -1,6 +1,9 @@
 from __future__ import print_function
 from __future__ import division
 
+import inspect
+import time
+
 import numpy
 import matplotlib 
 import matplotlib.pyplot as plt
@@ -24,19 +27,20 @@ class dataclass(CT.ClassTools):
         - measurements: number of diagrams. Is 1 for everything except 2D-PE (=2) or 3D (=4?)
 
         CHANGELOG:
-        20130131/RB: cleaned up version from croc
+        20130131/RB: cleaned up version from croc. The specific experimental details have been moved to their respective classes. 
         
         """
         
         self.verbose("New dataclass", flag_verbose)
         
         self.obj_id = objectname
+        self.obj_index = -1
         
         self.objectname = objectname
 
         # file stuff
         self.source_path = ""
-        self.base_filename = ""
+        self.base_filename = "" 
         self.time_stamp = ""
         self.date = ""
 
@@ -65,14 +69,11 @@ class dataclass(CT.ClassTools):
         self.s = [0]                    
         self.s_axis = [0] * dimensions    
 
-        # _domain: time/freq domain
         # _units: cm-1, fs etc.
         # _resolution: _axis[i] - _axis[i-1]
-        self.r_domain = [0] * dimensions     
         self.r_units = [0] * dimensions
         self.r_resolution = [0] * measurements 
 
-        self.s_domain = [0] * dimensions  
         self.s_units = [0] * dimensions
         self.s_resolution = [0] * dimensions   
         
@@ -91,10 +92,6 @@ class dataclass(CT.ClassTools):
         self._phase_rad = False
         self.undersampling = False
         self._comment = ""
-
-        self.n_shots = 0
-        self.n_steps = 0
-        self.n_scans = 0
 
         self.debug = False
 
@@ -129,6 +126,8 @@ class dataclass(CT.ClassTools):
         return self._zeropad_to
     @zeropad_to.setter
     def zeropad_to(self, zpt):
+        if len(self.s) != 1:
+            self.printWarning("Zeropadding has changed after spectrum was calculated.", inspect.stack())
         self._zeropad_to = int(zpt)
         self._zeropad_by = zpt / numpy.shape(self.r[0])[0]
 
@@ -137,9 +136,10 @@ class dataclass(CT.ClassTools):
         return self._zeropad_by
     @zeropad_by.setter
     def zeropad_by(self, zp_by):
-        #print("ADVISE (croc.DataClasses.mess_data.zeropad_by.setter): The variable zeropad_by will actually set the variable zeropad_to, which is an integer. Then zeropad_by will be recalculated using that.\n")
-        self.zeropad_to = int(zp_by * numpy.shape(self.r[0])[0])
-        #self._zeropad_by = zp_by 
+        if len(self.s) != 1:
+            self.printWarning("Zeropadding has changed after spectrum was calculated.", inspect.stack())
+        self._zeropad_to = int(zp_by * numpy.shape(self.r[0])[0])
+        self._zeropad_by = zp_by 
 
 
 

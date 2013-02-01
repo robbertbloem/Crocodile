@@ -21,7 +21,7 @@ def printError(string, location = []):
     if location == []:
         print("\033[1;31mERROR: " + string + "\033[1;m")
     else:
-        print("\033[1;31mERROR (" + location[0][1] + ":" + location[0][3] + "): " + string + "\033[1;m")
+        print("\033[1;31mERROR (" + location[0][1] + ":" + location[0][3] + ":" + str(location[0][2]) + "): " + string + "\033[1;m")
 
 
 def printWarning(string, location = []):
@@ -39,8 +39,8 @@ def printWarning(string, location = []):
     if location == []:
         print("\033[1;35mWARNING: " + string + "\033[1;m")
     else:
-        print("\033[1;35mWARNING (" + location[0][1] + "): " + string + "\033[1;m")
-
+        # print("\033[1;35mWARNING (" + location[0][1] + "): " + string + "\033[1;m")
+        print("\033[1;35mWARNING (" + location[0][1] + ":" + location[0][3] + ":" + str(location[0][2]) + "): " + string + "\033[1;m")
 
 
 def verbose(string, flag_verbose):
