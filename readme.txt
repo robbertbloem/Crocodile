@@ -9,7 +9,7 @@ This software is experimental and may come with bugs. Please report those.
 1 - GOAL ETC
 
 Crocodile is an improved version of the croc scripts. Since croc was written a lot has changed and Crocodile is designed from the start to work with those changes. 
-Most notable is the inclusion of a separate class to keep track of the array of measurements. In croc this was scattered around. 
+Most notable is the inclusion of a separate class to keep track of the array of measurements. In croc this was scattered around. These tools are part of PythonTools.
 The classes have also been reorganized. 
 A lot of the deeper code (the actual calculations) has not been changed (at least, not too much).
 The changes mean that the scripts used until now are not compatible.
