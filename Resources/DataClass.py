@@ -34,7 +34,7 @@ class dataclass(CT.ClassTools):
         self.verbose("New dataclass", flag_verbose)
         
         self.obj_id = objectname
-        self.obj_index = -1
+        self.sub_type = ""
         
         self.objectname = objectname
 
@@ -147,11 +147,7 @@ class dataclass(CT.ClassTools):
 if __name__ == "__main__": 
     
     pass
-  
-    # a = dataclass("Fiets", 2, 3, flag_verbose = True)
-    # 
-    # print(a)
-    
+
     
     
     
