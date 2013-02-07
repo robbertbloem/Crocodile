@@ -265,6 +265,7 @@ def make_ft_axis(length, dt, undersampling = 0, normalized_to_period = 0, zero_i
 def correlation(array, maxtau = 200, step_type = "tau", flag_normalize = True, flag_verbose = False):
     """
     Calculation of the correlation using the method Jan used.
+    The method is slow and probably wrong. Use correlation_fft instead.
 
     For every iteration, the copied array will be 'rolled' or 'rotated' left by 1 for maxtau times. The copied array will be multiplied with the original array, but only the elements with a certain step between them will be used. The larger the step size, the quicker the method but also the more noisy the result will become.
 
@@ -274,13 +275,10 @@ def correlation(array, maxtau = 200, step_type = "tau", flag_normalize = True, f
     step_type ("1", "tau"): The step size. With "1" the step size is 1, this will result in a longer calculation but less noise. With "tau" the step size is the current "tau". The calculation will be faster but the result will be noisier.
     flag_normalize (BOOL, True): see note below.
 
-    NOTE:
-    The autocorrelation will show the different contributions to the loss of correlation. If the result is normalized, this is by ratio. Large long-term fluctuations will dominate the result, and make it look as if the shot-to-shot correlation is very good. But really, it is just not 
-
-
     CHANGELOG:
     20120215: Introduced step_type
     20130131/RB: introduced flag_normalize
+    20130204/RB: tested if 'array2 = numpy.roll(array2, -1)' is better nested in the itertools call, but it makes no real change on the speed of the function. No changes made.
     """
     DEBUG.verbose("Correlation Jan-style", flag_verbose)
     
@@ -313,21 +311,34 @@ def correlation(array, maxtau = 200, step_type = "tau", flag_normalize = True, f
 
 
 
-def correlation_fft(array, flag_verbose = False):
+def correlation_fft(array, flag_normalize = True, flag_verbose = False):
+    """
+    Calculate the autocorrelation using fft.
     
-    DEBUG.verbose("Correlation FFT-style", flag_verbose)
+    This method was verified using a naive implementation in C. 
     
-    # fix that is proposed for numpy, but not implemented yet
-    a = (array - numpy.mean(array)) / (numpy.std(array) * len(array))
-    v = (array - numpy.mean(array)) /  numpy.std(array)
+    201202xx/RB: started function
+    20130205/RB: the function now uses an actual Fourier transform
+    20130207/RB: take the first part of the array, not the last part reversed. This was done to agree with Jan's correlation method, but now it seems that one is wrong.
+    
+    """
+    
+    DEBUG.verbose("correlation_fft", flag_verbose)
 
-    # calculate the autocorrelation
-    r = numpy.correlate(a, v, mode="full")
+    array = array - numpy.mean(array)
 
-    # select the part we want
-    r = r[len(r)/2:]
+    # zeropad to closest 2^n 
+    l = 2 ** int(1+numpy.log2(len(array) * 2))
 
-    return numpy.real(r/r[0])
+    s = numpy.fft.fft(array, n=l)
+    r = numpy.fft.ifft(s * numpy.conjugate(s))
+
+    r = r[:len(array)]
+
+    if flag_normalize:
+        return numpy.real(r/r[0])
+    else:
+        return numpy.real(r)
 
 
 
