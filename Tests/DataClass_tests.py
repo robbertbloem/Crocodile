@@ -55,8 +55,8 @@ class Test_dataclass_setters(unittest.TestCase):
         """
         self.dc.r = [numpy.ones((10,20)), numpy.ones((10,20))]
         self.dc.zeropad_to = 40
-        self.assertEqual(self.dc._zeropad_to, 40)
-        self.assertEqual(self.dc._zeropad_by, 4.0)
+        self.assertEqual(self.dc.zeropad_to, 40)
+        self.assertEqual(self.dc.zeropad_by, 4.0)
 
     def test_zeropad_to_r_uninit(self):
         """
@@ -64,8 +64,8 @@ class Test_dataclass_setters(unittest.TestCase):
         """
         DEBUG.verbose("\nError is intentional", True)
         self.dc.zeropad_to = 40
-        self.assertEqual(self.dc._zeropad_to, None)
-        self.assertEqual(self.dc._zeropad_by, 1.0)
+        self.assertEqual(self.dc.zeropad_to, None)
+        self.assertEqual(self.dc.zeropad_by, 1.0)
 
     def test_zeropad_to_nan(self):
         """
@@ -74,8 +74,8 @@ class Test_dataclass_setters(unittest.TestCase):
         self.dc.r = [numpy.ones((10,20)), numpy.ones((10,20))]
         DEBUG.verbose("\nError is intentional", True)
         self.dc.zeropad_to = numpy.nan
-        self.assertEqual(self.dc._zeropad_to, None)
-        self.assertEqual(self.dc._zeropad_by, 1.0)
+        self.assertEqual(self.dc.zeropad_to, None)
+        self.assertEqual(self.dc.zeropad_by, 1.0)
 
 
     def test_zeropad_by_correct(self):
@@ -84,8 +84,8 @@ class Test_dataclass_setters(unittest.TestCase):
         """
         self.dc.r = [numpy.ones((10,20)), numpy.ones((10,20))]
         self.dc.zeropad_by = 4
-        self.assertEqual(self.dc._zeropad_to, 40)
-        self.assertEqual(self.dc._zeropad_by, 4.0)
+        self.assertEqual(self.dc.zeropad_to, 40)
+        self.assertEqual(self.dc.zeropad_by, 4.0)
     
     def test_zeropad_by_r_uninit(self):
         """
@@ -93,8 +93,8 @@ class Test_dataclass_setters(unittest.TestCase):
         """
         DEBUG.verbose("\nError is intentional", True)
         self.dc.zeropad_by = 4
-        self.assertEqual(self.dc._zeropad_to, None)
-        self.assertEqual(self.dc._zeropad_by, 1.0)
+        self.assertEqual(self.dc.zeropad_to, None)
+        self.assertEqual(self.dc.zeropad_by, 1.0)
     
     def test_zeropad_by_nan(self):
         """
@@ -103,8 +103,8 @@ class Test_dataclass_setters(unittest.TestCase):
         self.dc.r = [numpy.ones((10,20)), numpy.ones((10,20))]
         DEBUG.verbose("\nError is intentional", True)
         self.dc.zeropad_by = numpy.nan
-        self.assertEqual(self.dc._zeropad_to, None)
-        self.assertEqual(self.dc._zeropad_by, 1.0)
+        self.assertEqual(self.dc.zeropad_to, None)
+        self.assertEqual(self.dc.zeropad_by, 1.0)
 
     def test_zeropad_by_float(self):
         """
@@ -112,17 +112,10 @@ class Test_dataclass_setters(unittest.TestCase):
         """
         self.dc.r = [numpy.ones((10,20)), numpy.ones((10,20))]
         self.dc.zeropad_by = 3.05
-        self.assertEqual(self.dc._zeropad_to, 30)
-        self.assertEqual(self.dc._zeropad_by, 3.05)
+        self.assertEqual(self.dc.zeropad_to, 30)
+        self.assertEqual(self.dc.zeropad_by, 3.0)
 
-    def test_zeropad_by_read(self):
-        """
-        The use of zeropad_to is prefered
-        reading zeropad_by should give a warning
-        """
-        self.dc.r = [numpy.ones((10,20)), numpy.ones((10,20))]
-        DEBUG.verbose("\nWarning is intentional", True)
-        print(self.dc.zeropad_by)
+
 
 
 
