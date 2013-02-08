@@ -93,8 +93,6 @@ class dataclass(CT.ClassTools):
         self.undersampling = False
         self._comment = ""
 
-        self.debug = False
-
     # comments
     @property
     def comment(self):  
