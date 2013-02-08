@@ -65,6 +65,7 @@ class pe_LV(pe_tw):
         pe_tw.__init__(self, objectname = objectname, root_filename = root_filename, time_stamp = time_stamp, population_time = population_time, undersampling = 0, flag_verbose = flag_verbose)  
         
         self.n_fringes = 0 
+        self.undersampling = 0
     
 
     def import_data(self, flag_verbose = False):
