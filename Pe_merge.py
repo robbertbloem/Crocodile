@@ -16,8 +16,8 @@ class pe_merge(PE.pe):
         
         PE.pe.__init__(self, objectname, flag_verbose = flag_verbose)
 
-        self.obj_id = objectname
-        self.objectname = objectname
+        # self.obj_id = objectname
+        # self.objectname = objectname
 
         # first check if it makes sense to continue
         # at least r or s should have the same dimensions
@@ -29,7 +29,9 @@ class pe_merge(PE.pe):
             
             if hasattr(obj, "s"):
                 temp = numpy.shape(obj.s)
-                if s_size:
+                if temp == (1,):
+                    flag_s = False
+                elif s_size:
                     if s_size != temp:
                         flag_s = False
                 else:
@@ -39,7 +41,9 @@ class pe_merge(PE.pe):
 
             if hasattr(obj, "r"):
                 temp = numpy.shape(obj.r)
-                if r_size:
+                if temp == (2,):
+                    flag_r = False
+                elif r_size:
                     if r_size != temp:
                         flag_r = False
                 else:
@@ -47,8 +51,8 @@ class pe_merge(PE.pe):
             else:
                 flag_r = False            
 
-        print(r_size, s_size)
-        print(flag_r, flag_s)
+        # print(r_size, s_size)
+        # print(flag_r, flag_s)
 
         if flag_r == False and flag_s == False:
             return False
@@ -107,7 +111,8 @@ class pe_merge(PE.pe):
                 elif key == "_phase_degrees":
                     check_value_set_key(self, obj, key = "phase_degrees", flag_verbose = flag_verbose)
                 elif key == "_zeropad_to":
-                    check_value_set_key(self, obj, key = "zeropad_to", flag_verbose = flag_verbose)
+                    if flag_r:
+                        check_value_set_key(self, obj, key = "zeropad_to", flag_verbose = flag_verbose)
 
                 # normal variables, related to r
                 elif key in ["r_correction", "r_correction_applied", "r_resolution", "r_units", "undersampling"]:
@@ -121,7 +126,7 @@ class pe_merge(PE.pe):
                 elif key in ["date"]:
                     check_value_set_key(self, obj, key, flag_verbose = flag_verbose)                 
                 # skipped variables
-                elif key in ["s", "s_axis", "r", "r_axis", "_phase_rad", "_zeropad_by", "b", "b_axis", "b_count", "base_filename", "date", "debug", "dimensions", "f", "f_axis", "measurements", "obj_id", "objectname", "r", "r_axis", "source_path", "sub_type", "time_stamp"]:
+                elif key in ["s", "s_axis", "r", "r_axis", "_phase_rad", "_zeropad_by", "b", "b_axis", "b_count", "base_filename", "date", "dimensions", "f", "f_axis", "measurements", "obj_id", "objectname", "r", "r_axis", "source_path", "sub_type", "time_stamp"]:
                     pass
                 
                 # unknown variables
