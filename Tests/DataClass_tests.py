@@ -173,8 +173,8 @@ class Test_dataclass_phase(unittest.TestCase):
         """
         DEBUG.verbose("\nError is intentional", True)
         self.dc.phase_degrees = numpy.nan
-        self.assertEqual(self.dc.phase_degrees, False)
-        self.assertEqual(self.dc.phase_rad, 0)
+        self.assertEqual(self.dc.phase_degrees, None)
+        self.assertEqual(self.dc.phase_rad, None)
 
     def test_phase_degrees_none(self):
         """
@@ -183,7 +183,7 @@ class Test_dataclass_phase(unittest.TestCase):
         DEBUG.verbose("\nWarning is intentional", True)
         self.dc.phase_degrees = None
         self.assertEqual(self.dc.phase_degrees, None)
-        self.assertEqual(self.dc.phase_rad, 1.0)
+        self.assertEqual(self.dc.phase_rad, None)
 
     #################
     ### PHASE_RAD ###
@@ -228,8 +228,8 @@ class Test_dataclass_phase(unittest.TestCase):
         """
         DEBUG.verbose("\nWarning is intentional", True)
         self.dc.phase_rad = numpy.nan
-        self.assertEqual(self.dc.phase_degrees, False)
-        self.assertEqual(self.dc.phase_rad, 0)
+        self.assertEqual(self.dc.phase_degrees, None)
+        self.assertEqual(self.dc.phase_rad, None)
 
     def test_phase_rad_nan(self):
         """
@@ -238,7 +238,7 @@ class Test_dataclass_phase(unittest.TestCase):
         DEBUG.verbose("\nWarning is intentional", True)
         self.dc.phase_rad = None
         self.assertEqual(self.dc.phase_degrees, None)
-        self.assertEqual(self.dc.phase_rad, 1.0)
+        self.assertEqual(self.dc.phase_rad, None)
 
 
 

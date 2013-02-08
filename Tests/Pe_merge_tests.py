@@ -62,6 +62,7 @@ class Test_Pe_merge(unittest.TestCase):
             # assign after r to enabled calculation of zeropad_by
             # assign before s to prevent a warning that it changed
             self.mess[i].zeropad_to = 0 
+            self.mess[i].phase_degrees = 42
             
             self.mess[i].s = fake_data
             self.mess[i].s_axis = [numpy.arange(10), 10, numpy.arange(20)]    
@@ -77,7 +78,7 @@ class Test_Pe_merge(unittest.TestCase):
         This should work correct
         r and s exist
         """
-        DEBUG.verbose("\nZeropad warning is intentional", True)
+        DEBUG.verbose("\nTwo intentional zeropad warnings", True)
         mer = PEME.pe_merge("Test", class_plus = [self.mess[0]], class_min = [self.mess[1]], flag_verbose = self.flag_verbose)
         self.assertTrue(numpy.all(mer.s))
 
@@ -104,7 +105,7 @@ class Test_Pe_merge(unittest.TestCase):
 
     def test_r_1(self):
         """
-        for 1 object, only r exists: s is still as initialized: [0]
+        for 1 object, only s exists: r is still as initialized: [0]
         no zeropad warning because it is not set
         """
         self.mess[0].r = [0]
@@ -121,8 +122,30 @@ class Test_Pe_merge(unittest.TestCase):
         self.assertEqual(mer.r, [0,0])     
 
 
+    def test_phase_degrees_uninit_1(self):
+        """
+        mess[0].phase_degrees = None
+        s=[0] to suppress zeropad warning
+        """
+        self.mess[0].s = [0]
+        DEBUG.verbose("\nIntentional phase warning", True)
+        self.mess[0].phase_degrees = None
+        DEBUG.verbose("\nIntentional phase warning", True)
+        mer = PEME.pe_merge("Test", class_plus = [self.mess[0]], class_min = [self.mess[1]], flag_verbose = self.flag_verbose)
+        self.assertEqual(mer.phase_degrees, None)  
 
-
+    def test_phase_degrees_uninit_2(self):
+        """
+        mess[1].phase_degrees = None
+        s=[0] to suppress zeropad warning
+        Tests if the order makes a difference. It shouldn't
+        """
+        self.mess[0].s = [0]
+        DEBUG.verbose("\nIntentional phase warning", True)
+        self.mess[1].phase_degrees = None
+        DEBUG.verbose("\nError is intentional", True)
+        mer = PEME.pe_merge("Test", class_plus = [self.mess[0]], class_min = [self.mess[1]], flag_verbose = self.flag_verbose)
+        self.assertEqual(mer.phase_degrees, None)  
 
 
 
@@ -145,55 +168,75 @@ class Test_check_value_set_key(unittest.TestCase):
         
         self.B.var_int = 1
         self.B.var_list = [0,0]
-        self.B.zeropad_to = 2
 
        
-    def test_int_uninit(self):      
-        PEME.check_value_set_key(self.A, self.B, "var_int")    
+    def test_int_uninit_0(self):      
+        index = 0
+        PEME.check_value_set_key(self.A, self.B, "var_int", index, flag_verbose = self.flag_verbose)    
         self.assertEqual(self.A.var_int, 1)
 
-    def test_int_equal(self):    
+    def test_int_uninit_1(self):      
+        index = 1
+        PEME.check_value_set_key(self.A, self.B, "var_int", index, flag_verbose = self.flag_verbose)    
+        self.assertEqual(self.A.var_int, False)
+
+    def test_int_equal_0(self): 
+        index = 0   
         self.A.var_int = 1 
-        PEME.check_value_set_key(self.A, self.B, "var_int")    
+        PEME.check_value_set_key(self.A, self.B, "var_int", index, flag_verbose = self.flag_verbose)    
         self.assertEqual(self.A.var_int, 1)
 
-    def test_int_not_equal(self):    
+    def test_int_equal_1(self): 
+        index = 1  
+        self.A.var_int = 1 
+        PEME.check_value_set_key(self.A, self.B, "var_int", index, flag_verbose = self.flag_verbose)    
+        self.assertEqual(self.A.var_int, 1)
+
+    def test_int_not_equal_0(self):
+        index = 0    
         self.A.var_int = 2  
-        PEME.check_value_set_key(self.A, self.B, "var_int")    
+        PEME.check_value_set_key(self.A, self.B, "var_int", index, flag_verbose = self.flag_verbose)    
         self.assertTrue(numpy.isnan(self.A.var_int))
 
+    def test_int_not_equal_1(self):
+        index = 1  
+        self.A.var_int = 2  
+        PEME.check_value_set_key(self.A, self.B, "var_int", index, flag_verbose = self.flag_verbose)    
+        self.assertTrue(numpy.isnan(self.A.var_int))
 
-    def test_list_uninit(self):      
-        PEME.check_value_set_key(self.A, self.B, "var_list")    
+    def test_list_uninit_0(self): 
+        index = 0     
+        PEME.check_value_set_key(self.A, self.B, "var_list", index, flag_verbose = self.flag_verbose)    
         self.assertEqual(self.A.var_list, [0,0])
+        
+    def test_list_uninit_1(self): 
+        index = 1
+        PEME.check_value_set_key(self.A, self.B, "var_list", index, flag_verbose = self.flag_verbose)    
+        self.assertEqual(self.A.var_list, False)
     
-    def test_list_equal(self):    
+    def test_list_equal_0(self): 
+        index = 0   
         self.A.var_list = [0,0] 
-        PEME.check_value_set_key(self.A, self.B, "var_list")    
+        PEME.check_value_set_key(self.A, self.B, "var_list", index, flag_verbose = self.flag_verbose)    
+        self.assertEqual(self.A.var_list, [0,0])
+        
+    def test_list_equal_1(self): 
+        index = 1
+        self.A.var_list = [0,0] 
+        PEME.check_value_set_key(self.A, self.B, "var_list", index, flag_verbose = self.flag_verbose)    
         self.assertEqual(self.A.var_list, [0,0])
 
-    def test_list_not_equal(self):    
+    def test_list_not_equal_0(self):  
+        index = 0
         self.A.var_list = [1,1] 
-        PEME.check_value_set_key(self.A, self.B, "var_list")  
+        PEME.check_value_set_key(self.A, self.B, "var_list", index, flag_verbose = self.flag_verbose)  
         self.assertTrue(numpy.isnan(self.A.var_list))
 
-    # zeropad_to is special because it is set to False
-    def test_zeropad_uninit(self):      
-        PEME.check_value_set_key(self.A, self.B, "zeropad_to")    
-        self.assertEqual(self.A.zeropad_to, 2)
-    
-    def test_zeropad_equal(self):    
-        self.A.zeropad_to = 2
-        PEME.check_value_set_key(self.A, self.B, "zeropad_to")    
-        self.assertEqual(self.A.zeropad_to, 2)
-    
-    def test_zeropad_not_equal(self):    
-        self.A.zeropad_to = 1
-        DEBUG.verbose("\nZeropad warning is intentional", True)
-        PEME.check_value_set_key(self.A, self.B, "zeropad_to")  
-        self.assertTrue(numpy.isnan(self.A.zeropad_to))
-
-
+    def test_list_not_equal_1(self):  
+        index = 1
+        self.A.var_list = [1,1] 
+        PEME.check_value_set_key(self.A, self.B, "var_list", index, flag_verbose = self.flag_verbose)  
+        self.assertTrue(numpy.isnan(self.A.var_list))
     
 
 
@@ -203,7 +246,7 @@ class example_class():
         
         self.var_int = False
         self.var_list = False
-        self.zeropad_to = False
+
 
 
 

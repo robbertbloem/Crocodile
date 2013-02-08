@@ -99,7 +99,8 @@ class pe_merge(PE.pe):
         self.r_units = False
         self.s_resolution = False
         self.s_units = False
-    
+        
+        index = 0
         for obj in class_plus + class_min:
             # for stuff that independent for adding or subtracting
             
@@ -109,22 +110,22 @@ class pe_merge(PE.pe):
                 if key == "_comment":
                     self.comment = getattr(obj, key)
                 elif key == "_phase_degrees":
-                    check_value_set_key(self, obj, key = "phase_degrees", flag_verbose = flag_verbose)
+                    check_value_set_key(self, obj, key = "phase_degrees", index = index, flag_verbose = flag_verbose)
                 elif key == "_zeropad_to":
                     if flag_r:
-                        check_value_set_key(self, obj, key = "zeropad_to", flag_verbose = flag_verbose)
+                        check_value_set_key(self, obj, key = "zeropad_to", index  = index, flag_verbose = flag_verbose)
 
                 # normal variables, related to r
                 elif key in ["r_correction", "r_correction_applied", "r_resolution", "r_units", "undersampling"]:
                     if flag_r:
-                        check_value_set_key(self, obj, key, flag_verbose = flag_verbose) 
+                        check_value_set_key(self, obj, key, index, flag_verbose = flag_verbose) 
                 # normal variables, related to s
                 elif key in ["s_resolution", "s_units"]:
                     if flag_s:
-                        check_value_set_key(self, obj, key, flag_verbose = flag_verbose)  
+                        check_value_set_key(self, obj, key, index, flag_verbose = flag_verbose)  
                 # normal variables, other
                 elif key in ["date"]:
-                    check_value_set_key(self, obj, key, flag_verbose = flag_verbose)                 
+                    check_value_set_key(self, obj, key, index, flag_verbose = flag_verbose)                 
                 # skipped variables
                 elif key in ["s", "s_axis", "r", "r_axis", "_phase_rad", "_zeropad_by", "b", "b_axis", "b_count", "base_filename", "date", "dimensions", "f", "f_axis", "measurements", "obj_id", "objectname", "r", "r_axis", "source_path", "sub_type", "time_stamp"]:
                     pass
@@ -132,25 +133,27 @@ class pe_merge(PE.pe):
                 # unknown variables
                 else:
                     self.printWarning("Unknown key: " + key)
+            
+            index += 1
 
 
 
-def check_value_set_key(obj_to, obj_from, key, flag_verbose = False):
+def check_value_set_key(obj_to, obj_from, key, index, flag_verbose = False):
+    """
+    checks if a key is set. If it is set, it checks if the values are the same. If not, it gives an error and gives the variable a value numpy.nan. If the value is not set and index == 0, it will set the value. 
     
+    CHANGELOG:
+    20130208/RB: started the function
+    
+    """  
     # if key is already set, check if it is the same
     if getattr(obj_to, key):
         if getattr(obj_to, key) != getattr(obj_from, key):
-            # value is not the same, set to False or nan
-            # False should be avoided, as it is equal to not set
-            # if key in ["zeropad_to"]:
-            #     setattr(obj_to, key, False)
-            #     DEBUG.printWarning(key + " does not match. Set to False.", inspect.stack())
-            #     flag_error = False
-            # else:
+            # if value is different, set to numpy.nan
+            # make sure getters/setters can handle this
             setattr(obj_to, key, numpy.nan)
             DEBUG.verbose(key + " does not match. Set to NaN", flag_verbose = flag_verbose)
-
-    else:
+    elif index == 0:
         # if key was not set, set it now
         setattr(obj_to, key, getattr(obj_from, key))
     

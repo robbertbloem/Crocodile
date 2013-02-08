@@ -83,13 +83,8 @@ class dataclass(CT.ClassTools):
 
         # zeropadding
         # _zeropad_to: a specific number of samples
-        # _zeropad_by: how many times it should be zeropadded
         self._zeropad_to = None
-        # self._zeropad_by = 1.0 # now only a getter/setter method
-
-        # other experimental stuff
-        self._phase_degrees = False         
-        # self._phase_rad = False
+        self._phase_degrees = None         
         self.undersampling = False
         self._comment = ""
 
@@ -106,6 +101,7 @@ class dataclass(CT.ClassTools):
     @property
     def phase_degrees(self):
         return self._phase_degrees
+    
     @phase_degrees.setter   
     def phase_degrees(self, phase):
         if type(phase) == bool:
@@ -114,18 +110,20 @@ class dataclass(CT.ClassTools):
         if phase == None:
             # None and numpy.isnan don't work together
             self.printWarning("phase_degrees is set to None", inspect.stack()) 
-            self._phase_degrees = phase 
+            self._phase_degrees = None 
         elif numpy.isnan(phase):
-            self.printError("phase_degrees can not be numpy.nan. It is not set.", inspect.stack())
+            self.printError("phase_degrees can not be numpy.nan. Will be set to None", inspect.stack())
+            self._phase_degrees = None 
         else:
             self._phase_degrees = phase
 
     @property
     def phase_rad(self):
         if self._phase_degrees == None:
-            return 1.0
+            return None
         else:
             return self.phase_degrees * numpy.pi / 180
+    
     @phase_rad.setter
     def phase_rad(self, phase):
         if type(phase) == bool:
@@ -136,7 +134,8 @@ class dataclass(CT.ClassTools):
             self.printWarning("phase_rad is set to 1.0", inspect.stack()) 
             self._phase_degrees = None 
         elif numpy.isnan(phase):
-            self.printError("phase_rad can not be numpy.nan. It is not set.", inspect.stack())
+            self.printError("phase_rad can not be numpy.nan. Will be set to None", inspect.stack())
+            self._phase_degrees = None 
         else:
             self._phase_degrees = phase * 180 / numpy.pi
 
@@ -144,6 +143,7 @@ class dataclass(CT.ClassTools):
     @property
     def zeropad_to(self):
         return self._zeropad_to
+    
     @zeropad_to.setter
     def zeropad_to(self, zpt):
         if len(self.s) != 1:
