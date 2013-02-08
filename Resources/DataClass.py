@@ -89,7 +89,7 @@ class dataclass(CT.ClassTools):
 
         # other experimental stuff
         self._phase_degrees = False         
-        self._phase_rad = False
+        # self._phase_rad = False
         self.undersampling = False
         self._comment = ""
 
@@ -108,16 +108,26 @@ class dataclass(CT.ClassTools):
         return self._phase_degrees
     @phase_degrees.setter   
     def phase_degrees(self, phase):
-        self._phase_degrees = phase
-        self._phase_rad = phase*numpy.pi/180
+        if type(phase) == bool:
+            self.printWarning("phase_degrees is boolean type, will be set to " +  str(phase * 1), inspect.stack())
+            phase *= 1
+        if numpy.isnan(phase):
+            self.printError("phase_degrees can not be numpy.nan. It is not set.", inspect.stack())
+        else:
+            self._phase_degrees = phase
 
     @property
     def phase_rad(self):
-        return self._phase_rad
+        return self.phase_degrees * numpy.pi / 180
     @phase_rad.setter
     def phase_rad(self, phase):
-        self._phase_rad = phase
-        self._phase_degrees = phase * 180/numpy.pi
+        if type(phase) == bool:
+            self.printWarning("phase_degrees is boolean type, will be set to " +  str(phase * 1), inspect.stack())
+            phase *= 1
+        if numpy.isnan(phase):
+            self.printError("phase_degrees can not be numpy.nan. It is not set.", inspect.stack())
+        else:
+            self._phase_degrees = phase * 180 / numpy.pi
 
     # zeropadding
     @property

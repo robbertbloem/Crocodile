@@ -17,10 +17,8 @@ parser = argparse.ArgumentParser(description='Command line arguments')
 # add arguments
 parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
 parser.add_argument("-r", "--reload", action="store_true", help="Reload modules")
-parser.add_argument("-s1", "--skip1", action="store_true", help="Skip testing suite 1: pe_merge")
-# parser.add_argument("-s2", "--skip2", action="store_true", help="Skip testing suite 2: check_value_set_key")
-# parser.add_argument("-s3", "--skip3", action="store_true", help="Skip testing suite 3: print objects")
-# parser.add_argument("-s4", "--skip4", action="store_true", help="Skip testing suite 4: add array with objects")
+parser.add_argument("-s1", "--skip1", action="store_true", help="Skip testing suite 1: zeropad setters/getters")
+parser.add_argument("-s2", "--skip2", action="store_true", help="Skip testing suite 2: phase setters/getters")
 
 # process
 args = parser.parse_args()
@@ -31,7 +29,7 @@ if args.reload:
 
 
 
-class Test_dataclass_setters(unittest.TestCase):
+class Test_dataclass_zeropad(unittest.TestCase):
     """
 
     CHANGELOG:
@@ -42,13 +40,12 @@ class Test_dataclass_setters(unittest.TestCase):
     ### SETUP ###
     #############
     def setUp(self):
-
         self.flag_verbose = args.verbose
-
         self.dc = DC.dataclass("test", 3, 2, flag_verbose = self.flag_verbose)
 
-
-
+    ##################
+    ### ZEROPAD_TO ###
+    ##################    
     def test_zeropad_to_correct(self):
         """
         This is correct
@@ -77,7 +74,9 @@ class Test_dataclass_setters(unittest.TestCase):
         self.assertEqual(self.dc.zeropad_to, None)
         self.assertEqual(self.dc.zeropad_by, 1.0)
 
-
+    ##################
+    ### ZEROPAD_BY ###
+    ##################  
     def test_zeropad_by_correct(self):
         """
         This is correct
@@ -117,8 +116,112 @@ class Test_dataclass_setters(unittest.TestCase):
 
 
 
+class Test_dataclass_phase(unittest.TestCase):
+    """
+
+    CHANGELOG:
+    20130208/RB: started the suite
+
+    """
+    #############
+    ### SETUP ###
+    #############
+    def setUp(self):
+        self.flag_verbose = args.verbose
+        self.dc = DC.dataclass("test", 3, 2, flag_verbose = self.flag_verbose)
+
+    #####################
+    ### PHASE_DEGREES ###
+    #####################
+    def test_phase_degrees_float(self):
+        """
+        This is correct
+        """
+        self.dc.phase_degrees = 31.1
+        self.assertEqual(self.dc.phase_degrees, 31.1)
+        self.assertAlmostEqual(self.dc.phase_rad, 31.1 * numpy.pi / 180)
+
+    def test_phase_degrees_int(self):
+        """
+        This is correct
+        """
+        self.dc.phase_degrees = 42
+        self.assertEqual(self.dc.phase_degrees, 42)
+        self.assertAlmostEqual(self.dc.phase_rad, 42 * numpy.pi / 180)
+
+    def test_phase_degrees_false(self):
+        """
+        False should be interpreted as 0
+        """
+        DEBUG.verbose("\nWarning is intentional", True)
+        self.dc.phase_degrees = False
+        self.assertEqual(self.dc.phase_degrees, 0)
+        self.assertEqual(self.dc.phase_rad, 0)
+
+    def test_phase_degrees_true(self):
+        """
+        True should be interpreted as 1
+        """
+        DEBUG.verbose("\nWarning is intentional", True)
+        self.dc.phase_degrees = True
+        self.assertEqual(self.dc.phase_degrees, 1)
+        self.assertAlmostEqual(self.dc.phase_rad, 1 * numpy.pi / 180)
+
+    def test_phase_degrees_nan(self):
+        """
+        numpy.nan should give error, no value is set
+        """
+        DEBUG.verbose("\nError is intentional", True)
+        self.dc.phase_degrees = numpy.nan
+        self.assertEqual(self.dc.phase_degrees, False)
+        self.assertEqual(self.dc.phase_rad, 0)
 
 
+    #################
+    ### PHASE_RAD ###
+    #################  
+    def test_phase_rad_float(self):
+        """
+        This is correct
+        """
+        self.dc.phase_rad = 1.1
+        self.assertAlmostEqual(self.dc.phase_degrees, 1.1 * 180 / numpy.pi)
+        self.assertEqual(self.dc.phase_rad, 1.1)
+    
+    def test_phase_rad_int(self):
+        """
+        This is correct
+        """
+        self.dc.phase_rad = 2
+        self.assertAlmostEqual(self.dc.phase_degrees, 2 * 180 / numpy.pi)
+        self.assertEqual(self.dc.phase_rad, 2)
+    
+    def test_phase_rad_false(self):
+        """
+        False should be interpreted as 0
+        """
+        DEBUG.verbose("\nWarning is intentional", True)
+        self.dc.phase_rad = False
+        self.assertEqual(self.dc.phase_degrees, 0)
+        self.assertEqual(self.dc.phase_rad, 0)
+    
+    def test_phase_rad_true(self):
+        """
+        True should be interpreted as 1
+        """
+        DEBUG.verbose("\nWarning is intentional", True)
+        self.dc.phase_rad = True
+        self.assertAlmostEqual(self.dc.phase_degrees, 1 * 180 / numpy.pi)
+        self.assertEqual(self.dc.phase_rad, 1)
+    
+    def test_phase_rad_nan(self):
+        """
+        numpy.nan should give error, no value is set
+        """
+        DEBUG.verbose("\nError is intentional", True)
+        self.dc.phase_rad = numpy.nan
+        self.assertEqual(self.dc.phase_degrees, False)
+        self.assertEqual(self.dc.phase_rad, 0)
 
 
 
@@ -126,13 +229,13 @@ class Test_dataclass_setters(unittest.TestCase):
 if __name__ == '__main__':
 
     if args.skip1 == False:
-        suite = unittest.TestLoader().loadTestsFromTestCase(Test_dataclass_setters)
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_dataclass_zeropad)
         unittest.TextTestRunner(verbosity=1).run(suite)    
     else:
-        DEBUG.verbose("Skipping suite 1: pe init", True)
+        DEBUG.verbose("Skipping suite 1: zeropad getters/setters", True)
 
-    # if args.skip2 == False:
-    #     suite = unittest.TestLoader().loadTestsFromTestCase(Test_check_value_set_key)
-    #     unittest.TextTestRunner(verbosity=1).run(suite)    
-    # else:
-        # DEBUG.verbose("Skipping suite 2: check_value_set_key", True)
+    if args.skip2 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_dataclass_phase)
+        unittest.TextTestRunner(verbosity=1).run(suite)    
+    else:
+        DEBUG.verbose("Skipping suite 2: phase getters/setters", True)
