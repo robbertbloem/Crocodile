@@ -85,7 +85,7 @@ class dataclass(CT.ClassTools):
         # _zeropad_to: a specific number of samples
         # _zeropad_by: how many times it should be zeropadded
         self._zeropad_to = None
-        # self._zeropad_by = 1.0 
+        # self._zeropad_by = 1.0 # now only a getter/setter method
 
         # other experimental stuff
         self._phase_degrees = False         
@@ -133,9 +133,8 @@ class dataclass(CT.ClassTools):
             self.printError("zeropad_by can not be determined because r[0] has no length. zeropad_to is not set", inspect.stack())
         else:
             self._zeropad_to = int(zpt)
-            self._zeropad_by = zpt / numpy.shape(self.r[0])[0]
             
-
+    
     @property
     def zeropad_by(self):
         if self._zeropad_to == None:
@@ -152,7 +151,7 @@ class dataclass(CT.ClassTools):
             self.printError("zeropad_to can not be determined because r[0] has no length. zeropad_to is not set", inspect.stack())
         else:
             self._zeropad_to = int(zp_by * numpy.shape(self.r[0])[0])
-            # self._zeropad_by = zp_by 
+            
 
 
 
