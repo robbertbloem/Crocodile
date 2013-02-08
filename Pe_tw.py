@@ -32,6 +32,7 @@ class pe_tw(PE.pe):
         self.r_axis[1] = population_time
         self.time_stamp = time_stamp 
         self.base_filename = root_filename + "_" + str(self.time_stamp) + "_T" + str(self.r_axis[1])
+        self.sub_type = root_filename
         
         self.undersampling = undersampling
         self.path = self.base_filename + "/"  
