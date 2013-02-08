@@ -86,7 +86,9 @@ class pe(DC.dataclass):
         
         return ft_array
 
-            
+
+
+
 
 
 
@@ -106,6 +108,7 @@ class pe(DC.dataclass):
         20101204/RB: started
         20110909/RB: continued 
         20130131/RB: copied from croc to Crocodile. The function should now work for time-freq, freq-time and time-time domain. Only the FFT will give an error, the other problems give a warning.
+        20130208/RB: now checks used variables before the calculation instead of try/except during the calculation
         
         WARNING:
         Realistically, only the time-freq FFT is performed. The others may have problems.
@@ -113,7 +116,50 @@ class pe(DC.dataclass):
         """
         
         self.verbose("Super absorptive", flag_verbose)
+
+
+        # VARIABLE CHECKING
         
+        # r should be a list with numpy.ndarrays
+        # if not the case, return False
+        if type(self.r) != list:
+            self.printError("r should be a list.", inspect.stack())  
+            return False
+        elif type(self.r[0]) != numpy.ndarray or type(self.r[1]) != numpy.ndarray:
+            self.printError("r[0] or r[1] should be a numpy.ndarray. Did you assign r?", inspect.stack())  
+            return False
+        
+        # r_axis should be a list
+        # index 0 and 2 should be a numpy.ndarray
+        # if not the case, skip making the axes
+        flag_axis = True
+        if type(self.r_axis) != list:
+            flag_axis = False
+            self.printWarning("r_axis should be a list. s_axis will not be calculated.", inspect.stack())
+        elif type(self.r_axis[0]) != numpy.ndarray or type(self.r_axis[2]) != numpy.ndarray:
+            flag_axis = False
+            self.printWarning("r_axis[0] or r_axis[2] should be a numpy.ndarray. s_axis will not be calculated.", inspect.stack()) 
+        
+        # undersampling has to be an integer
+        # if it is a BOOL, it can be converted to 0 or 1
+        if type(self.undersampling) == bool: 
+            if self.undersampling:
+                self.undersampling = 1
+            else:
+                self.undersampling = 0
+            self.printWarning("undersampling is a BOOL, will use " + str(self.undersampling), inspect.stack())
+        if type(self.undersampling) != int:
+            self.printError("undersampling is NaN, not a valid value. ", inspect.stack())
+            return False
+        
+        # the phase should not be a numpy.nan
+        if numpy.isnan(self.phase_degrees):
+            self.printError("phase_degrees is NaN, not a valid value. ", inspect.stack())    
+            return False            
+
+        # ACTUAL FUNCTION
+
+        # do the FFT
         try: 
             for i in range(len(self.r)):
                 self.f[i] = self.absorptive_helper(array = numpy.copy(self.r[i]), axes = axes, window_function = window_function, window_length = window_length)
@@ -138,12 +184,10 @@ class pe(DC.dataclass):
                 self.f[1] = self.f[1][(len(self.f[1])/2):][:]
                 self.s = self.s[(len(self.s)/2):][:]  
                 
-            try:
+            if flag_axis:
                 self.s_axis[0] = MATH.make_ft_axis(length = 2*numpy.shape(self.s)[0], dt = self.r_axis[0][1]-self.r_axis[0][0], undersampling = self.undersampling)
                 self.s_axis[0] = self.s_axis[0][0:len(self.s_axis[0])/2]
-            except TypeError:
-                self.printWarning("Problem with making the Fourier Transformed axis. Is r_axis[0] assigned?", inspect.stack())
-                        
+                         
         if axes == 1 or axes == [0,1] or axes == 2 or axes == [1,1]:
             if self.undersampling % 2 == 0:
                 self.f[0] = self.f[0][:][:(len(self.f[0])/2)]
@@ -154,25 +198,24 @@ class pe(DC.dataclass):
                 self.f[1] = self.f[1][:][(len(self.f[1])/2):]
                 self.s = self.s[:][(len(self.s)/2):]
             
-            try:
+            if flag_axis:
                 self.s_axis[2] = MATH.make_ft_axis(length = 2*numpy.shape(self.s)[0], dt = self.r_axis[2][1]-self.r_axis[2][0], undersampling = self.undersampling)
                 self.s_axis[2] = self.s_axis[2][0:len(self.s_axis[0])/2]
-            except TypeError:
-                self.printWarning("Problem with making the Fourier Transformed axis. Is r_axis[2] assigned?", inspect.stack())
         
-        if axes == 0 or axes == [1,0]:
-            self.s_axis[2] = self.r_axis[2] + self.r_correction[2]   
-        
-        if axes == 1 or axes == [0,1]:
-            self.s_axis[0] = self.r_axis[0] + self.r_correction[0]   
+        if flag_axis:
+            if axes == 0 or axes == [1,0]:
+                self.s_axis[2] = self.r_axis[2] + self.r_correction[2]   
+            
+            if axes == 1 or axes == [0,1]:
+                self.s_axis[0] = self.r_axis[0] + self.r_correction[0]   
         
             
         # add some stuff to self
         self.s_units = ["cm-1", "fs", "cm-1"]
-        try:
+        
+        if flag_axis:
             self.s_resolution = [(self.s_axis[0][1] - self.s_axis[0][0]), 0, (self.s_axis[2][1] - self.s_axis[2][0])]
-        except TypeError:
-            self.printWarning("The resolution of the spectrum can not be determined. This can mean that the original axes (r_axis) or the spectral axes (s_axis) contains an error.", inspect.stack())  
+
             
         return True     
                   
