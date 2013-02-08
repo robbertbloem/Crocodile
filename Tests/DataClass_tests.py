@@ -176,6 +176,14 @@ class Test_dataclass_phase(unittest.TestCase):
         self.assertEqual(self.dc.phase_degrees, False)
         self.assertEqual(self.dc.phase_rad, 0)
 
+    def test_phase_degrees_none(self):
+        """
+        None should will reset phase_degrees to init value
+        """
+        DEBUG.verbose("\nWarning is intentional", True)
+        self.dc.phase_degrees = None
+        self.assertEqual(self.dc.phase_degrees, None)
+        self.assertEqual(self.dc.phase_rad, 1.0)
 
     #################
     ### PHASE_RAD ###
@@ -218,11 +226,19 @@ class Test_dataclass_phase(unittest.TestCase):
         """
         numpy.nan should give error, no value is set
         """
-        DEBUG.verbose("\nError is intentional", True)
+        DEBUG.verbose("\nWarning is intentional", True)
         self.dc.phase_rad = numpy.nan
         self.assertEqual(self.dc.phase_degrees, False)
         self.assertEqual(self.dc.phase_rad, 0)
 
+    def test_phase_rad_nan(self):
+        """
+        None sets phase_degrees to init value
+        """
+        DEBUG.verbose("\nWarning is intentional", True)
+        self.dc.phase_rad = None
+        self.assertEqual(self.dc.phase_degrees, None)
+        self.assertEqual(self.dc.phase_rad, 1.0)
 
 
 

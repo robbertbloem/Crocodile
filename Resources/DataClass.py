@@ -111,21 +111,32 @@ class dataclass(CT.ClassTools):
         if type(phase) == bool:
             self.printWarning("phase_degrees is boolean type, will be set to " +  str(phase * 1), inspect.stack())
             phase *= 1
-        if numpy.isnan(phase):
+        if phase == None:
+            # None and numpy.isnan don't work together
+            self.printWarning("phase_degrees is set to None", inspect.stack()) 
+            self._phase_degrees = phase 
+        elif numpy.isnan(phase):
             self.printError("phase_degrees can not be numpy.nan. It is not set.", inspect.stack())
         else:
             self._phase_degrees = phase
 
     @property
     def phase_rad(self):
-        return self.phase_degrees * numpy.pi / 180
+        if self._phase_degrees == None:
+            return 1.0
+        else:
+            return self.phase_degrees * numpy.pi / 180
     @phase_rad.setter
     def phase_rad(self, phase):
         if type(phase) == bool:
-            self.printWarning("phase_degrees is boolean type, will be set to " +  str(phase * 1), inspect.stack())
+            self.printWarning("phase_rad is boolean type, will be set to " +  str(phase * 1), inspect.stack())
             phase *= 1
-        if numpy.isnan(phase):
-            self.printError("phase_degrees can not be numpy.nan. It is not set.", inspect.stack())
+        if phase == None:
+            # None and numpy.isnan don't work together
+            self.printWarning("phase_rad is set to 1.0", inspect.stack()) 
+            self._phase_degrees = None 
+        elif numpy.isnan(phase):
+            self.printError("phase_rad can not be numpy.nan. It is not set.", inspect.stack())
         else:
             self._phase_degrees = phase * 180 / numpy.pi
 
