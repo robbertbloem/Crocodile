@@ -126,19 +126,31 @@ class dataclass(CT.ClassTools):
     @zeropad_to.setter
     def zeropad_to(self, zpt):
         if len(self.s) != 1:
-            self.printWarning("Zeropadding has changed after spectrum was calculated.", inspect.stack())
-        self._zeropad_to = int(zpt)
-        self._zeropad_by = zpt / numpy.shape(self.r[0])[0]
+            self.printWarning("Zeropadding has changed after spectrum was calculated.", inspect.stack())        
+        if numpy.isnan(zpt):
+            self.printError("zeropad_to can not be numpy.nan. It is not set.", inspect.stack())
+        elif type(self.r[0]) == int:
+            self.printError("zeropad_by can not be determined because r[0] has no length. zeropad_to is not set", inspect.stack())
+        else:
+            self._zeropad_to = int(zpt)
+            self._zeropad_by = zpt / numpy.shape(self.r[0])[0]
+            
 
     @property
     def zeropad_by(self):
+        self.printWarning("Use zeropad_to instead", inspect.stack())
         return self._zeropad_by
     @zeropad_by.setter
     def zeropad_by(self, zp_by):
         if len(self.s) != 1:
             self.printWarning("Zeropadding has changed after spectrum was calculated.", inspect.stack())
-        self._zeropad_to = int(zp_by * numpy.shape(self.r[0])[0])
-        self._zeropad_by = zp_by 
+        if numpy.isnan(zp_by):
+            self.printError("zeropad_by can not be numpy.nan. It is not set.", inspect.stack())
+        elif type(self.r[0]) == int:
+            self.printError("zeropad_to can not be determined because r[0] has no length. zeropad_to is not set", inspect.stack())
+        else:
+            self._zeropad_to = int(zp_by * numpy.shape(self.r[0])[0])
+            self._zeropad_by = zp_by 
 
 
 

@@ -177,7 +177,7 @@ class Test_check_value_set_key(unittest.TestCase):
         PEME.check_value_set_key(self.A, self.B, "var_list")  
         self.assertTrue(numpy.isnan(self.A.var_list))
 
-
+    # zeropad_to is special because it is set to False
     def test_zeropad_uninit(self):      
         PEME.check_value_set_key(self.A, self.B, "zeropad_to")    
         self.assertEqual(self.A.zeropad_to, 2)
@@ -191,8 +191,10 @@ class Test_check_value_set_key(unittest.TestCase):
         self.A.zeropad_to = 1
         DEBUG.verbose("\nZeropad warning is intentional", True)
         PEME.check_value_set_key(self.A, self.B, "zeropad_to")  
-        self.assertFalse(self.A.zeropad_to)
+        self.assertTrue(numpy.isnan(self.A.zeropad_to))
 
+
+    
 
 
 class example_class():

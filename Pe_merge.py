@@ -141,13 +141,14 @@ def check_value_set_key(obj_to, obj_from, key, flag_verbose = False):
     if getattr(obj_to, key):
         if getattr(obj_to, key) != getattr(obj_from, key):
             # value is not the same, set to False or nan
-            if key in ["zeropad_to"]:
-                setattr(obj_to, key, False)
-                DEBUG.printWarning(key + " does not match. Set to False.", inspect.stack())
-                flag_error = False
-            else:
-                setattr(obj_to, key, numpy.nan)
-                DEBUG.verbose(key + " does not match. Set to NaN", flag_verbose = flag_verbose)
+            # False should be avoided, as it is equal to not set
+            # if key in ["zeropad_to"]:
+            #     setattr(obj_to, key, False)
+            #     DEBUG.printWarning(key + " does not match. Set to False.", inspect.stack())
+            #     flag_error = False
+            # else:
+            setattr(obj_to, key, numpy.nan)
+            DEBUG.verbose(key + " does not match. Set to NaN", flag_verbose = flag_verbose)
 
     else:
         # if key was not set, set it now
