@@ -4,3 +4,4 @@
 *.pickle
 
 Tests/Test_resources/
+*.pickle
