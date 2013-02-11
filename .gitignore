@@ -2,4 +2,4 @@
 *.pickle
 Tests/Test_resources/
 Tests/Test_resources/*.pickle
-temp/test.pickle
+temp/*.pickle
