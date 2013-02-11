@@ -1,7 +1,5 @@
 *.pyc
 *.pickle
-
-*.pickle
-
 Tests/Test_resources/
-*.pickle
+Tests/Test_resources/*.pickle
+temp/test.pickle
