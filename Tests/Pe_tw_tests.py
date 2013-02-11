@@ -84,7 +84,6 @@ class Test_Pe_LV_import(unittest.TestCase):
         res = self.mess.import_data(flag_verbose = self.flag_verbose)
         self.assertFalse(res)
         
-
     def test_import_data_wrong_file_format(self):
         """
         LV_file_format.666 should not be recognized.
@@ -96,7 +95,7 @@ class Test_Pe_LV_import(unittest.TestCase):
 
     def test_import_data_no_data(self):
         """
-        folder exists, LV_file_format.1 is correct, but contains no data
+        folder exists, LV_file_format.1 exists and is correct, but contains no other data
         """
         self.mess.path = "Test_resources/petw_test_folder_2/"
         DEBUG.verbose("\nError about importing is intentional", True)

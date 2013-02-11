@@ -45,7 +45,7 @@ class pe_tw(PE.pe):
         
         self.n_shots = 0
         self.n_steps = 0
-        self.n_scans = 0
+        
 
 
 
