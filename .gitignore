@@ -3,3 +3,5 @@
 Tests/Test_resources/
 Tests/Test_resources/*.pickle
 temp/*.pickle
+
+temp/test.pickle
