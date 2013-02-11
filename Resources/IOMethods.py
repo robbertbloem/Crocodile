@@ -11,10 +11,9 @@ import matplotlib.pyplot as plt
 import PythonTools.Debug as DEBUG
 import Crocodile.Resources.Constants as CONST
 
-def import_data_LV(path, base_filename):
-
+def import_data_LV_A(path, base_filename):
     """
-    Imports data, LabView format 1
+    Imports data for 'LV_file_format.1'
     
     """
 
@@ -62,8 +61,6 @@ def import_data_LV(path, base_filename):
         R = data[n_fringes-1:, :]
         NR = numpy.flipud(data[:n_fringes, :])
 
-        # fringe 4000 is included twice. 
-
         # for the FFT, we don't want 4000 to be zero. The axes run from 0 to N
         # also: calculate the axis in fs        
         t1fr_axis = numpy.arange(n_fringes)
@@ -73,9 +70,9 @@ def import_data_LV(path, base_filename):
         return R, NR, t1fs_axis, t1fr_axis, w3_axis, phase, lastpump, n_fringes, n_pixels
 
     except IOError:
-        DEBUG.printError("Unable to LabView data from file " + path + "/" + base_filename, inspect.stack())
-        raise
-        return 0, 0, 0  
+        DEBUG.printError("Unable to import LabView data from file " + path + base_filename, inspect.stack())
+        # raise
+        return False
         
 
 
