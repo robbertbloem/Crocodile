@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import division
 
 import inspect
+import os
 
 import numpy
 import matplotlib 
@@ -57,6 +58,15 @@ class pe_tw(PE.pe):
 
 
 class pe_LV(pe_tw):
+    """
+    Class to process results from LabView.
+    
+
+    
+    
+    
+    """
+    
 
     def __init__(self, objectname, root_filename, time_stamp, population_time, flag_verbose = False):
     
@@ -69,10 +79,34 @@ class pe_LV(pe_tw):
     
 
     def import_data(self, flag_verbose = False):
+        """
+        There can be different file formats, indicated by the file 'LV_file_format.N', where N is the format. The file format should be changed when a new or adapted import method is needed. 
+        For example, the format '1' writes data as .csv, while '2' writes data as .bin. Format '1' needs import method 'IOM.import_data_LV_A'. Format 2 can use a modified version of that (add an extra flag indicating .bin files, it should default to .csv to maintain compatibility with older scripts) or make a completly new method 'IOM.import_data_LV_B'. 
+        Note that the 'LV_file_format.N' are numbered by numbers, while the versions of 'IOM.import_data_LV_X' are indicated by letters.
+        'LV_file_format.666' is reserved for testing purposes.
+        
+        """
         
         self.verbose("Import data", flag_verbose)
         
-        R, NR, t1fs_axis, t1fr_axis, w3_axis, phase, lastpump, n_fringes, n_pixels = IOM.import_data_LV(self.path, self.base_filename)
+        try:
+            filelist = os.listdir(self.path)
+        except OSError:
+            self.printError("Directory can not be found.", inspect.stack())
+            return False
+        
+        if "LV_file_format.1" in filelist:
+            self.verbose("  LabView file format 1", flag_verbose)
+            res = IOM.import_data_LV_A(self.path, self.base_filename)
+            if res:
+                R, NR, t1fs_axis, t1fr_axis, w3_axis, phase, lastpump, n_fringes, n_pixels = res
+            else:
+                # res == False means error in importing
+                return False
+            
+        else:
+            self.printError("Unknown file format. Please check 'LV_file_format.N' is present.", inspect.stack())
+            return False
         
         self.r[0] = R
         self.r[1] = NR
