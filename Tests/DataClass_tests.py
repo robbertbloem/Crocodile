@@ -240,6 +240,48 @@ class Test_dataclass_phase(unittest.TestCase):
         self.assertEqual(self.dc.phase_degrees, None)
         self.assertEqual(self.dc.phase_rad, None)
 
+    ##################
+    ### TIME_STAMP ###
+    ##################  
+    
+    # time_stamp should be have a 'hhmm' format. If only 'hmm' is given (measurement before 12:00), prepend a zero. Give a warning for non-sensical time stamps.
+    
+    def test_time_stamp_4_int(self):
+        """
+        This is correct
+        """
+        self.dc.time_stamp = 1234
+        self.assertEqual(self.dc.time_stamp, "1234")
+
+    def test_time_stamp_3_int(self):
+        """
+        If only 3 digits are given, prepend a zero.
+        """
+        self.dc.time_stamp = 234
+        self.assertEqual(self.dc.time_stamp, "0234")
+
+    def test_time_stamp_4_str(self):
+        """
+        This is correct
+        """
+        self.dc.time_stamp = "1234"
+        self.assertEqual(self.dc.time_stamp, "1234")
+
+    def test_time_stamp_5_int(self):
+        """
+        This is correct
+        """
+        DEBUG.verbose("\nWarning is intentional", True)
+        self.dc.time_stamp = 12345
+        self.assertEqual(self.dc.time_stamp, "12345")
+
+    def test_time_stamp_False(self):
+        """
+        This is correct
+        """
+        DEBUG.verbose("\nWarning is intentional", True)
+        self.dc.time_stamp = False
+        self.assertEqual(self.dc.time_stamp, "False")
 
 
 if __name__ == '__main__':

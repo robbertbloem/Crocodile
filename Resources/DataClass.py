@@ -41,7 +41,7 @@ class dataclass(CT.ClassTools):
         # file stuff
         self.source_path = ""
         self.base_filename = "" 
-        self.time_stamp = ""
+        self._time_stamp = ""
         self.date = ""
 
         # organizational stuff
@@ -96,6 +96,28 @@ class dataclass(CT.ClassTools):
     @comment.setter
     def comment(self, text):
         self._comment = self._comment + time.strftime("%d/%m/%Y %H:%M:%S: ", time.localtime()) + text + "\n"
+
+
+    # time_stamp
+    @property
+    def time_stamp(self):
+        return self._time_stamp
+    
+    @time_stamp.setter   
+    def time_stamp(self, ts):
+        self._time_stamp = str(ts)
+        if len(self._time_stamp) == 3:
+            self._time_stamp = "0" + self._time_stamp
+        try:
+            res = int(self._time_stamp)
+            if res >= 2400:
+                self.printWarning("time_stamp >= 2400. That's not an acceptable time.", inspect.stack())
+        except ValueError:
+            self.printWarning("time_stamp is not numerical. Please use 0000 or something.", inspect.stack())
+        
+                 
+
+
 
     # phase   
     @property
