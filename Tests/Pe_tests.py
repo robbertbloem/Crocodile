@@ -1,5 +1,7 @@
 from __future__ import print_function
 from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import argparse
 import unittest
@@ -109,7 +111,7 @@ class Test_Pe_absorptive(unittest.TestCase):
         self.assertTrue(res)
         self.assertEqual(self.mess.s_axis, [0,0,0])
 
-    def test_pe_undersampling_1(self):
+    def test_pe_undersampling_false(self):
         """
         undersampling is False, should be treated as 0
         """
@@ -119,7 +121,7 @@ class Test_Pe_absorptive(unittest.TestCase):
         self.assertTrue(res)
         self.assertEqual(self.mess.undersampling, 0)
 
-    def test_pe_undersampling_2(self):
+    def test_pe_undersampling_true(self):
         """
         undersampling is True, should be treated as 1
         """
@@ -129,7 +131,7 @@ class Test_Pe_absorptive(unittest.TestCase):
         self.assertTrue(res)
         self.assertEqual(self.mess.undersampling, 1)
          
-    def test_pe_undersampling_3(self):
+    def test_pe_undersampling_nan(self):
         """
         undersampling is numpy.nan, should return False
         """
@@ -138,7 +140,7 @@ class Test_Pe_absorptive(unittest.TestCase):
         res = self.mess.super_absorptive(axes = 0)    
         self.assertFalse(res)
 
-    def test_pe_phase_1(self):
+    def test_pe_phase_false(self):
         """
         phase_degrees is False, should be treated as 0
         """
@@ -147,7 +149,7 @@ class Test_Pe_absorptive(unittest.TestCase):
         self.assertTrue(res)
         self.assertEqual(self.mess.phase_degrees, 0)
     
-    def test_pe_phase_2(self):
+    def test_pe_phase_true(self):
         """
         phase_degrees is True, should be treated as 1
         """
@@ -156,7 +158,7 @@ class Test_Pe_absorptive(unittest.TestCase):
         self.assertTrue(res)
         self.assertEqual(self.mess.phase_degrees, 1)
          
-    def test_pe_phase_3(self):
+    def test_pe_phase_nan(self):
         """
         phase_degrees is numpy.nan, should return False
         """

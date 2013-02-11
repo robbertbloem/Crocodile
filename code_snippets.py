@@ -1,5 +1,17 @@
+# for compatibility with Python 3
+# in python 2, you can write 
+# >> print "string"
+# in python 3, and with the __future__ thingy, it becomes:
+# >> print("string")
 from __future__ import print_function
+# in Python 2: 
+# 2.0/3.0 = 0, because it is modulo or something
+# 2.0//3.0 = 1.5, // is a normal division
+# in Python 3, and with the __future__ thingy, it is the other way around. 
 from __future__ import division
+
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import numpy
 import matplotlib 
@@ -209,7 +221,8 @@ linestyle = "-" # set linestyle ":", "-."
 ax[i].plot(x, y, c = color, linestyle = linestyle, linewidth = linewidth)
 
 
-### LOOK OF THE TICKS ###
+### LOOK OF THE TICKS AND LABELS ###
+
 fontsize = 8    # fontsize
 # set ticks at positions (in data-units)
 ax[i].set_yticks([0, 5, 10, 15, 20])
@@ -222,17 +235,25 @@ ax[i].set_yticklabels(["bla", "", "di", "", "bla"], fontsize = fontsize)
 ax[i].tick_params("x", which = "both", length = 2)
 
 # change the width of (a selection of) the edges. Use 0 to show no edges. 
+# iteritems() fails in Python 3
 for loc, spine in ax[i].spines.iteritems():
     if loc in ['left', 'right', 'bottom', 'top']:
         spine.set_linewidth(0.5)
 
 ### LATEX TEXT ###
-# Matplotlib can use latex to make fancy labels. the r indicates a raw string: Python will not parse it. Use $$ as you would in LaTex
+
+# Matplotlib can use latex to make fancy labels. The r"" indicates a raw string: Python will not parse it ("\n" will make a newline, r"\n" wil print \n. Use $$ as you would in LaTex. 
 text = r"$cm^{-1}$" 
 
 
 
+### PRINT TEXT IN COLUMNS ###
 
+# see for more details: http://docs.python.org/2/library/string.html#format-specification-mini-language
+a = 5
+b = "string"
+c = "another string"
+print("{0:3d} {1:10s} {2:10s}".format(a, b, c))
 
 
 

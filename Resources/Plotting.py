@@ -1,5 +1,7 @@
 from __future__ import print_function
 from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import inspect
 
@@ -9,8 +11,6 @@ import matplotlib.pyplot as plt
 
 import PythonTools.Debug as DEBUG
 
-reload(DEBUG)
-
 cdict = {'red':   [(0.0,  0.0, 0.0),(0.475,  1.0, 1.0),(0.525,  1.0, 1.0),
             (1.0,  1.0, 1.0)],
          'green': [(0.0,  0.0, 0.0),(0.475,  1.0, 1.0),(0.525,  1.0, 1.0),
@@ -19,8 +19,6 @@ cdict = {'red':   [(0.0,  0.0, 0.0),(0.475,  1.0, 1.0),(0.525,  1.0, 1.0),
             (1.0,  0.0, 0.0)]
         }
 rwb_cmap = matplotlib.colors.LinearSegmentedColormap('rwb_colormap', cdict, 256)
-
-
 
 
 def find_axes(x_axis, y_axis, x_range, y_range, flag_verbose = False):
