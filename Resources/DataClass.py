@@ -81,6 +81,8 @@ class dataclass(CT.ClassTools):
         self.r_correction = [0] * dimensions  
         self.r_correction_applied = [0] * dimensions
 
+        self.n_scans = 0
+
         # zeropadding
         # _zeropad_to: a specific number of samples
         self._zeropad_to = None

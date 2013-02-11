@@ -51,36 +51,43 @@ class pe_merge(PE.pe):
             else:
                 flag_r = False            
 
-        # print(r_size, s_size)
-        # print(flag_r, flag_s)
-
         if flag_r == False and flag_s == False:
             return False
 
+        n_p = 0
+        n_m = 0   
+        for obj in class_plus:
+            n_p += obj.n_scans
+
+        for obj in class_min:
+            n_m += obj.n_scans
+        
+        
         # add or subtract the data
         # frankly, it is stupid to set the axis all the time
         for obj in class_plus:
             if flag_r:
                 for i in range(len(obj.r)):
-                    self.r[i] += obj.r[i]
+                    self.r[i] += obj.r[i] * obj.n_scans / n_p
                 for i in range(len(obj.r_axis)):
                     self.r_axis[i] = obj.r_axis[i]
             if flag_s:   
-                self.s += obj.s    
+                self.s += obj.s * obj.n_scans / n_p
                 for i in range(len(obj.s_axis)):
                     self.s_axis[i] = obj.s_axis[i]
 
         for obj in class_min:       
             if flag_r:
                 for i in range(len(obj.r)):
-                    self.r[i] -= obj.r[i]
+                    self.r[i] -= obj.r[i] * obj.n_scans / n_m
                 for i in range(len(obj.r_axis)):
                     self.r_axis[i] = obj.r_axis[i]
             if flag_s:   
-                self.s -= obj.s
+                self.s -= obj.s * obj.n_scans / n_m
                 for i in range(len(obj.s_axis)):
                     self.s_axis[i] = obj.s_axis[i]
 
+        
         # SKIPPED VARIABLES:
         # phase_rad: set by phase_degrees
         # zeropad_by: set by zeropad_to
@@ -93,7 +100,7 @@ class pe_merge(PE.pe):
         # r, r_axis: set above
         # source_path: no meaning without measurement
         # sub_type: set manually
-        # time_stamp: set by init
+        # _time_stamp: set by init
     
         # set some variable are initialized to an array. Set to False so that     getattr(obj_to, key) == False
         self.r_units = False
@@ -127,7 +134,7 @@ class pe_merge(PE.pe):
                 elif key in ["date"]:
                     check_value_set_key(self, obj, key, index, flag_verbose = flag_verbose)                 
                 # skipped variables
-                elif key in ["s", "s_axis", "r", "r_axis", "_phase_rad", "_zeropad_by", "b", "b_axis", "b_count", "base_filename", "date", "dimensions", "f", "f_axis", "measurements", "obj_id", "objectname", "r", "r_axis", "source_path", "sub_type", "time_stamp"]:
+                elif key in ["s", "s_axis", "r", "r_axis", "_phase_rad", "_zeropad_by", "b", "b_axis", "b_count", "base_filename", "date", "dimensions", "f", "f_axis", "measurements", "n_scans", "obj_id", "objectname", "r", "r_axis", "source_path", "sub_type", "_time_stamp"]:
                     pass
                 
                 # unknown variables

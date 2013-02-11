@@ -63,7 +63,7 @@ class Test_Pe_merge(unittest.TestCase):
             # assign before s to prevent a warning that it changed
             self.mess[i].zeropad_to = 0 
             self.mess[i].phase_degrees = 42
-            
+            self.mess[i].n_scans = 1
             self.mess[i].s = fake_data
             self.mess[i].s_axis = [numpy.arange(10), 10, numpy.arange(20)]    
             
@@ -120,6 +120,33 @@ class Test_Pe_merge(unittest.TestCase):
         self.mess[0].r[0] = numpy.ones((20,20))
         mer = PEME.pe_merge("Test", class_plus = [self.mess[0]], class_min = [self.mess[1]], flag_verbose = self.flag_verbose)
         self.assertEqual(mer.r, [0,0])     
+
+    def test_2p(self):
+        """
+        mess[0].s = 1 + [1].s: 2
+        (1 + 2) / 2 = 1.5
+        """
+        DEBUG.verbose("\nWarning about zeropad intentional", True)
+        mer = PEME.pe_merge("Test", class_plus = [self.mess[0], self.mess[1]], class_min = [], flag_verbose = self.flag_verbose)
+        self.assertTrue(numpy.all(mer.s == 1.5))
+
+    def test_2m(self):
+        """
+        - mess[0].s = 1 - [1].s: 2
+        -(1 + 2) / 2 = -1.5
+        """
+        DEBUG.verbose("\nWarning about zeropad intentional", True)
+        mer = PEME.pe_merge("Test", class_plus = [], class_min = [self.mess[0], self.mess[1]], flag_verbose = self.flag_verbose)
+        self.assertTrue(numpy.all(mer.s == -1.5))
+
+    def test_2p_1m(self):
+        """
+        mess[0].s = 1 + [1].s: 2 - [2].s: 3
+        (1 + 2) / 2 - 3 = -1.5
+        """
+        DEBUG.verbose("\nWarning about zeropad intentional", True)
+        mer = PEME.pe_merge("Test", class_plus = [self.mess[0], self.mess[1]], class_min = [self.mess[2]], flag_verbose = self.flag_verbose)
+        self.assertTrue(numpy.all(mer.s == -1.5))
 
 
     def test_phase_degrees_uninit_1(self):
