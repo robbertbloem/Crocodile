@@ -2,3 +2,5 @@
 *.pickle
 
 *.pickle
+
+Tests/Test_resources/
