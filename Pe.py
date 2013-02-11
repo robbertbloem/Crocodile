@@ -11,10 +11,12 @@ import Crocodile
 import Crocodile.Resources.DataClass as DC
 import Crocodile.Resources.Plotting as PL
 import Crocodile.Resources.Mathematics as MATH
+import Crocodile.Resources.IOMethods as IOM
 
 reload(DC)
 reload(PL)
 reload(MATH)
+reload(IOM)
 
 class pe(DC.dataclass):
     
@@ -215,21 +217,11 @@ class pe(DC.dataclass):
         
         if flag_axis:
             self.s_resolution = [(self.s_axis[0][1] - self.s_axis[0][0]), 0, (self.s_axis[2][1] - self.s_axis[2][0])]
-
             
         return True     
                   
     
             
-    
-    
-    
-     
-                
-
-
-
-
 
     
     # PLOTTING 
@@ -348,8 +340,9 @@ class pe(DC.dataclass):
                 x_label = r"$\t_1 (fs)$"
                 
             PL.linear(data[pixel], x_axis, x_range = x_range, y_range = y_range, ax = ax, x_label = x_label, y_label = y_label, title = title, legend = "", plot_real = True, flag_verbose = flag_verbose)
-  
-        plt.show()
+
+        if not ax:
+            plt.show()
 
 
 
@@ -372,9 +365,26 @@ class pe(DC.dataclass):
         """
         self.plot(plot_type = "T", ax = ax, x_range = x_range, y_range = y_range, zlimit = zlimit, contours = contours, x_label = x_label, y_label = y_label, title = title, pixel = pixel, invert_colors = invert_colors, flipxy = flipxy, flag_verbose = flag_verbose)
         
+
+
+
+
+
+    def save_data(self, export_path, r = False, s = True, flag_verbose = False):
         
-        
-        
+        if s and numpy.shape(self.s) != (1,):
+            IOM.save_data_PE(export_path, self.base_filename, s = self.s, s_axis = self.s_axis)
+        if r and numpy.shape(self.r) != (3,):
+            IOM.save_data_PE(export_path, self.base_filename, r = self.r, r_axis = self.r_axis)
+
+
+
+
+
+
+
+
+
 
 
 

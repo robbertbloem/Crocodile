@@ -75,7 +75,31 @@ def import_data_LV_A(path, base_filename):
         return False
         
 
+def save_data_PE(path, base_filename, s = False, s_axis = False, r = False, r_axis = False):
+    
+    if type(s) != bool:
+        path_and_filename = path + base_filename + "_s.csv"
+        numpy.savetxt(path_and_filename, s, delimiter = ",")
+    
+    if type(s_axis) != bool:
+        path_and_filename = path + base_filename + "_s_w1.csv"
+        numpy.savetxt(path_and_filename, s_axis[0], delimiter = ",")        
+        path_and_filename = path + base_filename + "_s_w3.csv"
+        numpy.savetxt(path_and_filename, s_axis[2], delimiter = ",")  
 
+    if type(r) != bool:
+        path_and_filename = path + base_filename + "_R.csv"
+        numpy.savetxt(path_and_filename, r[0], delimiter = ",")
+        path_and_filename = path + base_filename + "_NR.csv"
+        numpy.savetxt(path_and_filename, r[1], delimiter = ",")
+    
+    if type(r_axis) != bool:
+        path_and_filename = path + base_filename + "_r_t1.csv"
+        numpy.savetxt(path_and_filename, r_axis[0], delimiter = ",")        
+        path_and_filename = path + base_filename + "_r_w3.csv"
+        numpy.savetxt(path_and_filename, r_axis[2], delimiter = ",")      
+
+   
 
 
 

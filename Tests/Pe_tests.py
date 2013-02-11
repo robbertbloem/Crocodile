@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser(description='Command line arguments')
 parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
 parser.add_argument("-r", "--reload", action="store_true", help="Reload modules")
 parser.add_argument("-s1", "--skip1", action="store_true", help="Skip testing suite 1: absorbtive")
-# parser.add_argument("-s2", "--skip2", action="store_true", help="Skip testing suite 2: object array, with pickle")
+parser.add_argument("-s2", "--skip2", action="store_true", help="Skip testing suite 2: save data")
 # parser.add_argument("-s3", "--skip3", action="store_true", help="Skip testing suite 3: print objects")
 # parser.add_argument("-s4", "--skip4", action="store_true", help="Skip testing suite 4: add array with objects")
 
@@ -168,6 +168,30 @@ class Test_Pe_absorptive(unittest.TestCase):
 
 
 
+class Test_Pe_save_data(unittest.TestCase):
+
+
+    def setUp(self):
+        self.flag_verbose = args.verbose
+        self.mess = PE.pe("Test", flag_verbose = self.flag_verbose)
+        
+        self.mess.r = [numpy.ones((10,20)), numpy.ones((10,20))]
+        self.mess.r_axis = [numpy.arange(10), 10, numpy.arange(20)]
+        
+        self.mess.s = numpy.ones((10,20))
+        self.mess.s_axis = [numpy.arange(10), 10, numpy.arange(20)]
+        
+        self.mess.base_filename = "test"
+        
+        self.export_path = "/Users/robbert/Developer/Crocodile/temp/"
+        
+    def test_save(self):
+        print(self.mess)
+        self.mess.save_data(self.export_path, s = True, r = True, flag_verbose = self.flag_verbose)
+
+
+
+
 
 
 if __name__ == '__main__':
@@ -178,6 +202,10 @@ if __name__ == '__main__':
     else:
         DEBUG.verbose("Skipping suite 1: pe init", True)
 
-
+    if args.skip2 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_Pe_save_data)
+        unittest.TextTestRunner(verbosity=1).run(suite)    
+    else:
+        DEBUG.verbose("Skipping suite 2: save data", True)
 
 
