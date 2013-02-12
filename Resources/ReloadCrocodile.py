@@ -19,6 +19,7 @@ import Crocodile.Resources.Pe_tw_vb6
 import Crocodile.Resources.Plotting
 
 import Crocodile.Plugins.Lineshape
+import Crocodile.Plugins.Plot_overlap
 
 import PythonTools.Debug as DEBUG
 
@@ -40,3 +41,4 @@ def reload_crocodile(flag_verbose = False):
     reload(Crocodile.Resources.Plotting)
     
     reload(Crocodile.Plugins.Lineshape)
+    reload(Crocodile.Plugins.Plot_overlap)
