@@ -18,6 +18,8 @@ import Crocodile.Resources.Mathematics
 import Crocodile.Resources.Pe_tw_vb6
 import Crocodile.Resources.Plotting
 
+import Crocodile.Plugins.Lineshape
+
 import PythonTools.Debug as DEBUG
 
 def reload_crocodile(flag_verbose = False):
@@ -36,3 +38,5 @@ def reload_crocodile(flag_verbose = False):
     reload(Crocodile.Resources.Mathematics)
     reload(Crocodile.Resources.Pe_tw_vb6)
     reload(Crocodile.Resources.Plotting)
+    
+    reload(Crocodile.Plugins.Lineshape)
