@@ -9,16 +9,11 @@ import numpy
 import matplotlib 
 import matplotlib.pyplot as plt
 
-import Crocodile
 import Crocodile.Resources.DataClass as DC
 import Crocodile.Resources.Plotting as PL
 import Crocodile.Resources.Mathematics as MATH
 import Crocodile.Resources.IOMethods as IOM
 
-reload(DC)
-reload(PL)
-reload(MATH)
-reload(IOM)
 
 class pe(DC.dataclass):
     

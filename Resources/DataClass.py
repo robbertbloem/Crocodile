@@ -7,11 +7,10 @@ import inspect
 import time
 
 import numpy
-import matplotlib 
-import matplotlib.pyplot as plt
 
 import Crocodile
 import PythonTools.ClassTools as CT
+
 
 class dataclass(CT.ClassTools):
     """

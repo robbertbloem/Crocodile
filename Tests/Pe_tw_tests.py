@@ -31,9 +31,8 @@ args = parser.parse_args()
 
 # reload
 if args.reload:
-    reload(PE)
-    reload(PETW)
-    reload(IOM)
+    import Crocodile.Resources.ReloadCrocodile
+    Crocodile.Resources.ReloadCrocodile.reload_crocodile(flag_verbose = args.verbose)
 
 
 

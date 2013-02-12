@@ -12,6 +12,10 @@ import matplotlib.pyplot as plt
 
 import Crocodile.Resources.DataClass as DC
 import PythonTools.Debug as DEBUG
+# import PythonTools.ReloadAll as RA
+
+
+
 
 # init argument parser
 parser = argparse.ArgumentParser(description='Command line arguments')
@@ -27,7 +31,8 @@ args = parser.parse_args()
 
 # reload
 if args.reload:
-    reload(DC)
+    import Crocodile.Resources.ReloadCrocodile
+    Crocodile.Resources.ReloadCrocodile.reload_crocodile(flag_verbose = args.verbose)
 
 
 

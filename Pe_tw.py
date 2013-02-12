@@ -14,9 +14,6 @@ import Crocodile.Pe as PE
 import Crocodile.Resources.IOMethods as IOM
 import Crocodile.Resources.Constants as CONST
 
-reload(PE)
-reload(IOM)
-
 class pe_tw(PE.pe):
     """
     pe_tw: implementation class for photo echo time-frequency. This includes all importing functions.

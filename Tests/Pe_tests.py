@@ -7,11 +7,11 @@ import argparse
 import unittest
 
 import numpy
-import matplotlib 
-import matplotlib.pyplot as plt
 
 import Crocodile.Pe as PE
 import PythonTools.Debug as DEBUG
+
+
 
 # init argument parser
 parser = argparse.ArgumentParser(description='Command line arguments')
@@ -19,17 +19,18 @@ parser = argparse.ArgumentParser(description='Command line arguments')
 # add arguments
 parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
 parser.add_argument("-r", "--reload", action="store_true", help="Reload modules")
-parser.add_argument("-s1", "--skip1", action="store_true", help="Skip testing suite 1: absorbtive")
+parser.add_argument("-s1", "--skip1", action="store_true", help="Skip testing suite 1: absorptive")
 parser.add_argument("-s2", "--skip2", action="store_true", help="Skip testing suite 2: save data")
-# parser.add_argument("-s3", "--skip3", action="store_true", help="Skip testing suite 3: print objects")
-# parser.add_argument("-s4", "--skip4", action="store_true", help="Skip testing suite 4: add array with objects")
+
 
 # process
 args = parser.parse_args()
 
 # reload
 if args.reload:
-    reload(PE)
+    import Crocodile.Resources.ReloadCrocodile
+    Crocodile.Resources.ReloadCrocodile.reload_crocodile(flag_verbose = args.verbose)
+    
 
 
 
@@ -50,10 +51,12 @@ class Test_Pe_absorptive(unittest.TestCase):
         self.mess.r = [numpy.zeros((10,20)), numpy.zeros((10,20))]
         self.mess.r_axis = [numpy.arange(10), 10, numpy.arange(20)]
         
+        self.mess.phase_degrees = 0
+        
         self.mess.undersampling = 0
 
     
-    def test_pe__r1(self):
+    def test_pe_r_1(self):
         """
         Correct input
         """
@@ -142,27 +145,27 @@ class Test_Pe_absorptive(unittest.TestCase):
 
     def test_pe_phase_false(self):
         """
-        phase_degrees is False, should be treated as 0
+        _phase_degrees is False (override the setter method), should be treated as 0
         """
-        self.mess.phase_degrees = False
+        self.mess._phase_degrees = False
         res = self.mess.super_absorptive(axes = 0)
         self.assertTrue(res)
         self.assertEqual(self.mess.phase_degrees, 0)
     
     def test_pe_phase_true(self):
         """
-        phase_degrees is True, should be treated as 1
+        _phase_degrees is True (override the setter method), should be treated as 1
         """
-        self.mess.phase_degrees = True
+        self.mess._phase_degrees = True
         res = self.mess.super_absorptive(axes = 0)
         self.assertTrue(res)
         self.assertEqual(self.mess.phase_degrees, 1)
          
     def test_pe_phase_nan(self):
         """
-        phase_degrees is numpy.nan, should return False
+        _phase_degrees is numpy.nan (override the setter method), should return False
         """
-        self.mess.phase_degrees = numpy.nan
+        self.mess._phase_degrees = numpy.nan
         DEBUG.verbose("\nError is intentional", True) 
         res = self.mess.super_absorptive(axes = 0)    
         self.assertFalse(res)      
@@ -202,7 +205,7 @@ if __name__ == '__main__':
         suite = unittest.TestLoader().loadTestsFromTestCase(Test_Pe_absorptive)
         unittest.TextTestRunner(verbosity=1).run(suite)    
     else:
-        DEBUG.verbose("Skipping suite 1: pe init", True)
+        DEBUG.verbose("Skipping suite 1: absorptive", True)
 
     if args.skip2 == False:
         suite = unittest.TestLoader().loadTestsFromTestCase(Test_Pe_save_data)

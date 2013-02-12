@@ -134,10 +134,9 @@ if flag_parse:
     flag_reload = args.reload
 
 # reload modules
-if flag_reload:
-    reload(OA)
-    reload(PETW)
-    reload(PEME)
+if args.reload:
+    import Crocodile.Resources.ReloadCrocodile
+    Crocodile.Resources.ReloadCrocodile.reload_crocodile(flag_verbose = args.verbose)
 
 # some functions
 def import_pickle(oa_object, pickle_path_and_filename, mess_array, flag_verbose = False):
