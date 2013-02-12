@@ -130,6 +130,31 @@ for obj in oa.obj_array:
 
 
 
+
+######################################
+# FIND INDEX FOR A CERTAIN FREQUENCY #
+######################################
+
+# this is used to find the area to be plotted
+# find the indices in y_axis that span a slightly larger area than y_min to y_max
+y_axis = [2000,2050,2100,2150,2200,2250,2300]
+y_min = 2075
+y_max = 2225
+try:
+    # take all indices where y_axis < y_min and select the last one
+    y_min_i = numpy.where(y_axis < y_min)[0][-1]
+except: 
+    # if y_axis[0] > y_min, it gives an error. Use index 0
+    y_min_i = 0
+try:
+    # take all indices where y_axis > y_max and select the first one and add one
+    y_max_i = numpy.where(y_axis > y_max)[0][0] + 1
+except:
+    # if y_axis[-1] < y_max, it gives an error. Use index -1 or len(y_axis)
+    y_max_i = len(y_axis)
+
+
+
 ############
 # PLOTTING #
 ############
