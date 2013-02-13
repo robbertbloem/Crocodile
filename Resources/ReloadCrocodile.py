@@ -11,6 +11,7 @@ import Crocodile.Pe
 import Crocodile.Pe_tw
 import Crocodile.Pe_merge
 
+import Crocodile.Resources.Functions
 import Crocodile.Resources.Constants
 import Crocodile.Resources.Equations
 import Crocodile.Resources.IOMethods
@@ -33,6 +34,7 @@ def reload_crocodile(flag_verbose = False):
     reload(Crocodile.Pe_tw)
     reload(Crocodile.Pe_merge)
     
+    reload(Crocodile.Resources.Functions)
     reload(Crocodile.Resources.Constants)
     reload(Crocodile.Resources.Equations)
     reload(Crocodile.Resources.IOMethods)

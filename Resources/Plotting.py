@@ -9,131 +9,10 @@ import numpy
 import matplotlib 
 import matplotlib.pyplot as plt
 
+import Crocodile.Resources.Functions as FU
 import PythonTools.Debug as DEBUG
 
-cdict = {'red':   [(0.0,  0.0, 0.0),(0.475,  1.0, 1.0),(0.525,  1.0, 1.0),
-            (1.0,  1.0, 1.0)],
-         'green': [(0.0,  0.0, 0.0),(0.475,  1.0, 1.0),(0.525,  1.0, 1.0),
-            (1.0,  0.0, 0.0)],
-         'blue':  [(0.0,  1.0, 1.0),(0.475,  1.0, 1.0),(0.525,  1.0, 1.0),
-            (1.0,  0.0, 0.0)]
-        }
-rwb_cmap = matplotlib.colors.LinearSegmentedColormap('rwb_colormap', cdict, 256)
 
-
-def find_axes(x_axis, y_axis, x_range, y_range, flag_verbose = False):
-    """
-    croc.Plotting.find_axis
-
-    INPUT:
-    - x_axis, y_axis (ndarray): the axes
-    - x_range, y_range (array): the ranges to be plotted
-        Possible cases:
-        - [min, max]: plot range min to max
-        - [0, 0]: plot the whole range
-        - [0, -1]: use the range from the other axis. If both have this, it will plot both axes complete. (ie. it is identical to both having [0,0])
-
-    OUTPUT:
-    - xmin, xmax, ymin, ymax: a value
-
-    CHANGELOG
-    - 20110910 RB: init
-
-    """
-    DEBUG.verbose("find axes", flag_verbose)
-    
-    # x_min and x_max are determined by y
-    if x_range[0] == 0 and x_range[1] == -1:
-
-        # they are both dependent on each other, plot everything
-        if y_range[0] == 0 and y_range[1] == -1:
-            x_min = x_axis[0]
-            x_max = x_axis[-1]
-            y_min = y_axis[0]
-            y_max = y_axis[-1]     
-
-        # take the whole y-axis, the same for the x-axis
-        # it may extend beyond the range of the data 
-        elif y_range[0] == 0 and y_range[1] == 0:
-            x_min = y_axis[0]
-            x_max = y_axis[-1]
-            y_min = y_axis[0]
-            y_max = y_axis[-1]         
-
-        # take part of the y-axis, the same for the x-axis
-        # it may extend beyond the range of the data
-        else:
-            x_min = y_range[0]
-            x_max = y_range[1]
-            y_min = y_range[0]
-            y_max = y_range[1]  
-
-    else:
-        # plot the whole x-axis
-        if x_range[0] == 0 and x_range[1] == 0:
-            x_min = x_axis[0]
-            x_max = x_axis[-1]
-        # plot only part of the x-axis
-        else:
-            x_min = x_range[0]
-            x_max = x_range[1]
-
-        # plot the whole y-axis
-        if y_range[0] == 0 and y_range[1] == 0:
-            y_min = y_axis[0]
-            y_max = y_axis[-1]
-        # use the range of the x-axis
-        elif y_range[0] == 0 and y_range[1] == -1:
-            y_min = x_min
-            y_max = x_max
-        # use the specified range
-        else:
-            y_min = y_range[0]
-            y_max = y_range[1]        
-    if flag_verbose:
-        DEBUG.verbose("  axes found: x_min: " + str(x_min) + ", x_max: " + str(x_max) + ", y_min: " + str(y_min) + ", y_max: " + str(y_max), flag_verbose)
-
-    return x_min, x_max, y_min, y_max    
-
-
-
-
-def make_contours_2d(data, zlimit = 0, contours = 21, flag_verbose = False):
-    """
-    zlimit = 0, show all, not don't care about centering around zero
-    zlimit = -1, show all, centered around zero
-    zlimit = all else, use that, centered around zero
-    zlimit = [a,b], plot from a to b
-    """
-    
-    DEBUG.verbose("make contours 2D", flag_verbose)
-    
-    if zlimit == 0:
-        ma = numpy.amax(data)
-        mi = numpy.amin(data)
-        if flag_verbose:
-            DEBUG.verbose("  zlimit = 0, min: " + str(mi) + ", max: " + str(ma), flag_verbose)
-        return numpy.linspace(mi, ma, num=contours)
-
-    elif zlimit == -1:
-        ma = numpy.amax(data)
-        mi = numpy.amin(data)
-        if flag_verbose:
-            DEBUG.verbose("  zlimit = 0, min: " + str(mi) + ", max: " + str(ma), flag_verbose)
-
-        if abs(mi) > abs(ma):
-            ma = abs(mi)
-        else:
-            ma = abs(ma)
-        return numpy.linspace(-ma, ma, num=contours) 
-
-    elif type(zlimit) == list:
-        DEBUG.verbose("  zlimit == list", flag_verbose)
-        return numpy.linspace(zlimit[0], zlimit[1], num=contours)   
-
-    else:
-        DEBUG.verbose("  zlimit is linspace", flag_verbose)
-        return numpy.linspace(-abs(zlimit), abs(zlimit), num=contours) 
 
 
 
@@ -172,38 +51,19 @@ def contourplot(data, x_axis, y_axis,
         data = -data
 
     # determine the range to be plotted
-    x_min, x_max, y_min, y_max = find_axes(x_axis, y_axis, x_range, y_range, flag_verbose)
+    x_min, x_max, y_min, y_max = FU.find_axes(x_axis, y_axis, x_range, y_range, flag_verbose)
     
-    # make the contours
-    # first find the area to be plotted
-    # not the most elegant way I guess
-    try:
-        y_min_i = numpy.where(y_axis < y_min)[0][-1]
-    except: 
-        y_min_i = 0
+    # find the area to be plotted
+    x_min_i, x_max_i= FU.find_axes_indices(x_axis, x_min, x_max)
+    y_min_i, y_max_i= FU.find_axes_indices(y_axis, y_min, y_max)
     
-    try:
-        y_max_i = numpy.where(y_axis > y_max)[0][0] + 1
-    except: 
-        y_max_i = len(y_axis)
-    
-    try:
-        x_min_i = numpy.where(x_axis < x_min)[0][-1]
-    except: 
-        x_min_i = 0
-    
-    try:
-        x_max_i = numpy.where(x_axis > x_max)[0][0] + 1
-    except: 
-        x_max_i = len(x_axis)
-        
     # truncate the data, this speeds up the plotting
     data = data[y_min_i:y_max_i,x_min_i:x_max_i]
     x_axis = x_axis[x_min_i:x_max_i]
     y_axis = y_axis[y_min_i:y_max_i]
 
     # now make the actual contours   
-    V = make_contours_2d(data, zlimit, contours, flag_verbose)        
+    V = FU.make_contours_2d(data, zlimit, contours, flag_verbose)        
 
     # make sure there is an axis-object
     if ax == False:
@@ -215,7 +75,7 @@ def contourplot(data, x_axis, y_axis,
 
     # actually plot the thing
     if filled:
-        ax.contourf(x_axis, y_axis, data, V, cmap = rwb_cmap)
+        ax.contourf(x_axis, y_axis, data, V, cmap = FU.rwb_cmap)
     if black_contour:
         if filled:
             ax.contour(x_axis, y_axis, data, V, linewidths = linewidth, linestyles = "solid", colors = "k")
