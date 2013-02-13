@@ -17,13 +17,18 @@ import PythonTools.Debug as DEBUG
 # init argument parser
 parser = argparse.ArgumentParser(description='Command line arguments')
 
+global suite_list
+suite_list = [
+    "Suite 1: Importing from LabView",
+    "Suite 2: Init pe_tw",
+]
+
 # add arguments
-parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
-parser.add_argument("-r", "--reload", action="store_true", help="Reload modules")
-parser.add_argument("-s1", "--skip1", action="store_true", help="Skip testing suite 1: importing LabView")
-parser.add_argument("-s2", "--skip2", action="store_true", help="Skip testing suite 2: init Pe_tw")
-# parser.add_argument("-s3", "--skip3", action="store_true", help="Skip testing suite 3: print objects")
-# parser.add_argument("-s4", "--skip4", action="store_true", help="Skip testing suite 4: add array with objects")
+parser.add_argument("-v", "--verbose", action = "store_true", help = "Increase output verbosity")
+parser.add_argument("-r", "--reload", action = "store_true", help = "Reload modules")
+parser.add_argument("-s1", "--skip1", action = "store_true", help = suite_list[0])
+parser.add_argument("-s2", "--skip2", action = "store_true", help = suite_list[1])
+
 
 # process
 args = parser.parse_args()
@@ -33,7 +38,19 @@ if args.reload:
     import Crocodile.Resources.ReloadCrocodile
     Crocodile.Resources.ReloadCrocodile.reload_crocodile(flag_verbose = args.verbose)
 
+def execute(args):
 
+    if args.skip1 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_Pe_LV_import)
+        unittest.TextTestRunner(verbosity=1).run(suite)  
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[0], True)
+
+    if args.skip2 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_Pe_tw_init)
+        unittest.TextTestRunner(verbosity=1).run(suite)    
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[1], True) 
 
 
 
@@ -153,32 +170,9 @@ class Test_Pe_tw_init(unittest.TestCase):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
 
-    if args.skip1 == False:
-        suite = unittest.TestLoader().loadTestsFromTestCase(Test_Pe_LV_import)
-        unittest.TextTestRunner(verbosity=1).run(suite)    
-    else:
-        DEBUG.verbose("Skipping suite 1: importing LabView", True)
-        
-        
-    if args.skip2 == False:
-        suite = unittest.TestLoader().loadTestsFromTestCase(Test_Pe_tw_init)
-        unittest.TextTestRunner(verbosity=1).run(suite)    
-    else:
-        DEBUG.verbose("Skipping suite 2: init Pe_tw", True)
+    execute(args)
 
 
 

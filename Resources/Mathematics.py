@@ -17,7 +17,11 @@ import numpy
 import matplotlib 
 import matplotlib.pyplot as plt
 
-from scipy.optimize.minpack import leastsq
+try:
+    from scipy.optimize.minpack import leastsq
+    scipy_import = True
+except ImportError:
+    scipy_import = False
 
 import itertools
 
@@ -76,11 +80,15 @@ def fit(x_array, y_array, function, A_start):
     Always check the result, it might sometimes be sensitive to a good starting point.
 
     """
-    param = (x_array, y_array, function)
+    if scipy_import:
+        param = (x_array, y_array, function)
+    
+        A_final, cov_x, infodict, mesg, ier = leastsq(minimize, A_start, args=param, full_output=True)
 
-    A_final, cov_x, infodict, mesg, ier = leastsq(minimize, A_start, args=param, full_output=True)
-
-    return A_final
+        return A_final
+    else:
+        DEBUG.printError("Scipy.leastsq is not loaded. Fit is not done", inspect.stack())
+        return False
 
 
 

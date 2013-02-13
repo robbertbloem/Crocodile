@@ -5,26 +5,34 @@ from __future__ import absolute_import
 
 from imp import reload 
 
-import Crocodile.Resources.DataClass
-
-import Crocodile.Pe
-import Crocodile.Pe_tw
-import Crocodile.Pe_merge
-
-import Crocodile.Resources.Functions
-import Crocodile.Resources.Constants
-import Crocodile.Resources.Equations
-import Crocodile.Resources.IOMethods
-import Crocodile.Resources.Mathematics
-import Crocodile.Resources.Pe_tw_vb6
-import Crocodile.Resources.Plotting
-
-import Crocodile.Plugins.Lineshape
-import Crocodile.Plugins.Plot_overlap
-
 import PythonTools.Debug as DEBUG
 
+
+
+
+
+
+
 def reload_crocodile(flag_verbose = False):
+
+    DEBUG.verbose("Importing Crocodile", flag_verbose)
+
+    import Crocodile.Resources.DataClass
+    
+    import Crocodile.Pe
+    import Crocodile.Pe_tw
+    import Crocodile.Pe_merge
+    
+    import Crocodile.Resources.Functions
+    import Crocodile.Resources.Constants
+    import Crocodile.Resources.Equations
+    import Crocodile.Resources.IOMethods
+    import Crocodile.Resources.Mathematics
+    import Crocodile.Resources.Pe_tw_vb6
+    import Crocodile.Resources.Plotting
+    
+    import Crocodile.Plugins.Lineshape
+    import Crocodile.Plugins.Plot_overlap
     
     DEBUG.verbose("Reloading Crocodile", flag_verbose)
     

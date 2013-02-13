@@ -15,12 +15,17 @@ import PythonTools.Debug as DEBUG
 # init argument parser
 parser = argparse.ArgumentParser(description='Command line arguments')
 
-# add arguments
-parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
-parser.add_argument("-r", "--reload", action="store_true", help="Reload modules")
-parser.add_argument("-s1", "--skip1", action="store_true", help="Skip testing suite 1: absorptive")
-parser.add_argument("-s2", "--skip2", action="store_true", help="Skip testing suite 2: save data")
+global suite_list
+suite_list = [
+    "Suite 1: Absorptive",
+    "Suite 2: Save data",
+]
 
+# add arguments
+parser.add_argument("-v", "--verbose", action = "store_true", help = "Increase output verbosity")
+parser.add_argument("-r", "--reload", action = "store_true", help = "Reload modules")
+parser.add_argument("-s1", "--skip1", action = "store_true", help = suite_list[0])
+parser.add_argument("-s2", "--skip2", action = "store_true", help = suite_list[1])
 
 # process
 args = parser.parse_args()
@@ -30,10 +35,23 @@ if args.reload:
     import Crocodile.Resources.ReloadCrocodile
     Crocodile.Resources.ReloadCrocodile.reload_crocodile(flag_verbose = args.verbose)
     
+def execute(args):
+
+    if args.skip1 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_absorptive)
+        unittest.TextTestRunner(verbosity=1).run(suite)  
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[0], True)
 
 
+    if args.skip2 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_save_data)
+        unittest.TextTestRunner(verbosity=1).run(suite)    
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[1], True)  
 
-class Test_Pe_absorptive(unittest.TestCase):
+
+class Test_absorptive(unittest.TestCase):
     """
 
     CHANGELOG:
@@ -172,7 +190,7 @@ class Test_Pe_absorptive(unittest.TestCase):
 
 
 
-class Test_Pe_save_data(unittest.TestCase):
+class Test_save_data(unittest.TestCase):
 
 
     def setUp(self):
@@ -190,7 +208,6 @@ class Test_Pe_save_data(unittest.TestCase):
         self.export_path = "/Users/robbert/Developer/Crocodile/temp/"
         
     def test_save(self):
-        print(self.mess)
         self.mess.save_data(self.export_path, s = True, r = True, flag_verbose = self.flag_verbose)
 
 
@@ -200,16 +217,6 @@ class Test_Pe_save_data(unittest.TestCase):
 
 if __name__ == '__main__':
 
-    if args.skip1 == False:
-        suite = unittest.TestLoader().loadTestsFromTestCase(Test_Pe_absorptive)
-        unittest.TextTestRunner(verbosity=1).run(suite)    
-    else:
-        DEBUG.verbose("Skipping suite 1: absorptive", True)
-
-    if args.skip2 == False:
-        suite = unittest.TestLoader().loadTestsFromTestCase(Test_Pe_save_data)
-        unittest.TextTestRunner(verbosity=1).run(suite)    
-    else:
-        DEBUG.verbose("Skipping suite 2: save data", True)
+    execute(args)
 
 

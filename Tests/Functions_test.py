@@ -15,13 +15,21 @@ import PythonTools.Debug as DEBUG
 # init argument parser
 parser = argparse.ArgumentParser(description='Command line arguments')
 
+global suite_list
+suite_list = [
+    "Suite 1: Find axes",
+    "Suite 2: Make contours",
+    "Suite 3: Find axes indices",
+    "Suite 4: Truncate data"
+]
+
 # add arguments
-parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
-parser.add_argument("-r", "--reload", action="store_true", help="Reload modules")
-parser.add_argument("-s1", "--skip1", action="store_true", help="Skip testing suite 1: find_axes")
-parser.add_argument("-s2", "--skip2", action="store_true", help="Skip testing suite 2: make contours")
-parser.add_argument("-s3", "--skip3", action="store_true", help="Skip testing suite 3: find axes indices")
-parser.add_argument("-s4", "--skip4", action="store_true", help="Skip testing suite 4: truncate data")
+parser.add_argument("-v", "--verbose", action = "store_true", help = "Increase output verbosity")
+parser.add_argument("-r", "--reload", action = "store_true", help = "Reload modules")
+parser.add_argument("-s1", "--skip1", action = "store_true", help = suite_list[0])
+parser.add_argument("-s2", "--skip2", action = "store_true", help = suite_list[1])
+parser.add_argument("-s3", "--skip3", action = "store_true", help = suite_list[2])
+parser.add_argument("-s4", "--skip4", action = "store_true", help = suite_list[3])
 
 # process
 args = parser.parse_args()
@@ -30,11 +38,36 @@ args = parser.parse_args()
 if args.reload:
     import Crocodile.Resources.ReloadCrocodile
     Crocodile.Resources.ReloadCrocodile.reload_crocodile(flag_verbose = args.verbose)
-    
 
 
 
-# find_axes(x_axis, y_axis, x_range, y_range, flag_verbose = False)
+def execute(args):
+
+    if args.skip1 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_find_axes)
+        unittest.TextTestRunner(verbosity=1).run(suite)  
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[0], True)
+
+
+    if args.skip2 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_make_contours_2d)
+        unittest.TextTestRunner(verbosity=1).run(suite)    
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[1], True)   
+
+    if args.skip3 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_find_axes_indices)
+        unittest.TextTestRunner(verbosity=1).run(suite)    
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[2], True)        
+
+    if args.skip4 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_truncate_data)
+        unittest.TextTestRunner(verbosity=1).run(suite)    
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[3], True)  
+
 
 
 class Test_find_axes(unittest.TestCase):
@@ -44,9 +77,7 @@ class Test_find_axes(unittest.TestCase):
     20130213/RB: started the suite
 
     """
-    #############
-    ### SETUP ###
-    #############
+
     def setUp(self):
         self.flag_verbose = args.verbose
 
@@ -89,8 +120,6 @@ class Test_find_axes(unittest.TestCase):
 
 
 
-# make_contours_2d
-
 
 class Test_make_contours_2d(unittest.TestCase):
     """
@@ -99,9 +128,7 @@ class Test_make_contours_2d(unittest.TestCase):
     20130213/RB: started the suite
 
     """
-    #############
-    ### SETUP ###
-    #############
+
     def setUp(self):
         self.flag_verbose = args.verbose
         self.data = numpy.array([[-3,-2],[1,2]])
@@ -203,9 +230,7 @@ class Test_find_axes_indices(unittest.TestCase):
     20130213/RB: started the suite
 
     """
-    #############
-    ### SETUP ###
-    #############
+
     def setUp(self):
         self.flag_verbose = args.verbose
         self.axis = numpy.linspace(20,30,12)
@@ -295,9 +320,7 @@ class Test_truncate_data(unittest.TestCase):
     20130213/RB: started the suite
 
     """
-    #############
-    ### SETUP ###
-    #############
+
     def setUp(self):
         self.flag_verbose = args.verbose
         self.data = numpy.zeros((10,20))
@@ -402,26 +425,4 @@ class Test_truncate_data(unittest.TestCase):
 
 if __name__ == '__main__':
 
-    if args.skip1 == False:
-        suite = unittest.TestLoader().loadTestsFromTestCase(Test_find_axes)
-        unittest.TextTestRunner(verbosity=1).run(suite)    
-    else:
-        DEBUG.verbose("Skipping suite 1: find axes", True)
-
-    if args.skip2 == False:
-        suite = unittest.TestLoader().loadTestsFromTestCase(Test_make_contours_2d)
-        unittest.TextTestRunner(verbosity=1).run(suite)    
-    else:
-        DEBUG.verbose("Skipping suite 2: make contours", True)
-
-    if args.skip3 == False:
-        suite = unittest.TestLoader().loadTestsFromTestCase(Test_find_axes_indices)
-        unittest.TextTestRunner(verbosity=1).run(suite)    
-    else:
-        DEBUG.verbose("Skipping suite 3: find axes indices", True)
-
-    if args.skip4 == False:
-        suite = unittest.TestLoader().loadTestsFromTestCase(Test_truncate_data)
-        unittest.TextTestRunner(verbosity=1).run(suite)    
-    else:
-        DEBUG.verbose("Skipping suite 4: truncate data", True)
+    execute(args)

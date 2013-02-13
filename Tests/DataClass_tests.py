@@ -2,6 +2,8 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+from imp import reload
+
 import argparse
 import unittest
 
@@ -11,19 +13,21 @@ import matplotlib.pyplot as plt
 
 import Crocodile.Resources.DataClass as DC
 import PythonTools.Debug as DEBUG
-# import PythonTools.ReloadAll as RA
-
-
-
 
 # init argument parser
 parser = argparse.ArgumentParser(description='Command line arguments')
 
+global suite_list
+suite_list = [
+    "Suite 1: Zeropad setters/getters",
+    "Suite 2: Phase_degrees setters/getters",
+]
+
 # add arguments
-parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
-parser.add_argument("-r", "--reload", action="store_true", help="Reload modules")
-parser.add_argument("-s1", "--skip1", action="store_true", help="Skip testing suite 1: zeropad setters/getters")
-parser.add_argument("-s2", "--skip2", action="store_true", help="Skip testing suite 2: phase setters/getters")
+parser.add_argument("-v", "--verbose", action = "store_true", help = "Increase output verbosity")
+parser.add_argument("-r", "--reload", action = "store_true", help = "Reload modules")
+parser.add_argument("-s1", "--skip1", action = "store_true", help = suite_list[0])
+parser.add_argument("-s2", "--skip2", action = "store_true", help = suite_list[1])
 
 # process
 args = parser.parse_args()
@@ -34,8 +38,22 @@ if args.reload:
     Crocodile.Resources.ReloadCrocodile.reload_crocodile(flag_verbose = args.verbose)
 
 
+def execute(args):
 
-class Test_dataclass_zeropad(unittest.TestCase):
+    if args.skip1 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_zeropad_set_get)
+        unittest.TextTestRunner(verbosity=1).run(suite)    
+    else:
+        DEBUG.verbose("Skipping :" + suite_list[0], True)
+
+    if args.skip2 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_phase_degrees_set_get)
+        unittest.TextTestRunner(verbosity=1).run(suite)    
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[1], True)
+
+
+class Test_zeropad_set_get(unittest.TestCase):
     """
 
     CHANGELOG:
@@ -122,7 +140,7 @@ class Test_dataclass_zeropad(unittest.TestCase):
 
 
 
-class Test_dataclass_phase(unittest.TestCase):
+class Test_phase_degrees_set_get(unittest.TestCase):
     """
 
     CHANGELOG:
@@ -292,14 +310,4 @@ class Test_dataclass_phase(unittest.TestCase):
 
 if __name__ == '__main__':
 
-    if args.skip1 == False:
-        suite = unittest.TestLoader().loadTestsFromTestCase(Test_dataclass_zeropad)
-        unittest.TextTestRunner(verbosity=1).run(suite)    
-    else:
-        DEBUG.verbose("Skipping suite 1: zeropad getters/setters", True)
-
-    if args.skip2 == False:
-        suite = unittest.TestLoader().loadTestsFromTestCase(Test_dataclass_phase)
-        unittest.TextTestRunner(verbosity=1).run(suite)    
-    else:
-        DEBUG.verbose("Skipping suite 2: phase getters/setters", True)
+    execute(args)
