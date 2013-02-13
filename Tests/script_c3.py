@@ -68,20 +68,22 @@ global plot_y_range
 
 ### INPUT ###
 
-activity = "plot_all" # "plot_m" # "merge" # "import" #  
+activity = "x" # "plot_all" # "plot_m" # "merge" # "import" #  
 
-mess_date = 20130211
+mess_date = 20130213
 
 mess_array = [
-    ["VCn3",    "VCn3",  1354,   300],
-    ["VCd2o",    "VCd2o",  1356,   300],
-    ["VCn3_2",    "VCn3",  1410,   300],
-#    ["Aha2",    "aha",  1512,   300],
- #   ["Buf2",    "buf",  1515,   300],
+    #["N3_1",    "N3",  1448,   300],
+    #["N3_2",    "N3",  1449,   300],
+    #["N3_3",    "N3",  1452,   300],
+    #["N3_4",    "N3",  1453,   300],
+    #["h2o_1",    "h2o",  1454,   300],
+    #["h2o_3",    "h2o",  1505,   300],
+	["4mM_1", "N3", 1540, 300],
 ]
 
-sub_type_plus = ["VCn3"]
-sub_type_min = ["VCd2o"]
+sub_type_plus = []
+sub_type_min = []
 
 ### PROCESSING VARIABLES ###
 zeropad_by = 4
@@ -101,7 +103,7 @@ plot_index = 0
 
 flag_verbose = False
 
-pickle_base_name = "test" #str(mess_date) 
+pickle_base_name = str(mess_date) + "_rb"
 
 location = os.uname()[1]
 if location == "rbmbp.local":
@@ -111,9 +113,8 @@ elif location == "pcipdc.uzh.ch":
 else: # maybe klemens?
     path_to_PML3 = "/home/hamm_storage/Hamm_Groupshare/PML3/"
 
-data_path = path_to_PML3 + "/data/" + str(mess_date) + "/"
-pickle_path = path_to_PML3 + "/analysis/" + str(mess_date) + "/"
-
+data_path = path_to_PML3 + "data/" + str(mess_date) + "/"
+pickle_path = path_to_PML3 + "analysis/" + str(mess_date) + "/"
 
 ##########################################
 ### NO NEED TO MAKE CHANGES BELOW HERE ###
@@ -133,6 +134,12 @@ if flag_parse:
     plot_index = args.i
     flag_verbose = args.verbose
     flag_reload = args.reload
+
+
+if flag_verbose:
+    print(data_path)
+    print(pickle_path)
+
 
 # reload modules
 if args.reload:
@@ -206,7 +213,8 @@ if __name__ == "__main__":
                 mess.path = data_path + mess.base_filename + "/"
                 mess.import_data(flag_verbose = flag_verbose)
                 mess.r_correction[2] = w3_correction
-                oar.add_object(mess, flag_verbose = flag_verbose)    
+                oar.add_object(mess, flag_verbose = flag_verbose) 
+        oar.print_objects()   
         oar.save_objectarray(pickle_paf_r, flag_verbose = flag_verbose) 
       
     ########################
@@ -225,41 +233,31 @@ if __name__ == "__main__":
                 oar.obj[i].phase_degrees += phase_correction[i]
             oar.obj[i].zeropad_by = zeropad_by
             oar.obj[i].absorptive(flag_verbose = flag_verbose)
-        oar.save_objectarray(pickle_paf_r, flag_verbose = flag_verbose) 
-    
-    ##################
-    # REMOVE R AND F #
-    ##################
-    if activity == "import" or activity == "remove_r" or activity == "all":
-        if not oar:
-            oar = OA.objectarray(str(mess_date) + "_r", flag_verbose = flag_verbose)
-            import_pickle(oar, pickle_paf_r, mess_array, flag_verbose = flag_verbose)
         
-        # make new oas objectarray, add objects, remove time domain, save
-        oas = OA.objectarray(str(mess_date) + "_s", flag_verbose = flag_verbose)
-        oas.add_array_with_objects(oar.obj, flag_verbose = flag_verbose)
-        for m in oas.obj:
+        for m in oar.obj:
             m.r = [0,0]
             m.f = [0,0]
-        oas.save_objectarray(pickle_paf_s, flag_overwrite = True, flag_verbose = flag_verbose)
+        oar.save_objectarray(pickle_paf_s, flag_overwrite = True, flag_verbose = flag_verbose)
         
     #########
     # MERGE #
     #########
     if activity == "mess_s_to_sub_s" or activity == "merge" or activity == "all":
-        if not oas:
-            oas = OA.objectarray(str(mess_date) + "_s", flag_verbose = flag_verbose)
-            import_pickle(oas, pickle_paf_s, mess_array, flag_verbose = flag_verbose)        
+        if len(sub_type_plus) > 0 and len(sub_type_min) > 0:
         
-        # select object with sub_types
-        class_plus = oas.objects_with_sub_type(sub_type_plus, flag_verbose = flag_verbose)
-        class_min = oas.objects_with_sub_type(sub_type_min, flag_verbose = flag_verbose)        
-        mess = PEME.pe_merge(str(mess_date), class_plus, class_min, flag_verbose = flag_verbose)
-        
-        # make a merged object
-        oam = OA.objectarray(str(mess_date) + "_m", flag_verbose = flag_verbose)
-        oam.add_object(mess, flag_verbose = flag_verbose)
-        oam.save_objectarray(pickle_paf_m, flag_overwrite = True, flag_verbose = flag_verbose)
+            if not oas:
+                oas = OA.objectarray(str(mess_date) + "_s", flag_verbose = flag_verbose)
+                import_pickle(oas, pickle_paf_s, mess_array, flag_verbose = flag_verbose)        
+            
+            # select object with sub_types
+            class_plus = oas.objects_with_sub_type(sub_type_plus, flag_verbose = flag_verbose)
+            class_min = oas.objects_with_sub_type(sub_type_min, flag_verbose = flag_verbose)        
+            mess = PEME.pe_merge(str(mess_date), class_plus, class_min, flag_verbose = flag_verbose)
+            
+            # make a merged object
+            oam = OA.objectarray(str(mess_date) + "_m", flag_verbose = flag_verbose)
+            oam.add_object(mess, flag_verbose = flag_verbose)
+            oam.save_objectarray(pickle_paf_m, flag_overwrite = True, flag_verbose = flag_verbose)
 
     #######################
     # PLOT MERGED SPECTRA #
@@ -296,8 +294,6 @@ if __name__ == "__main__":
             y_range = plot_y_range,
             flag_verbose = flag_verbose,
             title = oas.obj_array[plot_index].obj_id)
-
-                
 
     if activity == "print" or args.print_object_ids:
         if not oar:

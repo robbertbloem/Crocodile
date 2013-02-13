@@ -11,7 +11,12 @@ from __future__ import print_function
 from __future__ import division
 
 from __future__ import absolute_import
-from __future__ import unicode_literals
+
+# unicode_literals break all python 2.x code and with python 3.3 this __future__ is not needed anymore
+# from __future__ import unicode_literals
+
+# needed 'reload' for python 3
+import imp
 
 import numpy
 import matplotlib 

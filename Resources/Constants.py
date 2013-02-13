@@ -1,7 +1,6 @@
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-from __future__ import unicode_literals
 
 # speed of light
 c_ms = 2.9979e8 # m/s

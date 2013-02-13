@@ -25,7 +25,6 @@ Note that the order is different from before. The ordering now is consistent wit
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-from __future__ import unicode_literals
 
 import os
 
