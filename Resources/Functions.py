@@ -96,9 +96,11 @@ def find_axes(x_axis, y_axis, x_range, y_range, flag_verbose = False):
     return x_min, x_max, y_min, y_max    
 
 
-def find_axes_indices(axis, val_min, val_max):
+def find_axes_indices(axis, val_min, val_max, flag_verbose = False):
     """
-    Find the indices of values val_min and val_max in axis, such that val_min and val_max are included. If the val_min or val_max exceed the axis, then the index is 0 or len(axis)-1, respectively.
+    Find the indices of values val_min and val_max in axis, such that val_min and val_max are included. 
+    Because the intended use is to slice an array data[val_min_i:val_max_i], 1 is added to val_max_i.
+    If the val_min or val_max exceed the axis, then the index is 0 or -1, respectively.
     
     BEHAVIOR:
     axis = [3,4,5,6]
@@ -106,9 +108,9 @@ def find_axes_indices(axis, val_min, val_max):
     if val_min == 5: val_min_i = 1
     if val_min == 1: val_min_i = 0
     
-    if val_max = 4.5: val_max_i = 2
-    if val_max = 4: val_max_i = 2
-    if val_max = 10: val_max_i = 3
+    if val_max = 4.5: val_max_i = 3: axis[0:3] = [3,4,5]
+    if val_max = 4: val_max_i = 2: axis[0:2] = [3,4]
+    if val_max = 10: val_max_i = -1: axis[0:-1] = [3,4,5]
     
     CHANGELOG:
     201108xx/RB: originated in contourplot
@@ -126,9 +128,11 @@ def find_axes_indices(axis, val_min, val_max):
 
     temp = numpy.where(axis > val_max)
     if len(temp[0]) == 0:
-        val_max_i = len(axis) - 1
+        val_max_i = -1
     else:
-        val_max_i = temp[0][0]
+        val_max_i = temp[0][0] + 1
+        if val_max_i == len(axis):
+            val_max_i = -1
 
     return val_min_i, val_max_i
 
@@ -139,6 +143,10 @@ def make_contours_2d(data, zlimit = 0, contours = 21, flag_verbose = False):
     zlimit = -1, show all, centered around zero
     zlimit = all else, use that, centered around zero
     zlimit = [a,b], plot from a to b
+    
+    CHANGELOG:
+    201108xx/RB: started in Plotting module
+    20130213/RB: moved to Functions module
     """
 
     DEBUG.verbose("make contours 2D", flag_verbose)
@@ -169,3 +177,40 @@ def make_contours_2d(data, zlimit = 0, contours = 21, flag_verbose = False):
     else:
         DEBUG.verbose("  zlimit is linspace", flag_verbose)
         return numpy.linspace(-abs(zlimit), abs(zlimit), num=contours) 
+
+
+def truncate_data(data, x_axis, y_axis, x_min_i, x_max_i, y_min_i, y_max_i, flag_verbose = False):
+    """
+    Truncate data in a non-default way. 
+    x_axis = [1,2,3,4,5]
+    x_min_i = 0
+    if x_max_i == 2: x_axis = [1,2]
+    if x_max_i == 4: x_axis = [1,2,3,4]
+    if x_max_i == -1: x_axis = [1,2,3,4,5]
+    
+    CHANGELOG:
+    20130213: was in Plotting.contourplot function, moved to Functions module, now handles x_max_i == -1
+    """
+    
+    DEBUG.verbose("Truncate data", flag_verbose)
+
+    if x_max_i == -1:
+        DEBUG.verbose("  x_max == -1", flag_verbose)
+        data = data[:,x_min_i:]
+        x_axis = x_axis[x_min_i:]
+    else:
+        DEBUG.verbose("  x_max != -1", flag_verbose)
+        data = data[:,x_min_i:x_max_i]
+        x_axis = x_axis[x_min_i:x_max_i]        
+
+    if y_max_i == -1:
+        DEBUG.verbose("  y_max == -1", flag_verbose)
+        data = data[y_min_i:,:]
+        y_axis = y_axis[y_min_i:]   
+    else:
+        DEBUG.verbose("  y_max != -1", flag_verbose)
+        data = data[y_min_i:y_max_i,:]
+        y_axis = y_axis[y_min_i:y_max_i]         
+        
+    return data, x_axis, y_axis
+

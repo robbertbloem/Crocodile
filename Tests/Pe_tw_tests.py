@@ -110,7 +110,7 @@ class Test_Pe_LV_import(unittest.TestCase):
         self.mess.path = "Test_resources/PI99aha_1626_T300/"
         res = self.mess.import_data(flag_verbose = self.flag_verbose)
         self.mess.absorptive()
-        # self.mess.plot()
+        self.mess.plot()
         # self.mess.plot_R()
         # self.mess.plot_NR()
         # self.mess.plot_T()

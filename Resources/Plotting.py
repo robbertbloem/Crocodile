@@ -33,6 +33,29 @@ def contourplot(data, x_axis, y_axis,
     linewidth = 1,
     flag_verbose = False):
     
+    """
+    - data, x_axis, y_axis: data and axes
+    - ax (bool (False) or matplotlib axes instance): if False, it will make a new figure, otherwise it will use the axes instance, allowing subplots etc.
+    - x_label, y_label, title (string, default=''): the labels for the axes. If no label is set, it will use the default. Use 'no_label' or 'no_title' to show no label.
+    - x_range, y_range (array with 2 elements, [0,0], [0,-1]): the range to be plotted. Possible cases:
+        - [min, max]: plot range min to max
+        - [0, 0]: plot the whole range
+        - [0, -1]: use the range from the other axis. If both have this, it will plot both axes complete. (ie. it is identical to both having [0,0])
+    - zlimit (number or list, -1): the z-range that will be used
+        Possible cases:
+        zlimit = 0, show all, not don't care about centering around zero
+        zlimit = -1, show all, centered around zero
+        zlimit = all else, use that, centered around zero
+        zlimit = [a,b], plot from a to b
+    - contours (number): number of contours to be used
+    - invert_colors (BOOL, False): data = -data   
+    
+    CHANGELOG:
+    201108xx/RB: started function
+    20130213/RB: moved some things out as separate functions
+    
+    """
+    
     DEBUG.verbose("contour plot", flag_verbose)
 
     y, x = numpy.shape(data)
@@ -53,13 +76,11 @@ def contourplot(data, x_axis, y_axis,
     x_min, x_max, y_min, y_max = FU.find_axes(x_axis, y_axis, x_range, y_range, flag_verbose)
     
     # find the area to be plotted
-    x_min_i, x_max_i= FU.find_axes_indices(x_axis, x_min, x_max)
-    y_min_i, y_max_i= FU.find_axes_indices(y_axis, y_min, y_max)
+    x_min_i, x_max_i = FU.find_axes_indices(x_axis, x_min, x_max)
+    y_min_i, y_max_i = FU.find_axes_indices(y_axis, y_min, y_max)
     
     # truncate the data, this speeds up the plotting
-    data = data[y_min_i:y_max_i,x_min_i:x_max_i]
-    x_axis = x_axis[x_min_i:x_max_i]
-    y_axis = y_axis[y_min_i:y_max_i]
+    data, x_axis, y_axis = FU.truncate_data(data, x_axis, y_axis, x_min_i, x_max_i, y_min_i, y_max_i)
 
     # now make the actual contours   
     V = FU.make_contours_2d(data, zlimit, contours, flag_verbose)        
