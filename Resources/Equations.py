@@ -1,3 +1,11 @@
+"""
+Equations
+- simple equations (exp, sin) that are rewritten to be used by the Crocodile.Resources.Mathematics.fit() function
+- complicated equations
+
+"""
+
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
