@@ -3,13 +3,15 @@ from __future__ import division
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import inspect
+
 import numpy
 import matplotlib 
 import matplotlib.pyplot as plt
 
 import PythonTools.Debug as DEBUG
-import Crocodile.Resources.Plotting as PL
-
+# import Crocodile.Resources.Plotting as PL
+import Crocodile.Resources.Functions as FU
 
 
 def plot_overlap(
@@ -53,30 +55,11 @@ def plot_overlap(
     y_axis = ma[0].s_axis[0]
     
     # determine the range to be plotted
-    x_min, x_max, y_min, y_max = PL.find_axes(x_axis, y_axis, x_range, y_range, flag_verbose)
+    x_min, x_max, y_min, y_max = FU.find_axes(x_axis, y_axis, x_range, y_range, flag_verbose)
     
-    # make the contours
-    # first find the area to be plotted
-    # not the most elegant way I guess
-    try:
-        y_min_i = numpy.where(y_axis < y_min)[0][-1]
-    except: 
-        y_min_i = 0
-    
-    try:
-        y_max_i = numpy.where(y_axis > y_max)[0][0] + 1
-    except: 
-        y_max_i = len(y_axis)
-    
-    try:
-        x_min_i = numpy.where(x_axis < x_min)[0][-1]
-    except: 
-        x_min_i = 0
-    
-    try:
-        x_max_i = numpy.where(x_axis > x_max)[0][0] + 1
-    except: 
-        x_max_i = len(x_axis)
+    # find the area to be plotted
+    x_min_i, x_max_i= FU.find_axes_indices(x_axis, x_min, x_max)
+    y_min_i, y_max_i= FU.find_axes_indices(y_axis, y_min, y_max)
 
     x_axis = x_axis[x_min_i:x_max_i]
     y_axis = y_axis[y_min_i:y_max_i]   
@@ -87,7 +70,7 @@ def plot_overlap(
         data = ma[i].s[y_min_i:y_max_i,x_min_i:x_max_i]
 
         # now make the actual contours   
-        V = PL.make_contours_2d(data, zlimit, contours, flag_verbose)        
+        V = FU.make_contours_2d(data, zlimit, contours, flag_verbose)        
         
         # actually plot the thing
         ax.contour(x_axis, y_axis, data, V, linewidths = ma_linewidth, colors = colors[i])
