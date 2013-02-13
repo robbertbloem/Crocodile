@@ -35,7 +35,6 @@ def contourplot(data, x_axis, y_axis,
     
     DEBUG.verbose("contour plot", flag_verbose)
 
-
     y, x = numpy.shape(data)
     if len(x_axis) != x and len(y_axis) != y:
         DEBUG.printError("The data should have the same shape as the axes, wrong for both axes", inspect.stack())
