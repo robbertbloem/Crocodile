@@ -227,26 +227,30 @@ class pe(DC.dataclass):
         ax = False, 
         x_range = [0,0],
         y_range = [0,-1],
-        zlimit = -1,
-        contours = 12,
+        pixel = -1,
         x_label = "", 
         y_label = "", 
         title = "", 
-        pixel = -1,
-        invert_colors = False,
-        flipxy = False, 
-        flag_verbose = False):
+        flipxy = False,
+        flag_verbose = False,
+        **kwargs):
+
         """
         Plot the data.
         
         INPUT:
         - plot_type ('S' (default), 'R', 'NR', 'T'): plot the spectrum, the rephasing, non-rephasing spectra or time domain. Note that R and NR only work if the Fourier transform has been done and saved.
         - ax (False (default) or matplotlib axes instance): if False, it will make a new figure, otherwise it will use the axes instance, allowing subplots etc.
+        - x_label, y_label, title (string, default=''): the labels for the axes. If no label is set, it will use the default. Use 'no_label' or 'no_title' to show no label.
+        - pixel (int, -1): if pixel is an element of w_3, it will plot only this pixel, otherwise it will plot a 2D-plot
+        - flipxy (BOOL, False): will flip the data and the axes. Non-default labels will not be flipped. 
         - x_range, y_range (array with 2 elements, [0,0], [0,-1]): the range to be plotted. 
-            Possible cases:
-            - [min, max]: plot range min to max
-            - [0, 0]: plot the whole range
-            - [0, -1]: use the range from the other axis. If both have this, it will plot both axes complete. (ie. it is identical to both having [0,0])
+        Possible cases:
+        - [min, max]: plot range min to max
+        - [0, 0]: plot the whole range
+        - [0, -1]: use the range from the other axis. If both have this, it will plot both axes complete. (ie. it is identical to both having [0,0])
+        
+        **kwargs (stuff for the plotting function)
         - zlimit (number or list, -1): the z-range that will be used
             Possible cases:
             zlimit = 0, show all, not don't care about centering around zero
@@ -254,15 +258,12 @@ class pe(DC.dataclass):
             zlimit = all else, use that, centered around zero
             zlimit = [a,b], plot from a to b
         - contours (number): number of contours to be used
-        - x_label, y_label, title (string, default=''): the labels for the axes. If no label is set, it will use the default. Use 'no_label' or 'no_title' to show no label.
-        - pixel (int, -1): if pixel is an element of w_3, it will plot only this pixel, otherwise it will plot a 2D-plot
         - invert_colors (BOOL, False): data = -data
-        - flipxy (BOOL, False): will flip the data and the axes. Non-default labels will not be flipped. 
-        
+
         CHANGELOG:
         20110910/RB: started as croc-function
         20130131/RB: rewrote function for Crocodile. Integrated it with plot_T
-        
+        20130213/RB: some arguments are now kwargs: they are not explicitly listed but are passed on to the plotting function.        
         """
 
         self.verbose("Plot", flag_verbose)
@@ -274,7 +275,7 @@ class pe(DC.dataclass):
         elif plot_type == "NR":
             data = numpy.real(numpy.exp(1j * self.phase_rad) * self.f[1])
         elif plot_type == "T":
-            data = numpy.concatenate((numpy.flipud(self.r[1]), self.r[0])).T
+            data = numpy.concatenate((numpy.flipud(self.r[1][1:,:]), self.r[0])).T
         
         if pixel < 0 or pixel > len(self.s_axis[2]):
             
@@ -306,7 +307,7 @@ class pe(DC.dataclass):
                     # not the normal way
                     data = data.T    
                     x_axis = self.r_axis[2]
-                    y_axis = numpy.concatenate((-numpy.flipud(self.r_axis[0]), self.r_axis[0]))
+                    y_axis = numpy.concatenate((-numpy.flipud(self.r_axis[0][1:]), self.r_axis[0]))
                     if x_label == "":
                         x_label = r"$\omega_3 (cm^{-1})$" 
                     if y_label == "":
@@ -314,16 +315,16 @@ class pe(DC.dataclass):
                     if y_range == [0,-1]: 
                         y_range = [0,0]
                 else:     
-                    x_axis = numpy.concatenate((-numpy.flipud(self.r_axis[0]), self.r_axis[0]))
+                    x_axis = numpy.concatenate((-numpy.flipud(self.r_axis[0][1:]), self.r_axis[0]))
                     y_axis = self.r_axis[2]
                     if x_label == "":
                         x_label = r"$t_1 (fs)$" 
                     if y_label == "":
                         y_label = r"$\omega_3 (cm^{-1})$" 
-                    if y_range == [0,1]:
+                    if y_range == [0,-1]:
                         y_range = [0,0]            
-               
-            PL.contourplot(data, x_axis, y_axis, ax = ax, x_range = x_range, y_range = y_range, zlimit = zlimit, contours = contours, filled = True, black_contour = True, x_label = x_label, y_label = y_label, title = title, diagonal_line = True,  invert_colors = invert_colors, linewidth = 1, flag_verbose = flag_verbose)
+            
+            PL.contourplot(data, x_axis, y_axis, ax = ax, x_range = x_range, y_range = y_range, x_label = x_label, y_label = y_label, title = title, flag_verbose = flag_verbose, **kwargs)
 
         else:
             
@@ -336,7 +337,7 @@ class pe(DC.dataclass):
                 x_axis = self.r_axis[0]
                 x_label = r"$\t_1 (fs)$"
                 
-            PL.linear(data[pixel], x_axis, x_range = x_range, y_range = y_range, ax = ax, x_label = x_label, y_label = y_label, title = title, legend = "", plot_real = True, flag_verbose = flag_verbose)
+            PL.linear(data[pixel], x_axis, x_range = x_range, y_range = y_range, ax = ax, x_label = x_label, y_label = y_label, title = title, flag_verbose = flag_verbose, **kwargs)
 
         if not ax:
             plt.show()
@@ -344,23 +345,26 @@ class pe(DC.dataclass):
 
 
 
-    def plot_R(self, ax = False, x_range = [0,0], y_range = [0,-1], zlimit = -1, contours = 12, x_label = "", y_label = "", title = "", pixel = -1, invert_colors = False, flipxy = False, flag_verbose = False):
+    def plot_R(self, **kwargs):
         """
         Wrapper for plot_type = R. See plot for more info.
         """
-        self.plot(plot_type = "R", ax = ax, x_range = x_range, y_range = y_range, zlimit = zlimit, contours = contours, x_label = x_label, y_label = y_label, title = title, pixel = pixel, invert_colors = invert_colors, flipxy = flipxy, flag_verbose = flag_verbose)
+        self.plot(plot_type = "R", **kwargs)
 
-    def plot_NR(self, ax = False, x_range = [0,0], y_range = [0,-1], zlimit = -1, contours = 12, x_label = "", y_label = "", title = "", pixel = -1, invert_colors = False, flipxy = False, flag_verbose = False):
+    def plot_NR(self, **kwargs):
         """
-        Wrapper for plot_type = NR. See plot for more info.
+        Wrapper for plot_type = R. See plot for more info.
         """
-        self.plot(plot_type = "NR", ax = ax, x_range = x_range, y_range = y_range, zlimit = zlimit, contours = contours, x_label = x_label, y_label = y_label, title = title, pixel = pixel, invert_colors = invert_colors, flipxy = flipxy, flag_verbose = flag_verbose)
+        self.plot(plot_type = "NR", **kwargs)
+        
+    def plot_T(self, **kwargs):
+        """
+        Wrapper for plot_type = R. See plot for more info.
+        """
+        self.plot(plot_type = "T", **kwargs)
 
-    def plot_T(self, ax = False, x_range = [0,0], y_range = [0,-1], zlimit = -1, contours = 12, x_label = "", y_label = "", title = "", pixel = -1, invert_colors = False, flipxy = False, flag_verbose = False):
-        """
-        Wrapper for plot_type = T. See plot for more info.
-        """
-        self.plot(plot_type = "T", ax = ax, x_range = x_range, y_range = y_range, zlimit = zlimit, contours = contours, x_label = x_label, y_label = y_label, title = title, pixel = pixel, invert_colors = invert_colors, flipxy = flipxy, flag_verbose = flag_verbose)
+
+
         
 
 

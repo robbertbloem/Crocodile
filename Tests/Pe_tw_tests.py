@@ -54,7 +54,7 @@ class Test_Pe_LV_import(unittest.TestCase):
 
     def test_initialized_values(self):
         self.assertEqual(self.mess.r_axis[1], 300)
-        self.assertEqual(self.mess.time_stamp, 1626)
+        self.assertEqual(self.mess.time_stamp, "1626")
         self.assertEqual(self.mess.base_filename, "PI99aha_1626_T300")
         self.assertEqual(self.mess.path, "PI99aha_1626_T300/")
         self.assertEqual(self.mess.sub_type, "PI99aha")
@@ -103,6 +103,19 @@ class Test_Pe_LV_import(unittest.TestCase):
         res = self.mess.import_data(flag_verbose = self.flag_verbose)
         self.assertFalse(res)
 
+    def test_plot(self):
+        """
+        Data is imported. Returns True. Check if phase is indeed imported.
+        """
+        self.mess.path = "Test_resources/PI99aha_1626_T300/"
+        res = self.mess.import_data(flag_verbose = self.flag_verbose)
+        self.mess.absorptive()
+        # self.mess.plot()
+        # self.mess.plot_R()
+        # self.mess.plot_NR()
+        # self.mess.plot_T()
+        self.assertTrue(res)
+        # self.assertAlmostEqual(self.mess.phase_degrees, 319.705649)
 
 
 class Test_Pe_tw_init(unittest.TestCase):
@@ -121,7 +134,7 @@ class Test_Pe_tw_init(unittest.TestCase):
 
     def test_initialized_values(self):
         self.assertEqual(self.mess.r_axis[1], 300)
-        self.assertEqual(self.mess.time_stamp, 1626)
+        self.assertEqual(self.mess.time_stamp, "1626")
         self.assertEqual(self.mess.base_filename, "Test_1626_T300")
         self.assertEqual(self.mess.path, "Test_1626_T300/")
         self.assertEqual(self.mess.sub_type, "Test")
