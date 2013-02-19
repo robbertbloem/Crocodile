@@ -34,6 +34,12 @@ ACTIVITIES:
 use 'import' to do (1) together
 use 'all' to do (2) together
 
+CHANGELOG
+20130212/RB: first version
+20130214/RB: lots of debugging, new activities 'plot_all', 'print'. 'r_to_s' now does not save s in _r.pickle, this prevents phase corrections to be applied over and over.
+20130219/RB: introduced window functions, corrected multiple plots (n_x >= n_y).
+
+
 """
 
 from __future__ import print_function
@@ -49,7 +55,6 @@ except:
     flag_parse = False
 
 import numpy
-import matplotlib 
 import matplotlib.pyplot as plt
 
 import PythonTools.ObjectArray as OA
@@ -68,24 +73,24 @@ global plot_y_range
 
 ### INPUT ###
 
-activity = "x" # "plot_all" # "plot_m" # "merge" # "import" #  
+activity = "plot_all" # "plot_m" # "merge" # "import" #  
 
-mess_date = 20130213
+mess_date = 20010101
 
 mess_array = [
-    #["N3_1",    "N3",  1448,   300],
-    #["N3_2",    "N3",  1449,   300],
-    #["N3_3",    "N3",  1452,   300],
-    #["N3_4",    "N3",  1453,   300],
-    #["h2o_1",    "h2o",  1454,   300],
-    #["h2o_3",    "h2o",  1505,   300],
-	["4mM_1", "N3", 1540, 300],
+    ["N3_5_1",  "N3_5", 1712,   300], # c1
+    ["N3_5_2",  "N3_5", 1713,   300], # c2
+    ["N3_5_3",  "N3_5", 1714,   300], # c4
+    ["h2o_1",   "h2o",  1636,   300], # c3
+    ["h2o_2",   "h2o",  1638,   300], # c3
+    ["h2o_3",   "h2o",  1640,   300], # c4
 ]
 
-sub_type_plus = []
-sub_type_min = []
+sub_type_plus = ["N3_5"]
+sub_type_min = ["h2o"]
 
 ### PROCESSING VARIABLES ###
+window_function = "none" # "gaussian"
 zeropad_by = 4
 w3_correction = -14
 # use int to apply for all, use list to apply to specific measurements
@@ -94,7 +99,7 @@ phase_correction = 0
 zlimit_array = [-1]
 invert_colors = True
 contours = 14
-plot_x_range = [0,0]
+plot_x_range = [1990,2100]
 plot_y_range = [0,-1]
 
 ### LESS USED VARIABLES ###
@@ -103,7 +108,7 @@ plot_index = 0
 
 flag_verbose = False
 
-pickle_base_name = str(mess_date) + "_rb"
+pickle_base_name = str(mess_date)
 
 location = os.uname()[1]
 if location == "rbmbp.local":
@@ -135,21 +140,18 @@ if flag_parse:
     flag_verbose = args.verbose
     flag_reload = args.reload
 
-
-if flag_verbose:
-    print(data_path)
-    print(pickle_path)
-
-
 # reload modules
 if args.reload:
     import Crocodile.Resources.ReloadCrocodile
     Crocodile.Resources.ReloadCrocodile.reload_crocodile(flag_verbose = args.verbose)
 
 # some functions
-def import_pickle(oa_object, pickle_path_and_filename, mess_array, flag_verbose = False):
-    obj_id_array = numpy.array(mess_array)[:,0]
-    oa_object.load_objectarray(pickle_path_and_filename, obj_id_array, flag_verbose = flag_verbose)
+def import_pickle(oa_object, pickle_path_and_filename, mess_array = [], flag_verbose = False):
+    if len(mess_array) > 0:
+        obj_id_array = numpy.array(mess_array)[:,0]
+        oa_object.load_objectarray(pickle_path_and_filename, obj_id_array, flag_verbose = flag_verbose)
+    else:
+        oa_object.import_db(pickle_path_and_filename, flag_verbose = flag_verbose)
     
 def find_subplot_size(i, flag_verbose = False):
     s = numpy.sqrt(i)
@@ -170,7 +172,7 @@ def plot_all(oa_object, zlimit_array = [-1], flag_verbose = False):
     x, y = find_subplot_size(n) 
     fig = plt.figure()
     for i in range(n):
-        ax[i] = fig.add_subplot(x,y,i+1)
+        ax[i] = fig.add_subplot(y,x,i+1)
         oa_object.obj_array[i].plot(ax = ax[i], 
             zlimit = zlimit_array[i],
             invert_colors = invert_colors,
@@ -214,7 +216,7 @@ if __name__ == "__main__":
                 mess.import_data(flag_verbose = flag_verbose)
                 mess.r_correction[2] = w3_correction
                 oar.add_object(mess, flag_verbose = flag_verbose) 
-        oar.print_objects()   
+
         oar.save_objectarray(pickle_paf_r, flag_verbose = flag_verbose) 
       
     ########################
@@ -232,12 +234,13 @@ if __name__ == "__main__":
             elif i < len(phase_correction): 
                 oar.obj[i].phase_degrees += phase_correction[i]
             oar.obj[i].zeropad_by = zeropad_by
-            oar.obj[i].absorptive(flag_verbose = flag_verbose)
+            oar.obj[i].absorptive(window_function = window_function, flag_verbose = flag_verbose)
         
         for m in oar.obj:
             m.r = [0,0]
             m.f = [0,0]
         oar.save_objectarray(pickle_paf_s, flag_overwrite = True, flag_verbose = flag_verbose)
+        oar = False
         
     #########
     # MERGE #
@@ -265,7 +268,7 @@ if __name__ == "__main__":
     if activity == "plot_m" or activity == "all":
         if not oam:
             oam = OA.objectarray(str(mess_date) + "_m", flag_verbose = flag_verbose)
-            import_pickle(oam, pickle_paf_m, mess_array, flag_verbose = flag_verbose)   
+            import_pickle(oam, pickle_paf_m, flag_verbose = flag_verbose)   
         
         # plot all - usually only one
         plot_all(oam, zlimit_array = zlimit_array, flag_verbose = flag_verbose)
@@ -281,7 +284,10 @@ if __name__ == "__main__":
         # plot all     
         plot_all(oas, zlimit_array = zlimit_array, flag_verbose = flag_verbose)
 
-
+    ##########################
+    # PLOT SPECIFIC SPECTRUM #
+    ##########################
+    # use -i n to plot index n, default is 0
     if activity == "plot":
         if not oas:
             oas = OA.objectarray(str(mess_date) + "_s", flag_verbose = flag_verbose)
@@ -295,6 +301,10 @@ if __name__ == "__main__":
             flag_verbose = flag_verbose,
             title = oas.obj_array[plot_index].obj_id)
 
+                    
+    #####################
+    # PRINT ALL OBJECTS #
+    #####################
     if activity == "print" or args.print_object_ids:
         if not oar:
             oar = OA.objectarray(str(mess_date) + "_r", flag_verbose = flag_verbose)
@@ -308,7 +318,7 @@ if __name__ == "__main__":
 
         if not oam:
             oam = OA.objectarray(str(mess_date) + "_m", flag_verbose = flag_verbose)
-            import_pickle(oas, pickle_paf_m, mess_array, flag_verbose = flag_verbose) 
+            import_pickle(oas, pickle_paf_m, flag_verbose = flag_verbose) 
         oam.print_object_ids(flag_verbose = flag_verbose)
 
 
