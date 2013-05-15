@@ -326,24 +326,37 @@ def correlation_fft(array, flag_normalize = True, flag_verbose = False):
     
     This method was verified using a naive implementation in C. 
     
+    INPUT:
+    - array (ndarray): the data
+    - flag_normalizae (Bool, True): if True, the starting value of the autocorrelation is 1. If not, it is an absolute value.
+    - flag_verbose (Bool, False): if True, print some debugging stuff
+    
+    OUTPUT:
+    - autocorrelation of array, normalized to the length or to 1, the real values   
+    
     201202xx/RB: started function
     20130205/RB: the function now uses an actual Fourier transform
     20130207/RB: take the first part of the array, not the last part reversed. This was done to agree with Jan's correlation method, but now it seems that one is wrong.
+    20130515/RB: the result is now always divided by the length of the array and it gives the actual absolute value. Added some documentation
     
     """
     
     DEBUG.verbose("correlation_fft", flag_verbose)
 
-    array = array - numpy.mean(array)
+    # by subtracting the mean, the autocorrelation decays to zero
+    array -= numpy.mean(array)
 
-    # zeropad to closest 2^n 
+    # zeropad to closest 2^n to prevent aliasing
     l = 2 ** int(1+numpy.log2(len(array) * 2))
 
+    # calculate autocorrelation
     s = numpy.fft.fft(array, n=l)
     r = numpy.fft.ifft(s * numpy.conjugate(s))
 
-    r = r[:len(array)]
+    # normalize to length
+    r = r[:len(array)] / len(array)
 
+    # return value
     if flag_normalize:
         return numpy.real(r/r[0])
     else:
