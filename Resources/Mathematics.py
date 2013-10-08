@@ -48,7 +48,7 @@ def minimize(A, t, y0, function):
     """
     return y0 - function(A, t)
 
-def fit(x_array, y_array, function, A_start):
+def fit(x_array, y_array, function, A_start, return_all = False):
     """
     Fit data
     
@@ -60,10 +60,31 @@ def fit(x_array, y_array, function, A_start):
     y-array: the array with the values that have to be fitted
     function: one of the functions, in the format as in the file "Equations"
     A_start: a starting point for the fitting
-
+    return_all: the function used to return only the final result. The leastsq method does however return more data, which may be useful for debugging. When the this flag is True, it will return these extras as well. For legacy purposes the default is False. See reference of leastsq method for the extra output: http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.leastsq.html
+    
     OUTPUT:
     A_final: the final parameters of the fitting
- 
+    When return_all == True:
+    - cov_x (ndarray): Uses the fjac and ipvt optional outputs to construct an estimate of the jacobian around the solution. None if a singular matrix encountered (indicates very flat curvature in some direction). This matrix must be multiplied by the residual variance to get the covariance of the parameter estimates - see curve_fit.
+    - infodict (dict): a dictionary of optional outputs with the key s:
+        - "nfev" : the number of function calls
+        - "fvec" : the function evaluated at the output
+        - "fjac" : A permutation of the R matrix of a QR
+                 factorization of the final approximate
+                 Jacobian matrix, stored column wise.
+                 Together with ipvt, the covariance of the
+                 estimate can be approximated.
+        - "ipvt" : an integer array of length N which defines
+                 a permutation matrix, p, such that
+                 fjac*p = q*r, where r is upper triangular
+                 with diagonal elements of nonincreasing
+                 magnitude. Column j of p is column ipvt(j)
+                 of the identity matrix.
+        - "qtf"  : the vector (transpose(q) * fvec).
+    - mesg (str): A string message giving information about the cause of failure.
+    - ier (int): An integer flag. If it is equal to 1, 2, 3 or 4, the solution was found. Otherwise, the solution was not found. In either case, the optional output variable "mesg" gives more information.
+
+
     EXAMPLE:
     Fit some data to this function from Crocodile.Resources.Equations:
     def linear(A, t):
@@ -85,7 +106,10 @@ def fit(x_array, y_array, function, A_start):
     
         A_final, cov_x, infodict, mesg, ier = leastsq(minimize, A_start, args=param, full_output=True)
 
-        return A_final
+        if return_all:
+            return A_final, cov_x, infodict, mesg, ier
+        else:
+            return A_final
     else:
         DEBUG.printError("Scipy.leastsq is not loaded. Fit is not done", inspect.stack())
         return False
