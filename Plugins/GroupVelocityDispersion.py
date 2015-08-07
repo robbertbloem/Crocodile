@@ -1,3 +1,7 @@
+
+
+
+
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
@@ -67,10 +71,11 @@ def calculate_effect_GVD(t0, gvd):
     
     CHANGELOG:
     20120221/RB: started the function
+    20150807/RB: copied to Crocodile. Added some documentation.
     
     INPUT:
     t0 (array or int): the pulse length(s) of the pulse before the gvd
-    gvd (numpy.float or ndarray): the GVD in fs^2 (!!!)
+    gvd (numpy.float or ndarray): the GVD in fs^2 (!!!). You have to multiply the GVD with the thickness of the material. 
     
     OUTPUT:
     t1 (ndarray): the new pulse length as a function of GVD.
@@ -163,8 +168,6 @@ def pulse_length_function_wavelength(material, material_mm = 1.0, pulse_length_f
                 ax.set_ylim(0, numpy.max(p_y)*1.05)
                 ax.set_title(label)
                 plt.show()
-                
-
 
 def n_function_wavelength(material, range_um = [3,7], print_for_um = [], flag_plot = True, ax = 0, n_steps = 1000):
 
@@ -204,16 +207,25 @@ def n_function_wavelength(material, range_um = [3,7], print_for_um = [], flag_pl
 
 def gvd_function_wavelength_for_materials(materials = [], range_um = [3,7], print_for_um = [], flag_plot = True, ax = 0):
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
+    if ax == 0 and flag_plot == True:
+        own_plot = True
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+    else:
+        own_plot = False
 
     for material in materials:
         
         gvd_function_wavelength(material, range_um = range_um, print_for_um = print_for_um, flag_plot = flag_plot, ax = ax, n_steps = 1000)
 
+    if own_plot:
+       plt.show()
+
+
+
 def pulse_length_function_wavelength_for(materials = [], material_mms = [], pulse_length_fss = 100, range_um = [3,7], print_for_um = [], flag_plot = True, ax = 0):
     
-    if ax == 0:
+    if ax == 0 and flag_plot == True:
         own_plot = True
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -227,11 +239,11 @@ def pulse_length_function_wavelength_for(materials = [], material_mms = [], puls
         
                 pulse_length_function_wavelength(material, material_mm = material_mm, pulse_length_fs = pulse_length_fs, range_um = range_um, print_for_um = print_for_um, flag_plot = flag_plot, ax = ax, n_steps = 1000)
         
-    ax.set_title("Pulse length for different materials")
+    ax.set_title("Pulse length for different situations")
     ax.set_ylim(0, ax.get_ylim()[1])
 
     if own_plot:
-       plt.plot()
+       plt.show()
 
 
 
