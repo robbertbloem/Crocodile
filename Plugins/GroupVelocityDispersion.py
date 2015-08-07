@@ -1,5 +1,19 @@
+"""
+This script calculates the index of refraction (n), group velocity (VG) and group velocity dispersion (GVD). 
+
+The calculation of the index of refraction is done using the Sellmeier Equation, the parameters for this are stored in GVD_Materials. The VG is the first derivative of this, the GVD the second derivative. This is calculated using a fairly simple (y2-y1)/(x2-x1) calculation. To accomodate this, these are all calculated for a range of values. 
+
+All wavelengths are in micron!
+
+SOURCES (for calculations):
+http://www.rp-photonics.com/chromatic_dispersion.html
+
+SOURCES (for data):
+RI: http://refractiveindex.info -> WARNING: C coefficients need to be squared SOMETIMES!
+MG: http://www.cvimellesgriot.com
 
 
+"""
 
 
 from __future__ import print_function
@@ -23,9 +37,11 @@ def calculate_gvd(range_L, n_steps, SC):
     
     The index of refraction as a function of wavelength is described by the Sellmeier equation. The VG is the first derivative of this, the GVD the second derivative. 
     
+    This is calculated using a fairly simple (y2-y1)/(x2-x1) calculation. To accomodate this, these are all calculated for a range of values.
+    
     CHANGELOG:
     20110909/RB: started
-    20150805/RB: copied to Crocodile
+    20150805/RB: copied to Crocodile. Added documentation. 
     
     INPUT:
     range_L (array, 2 elements): minimum and maximum in micron
@@ -61,6 +77,7 @@ def calculate_gvd(range_L, n_steps, SC):
     
     return n_x, n_y, vg_x, vg_y, gvd_x, gvd_y
 
+
 def calculate_effect_GVD(t0, gvd):
     """
     Calculates the effect the group velocity dispersion has on an unchirped Gaussian pulse. 
@@ -90,9 +107,57 @@ def calculate_effect_GVD(t0, gvd):
     
     return t1
 
-def gvd_function_wavelength(material, range_um = [3,7], print_for_um = [], flag_plot = True, ax = 0, n_steps = 1000):
+
+def check_wavelength_range(plot_range_um, print_for_um):
+    """
+    Sanity check for the plot_range_um and print_for_um. 
+    
+    INPUT:
+    plot_range_um: the range to be plotted, for example from 3 to 8 micron
+    print_for_um: a list for which the results are printed. 
+    
+    OUTPUT:
+    plot_range_um: the plot range, with the lower boundary the lowest wavelength
+    range_um: a range to be calculated. A selection of the results can be printed or plotted. 
+    
+    """
+    
+    
+    if plot_range_um[0] > plot_range_um[1]:
+        plot_range_um = plot_range_um[::-1]
+    
+    range_um = plot_range_um[:]
+    
+    for w in print_for_um:
+        if w < range_um[0]:
+            range_um[0] = w
+        if w > range_um[1]:
+            range_um[1] = w
+            
+        range_um[0] *= 0.9
+        range_um[1] *= 1.1
+        
+    return plot_range_um, range_um
+
+
+def gvd_function_wavelength(material, plot_range_um = [3,7], print_for_um = [], flag_plot = True, ax = 0, n_steps = 1000):
+
+    """
+    Calculate the GVD as a function of wavelength for a particular material. Prints the results for particular wavelengths and plots the results. 
+    
+    INPUT:
+    material (string): a string corresponding to the list in GVD_Materials
+    plot_range_um (list, len=2): list with lower and upper wavelength (in micron)  
+    print_for_um (list): list with wavelengths to be printed (in micron)
+    flag_plot (bool): whether to make a plot
+    ax (0 or axis instance): if zero, a new plot will be generated. If a pyplot axis instance, it will be added to that particular axis.  
+    n_steps (int): the number of steps to be calculated. A larger number will give a higher resolution, especially when calculating VG and GVD. 
+    
+    """
 
     [n, SC] = GVDM.MaterialProperties(material)
+    
+    plot_range_um, range_um = check_wavelength_range(plot_range_um, print_for_um)
     
     if SC != []:
     
@@ -123,13 +188,32 @@ def gvd_function_wavelength(material, range_um = [3,7], print_for_um = [], flag_
             ax.legend(loc = 4)
             
             if own_plot:
-                ax.set_ylim(0, numpy.max(p_y)*1.05)
+                ax.set_xlim(plot_range_um)
                 ax.set_title(label)
                 plt.show()
-                
-def pulse_length_function_wavelength(material, material_mm = 1.0, pulse_length_fs = 100, range_um = [3,7], print_for_um = [], flag_plot = True, ax = 0, n_steps = 1000):
+
+              
+def pulse_length_function_wavelength(material, material_mm = 1.0, pulse_length_fs = 100, plot_range_um = [3,7], print_for_um = [], flag_plot = True, ax = 0, n_steps = 1000):
+
+    """
+    Calculate how the pulse length is affected by a material, as a function of wavelength for a particular material. Prints the results for particular wavelengths and plots the results. 
+    
+    INPUT:
+    material (string): a string corresponding to the list in GVD_Materials
+    material_mm (float): thickness of the material
+    pulse_length_fs (float): length of the pulse before entering the material.
+    plot_range_um (list, len=2): list with lower and upper wavelength (in micron)  
+    print_for_um (list): list with wavelengths to be printed (in micron)
+    flag_plot (bool): whether to make a plot
+    ax (0 or axis instance): if zero, a new plot will be generated. If a pyplot axis instance, it will be added to that particular axis.  
+    n_steps (int): the number of steps to be calculated. A larger number will give a higher resolution, especially when calculating VG and GVD. 
+    
+    """
+
 
     [n, SC] = GVDM.MaterialProperties(material)
+    
+    plot_range_um, range_um = check_wavelength_range(plot_range_um, print_for_um)
     
     if SC != []:
     
@@ -164,14 +248,31 @@ def pulse_length_function_wavelength(material, material_mm = 1.0, pulse_length_f
             ax.set_ylabel("Pulse length (fs)")
             ax.legend(loc = 4)
             
-            if own_plot:
-                ax.set_ylim(0, numpy.max(p_y)*1.05)
+            if own_plot:                  
+                ax.set_xlim(plot_range_um)
+                ax.set_ylim(0, ax.get_ylim()[1])
                 ax.set_title(label)
                 plt.show()
 
-def n_function_wavelength(material, range_um = [3,7], print_for_um = [], flag_plot = True, ax = 0, n_steps = 1000):
 
+def n_function_wavelength(material, plot_range_um = [3,7], print_for_um = [], flag_plot = True, ax = 0, n_steps = 1000):
+
+    """
+    Calculate the index of refraction as a function of wavelength for a particular material. Prints the results for particular wavelengths and plots the results. 
+    
+    INPUT:
+    material (string): a string corresponding to the list in GVD_Materials
+    plot_range_um (list, len=2): list with lower and upper wavelength (in micron)  
+    print_for_um (list): list with wavelengths to be printed (in micron)
+    flag_plot (bool): whether to make a plot
+    ax (0 or axis instance): if zero, a new plot will be generated. If a pyplot axis instance, it will be added to that particular axis.  
+    n_steps (int): the number of steps to be calculated. A larger number will give a higher resolution, especially when calculating VG and GVD. 
+    
+    """
+    
     [n, SC] = GVDM.MaterialProperties(material)
+    
+    plot_range_um, range_um = check_wavelength_range(plot_range_um, print_for_um)
     
     if SC != []:
         
@@ -191,7 +292,7 @@ def n_function_wavelength(material, range_um = [3,7], print_for_um = [], flag_pl
             else:
                 own_plot = False
 
-            x = numpy.linspace(range_um[0], range_um[1], n_steps)
+            x = numpy.linspace(plot_range_um[0], plot_range_um[1], n_steps)
             n = numpy.sqrt(E.Sellmeier(SC, x))
   
             label = "Index of refraction of %s" % (material)
@@ -205,7 +306,19 @@ def n_function_wavelength(material, range_um = [3,7], print_for_um = [], flag_pl
                 ax.set_title(label)
                 plt.show()
 
-def gvd_function_wavelength_for_materials(materials = [], range_um = [3,7], print_for_um = [], flag_plot = True, ax = 0):
+
+def gvd_function_wavelength_for_materials(materials = [], plot_range_um = [3,7], print_for_um = [], flag_plot = True, ax = 0):
+    
+    """
+    Calculate the GVD as a function of wavelength, for a range of materials. 
+    
+    materials (list): a list with materials, selected from GVD_Materials
+    plot_range_um (list, len=2): list with lower and upper wavelength (in micron)  
+    print_for_um (list): list with wavelengths to be printed (in micron)
+    flag_plot (bool): whether to make a plot
+    ax (0 or axis instance): if zero, a new plot will be generated. If a pyplot axis instance, it will be added to that particular axis.  
+
+    """
 
     if ax == 0 and flag_plot == True:
         own_plot = True
@@ -216,15 +329,25 @@ def gvd_function_wavelength_for_materials(materials = [], range_um = [3,7], prin
 
     for material in materials:
         
-        gvd_function_wavelength(material, range_um = range_um, print_for_um = print_for_um, flag_plot = flag_plot, ax = ax, n_steps = 1000)
+        gvd_function_wavelength(material, plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = flag_plot, ax = ax, n_steps = 1000)
 
     if own_plot:
        plt.show()
 
 
+def pulse_length_function_wavelength_for(materials = [], material_mms = [], pulse_length_fss = 100, plot_range_um = [3,7], print_for_um = [], flag_plot = True, ax = 0):
+    """
+    Calculate the increase in pulse length, for given initial pulse lengths, materials, and thicknesses. 
 
-def pulse_length_function_wavelength_for(materials = [], material_mms = [], pulse_length_fss = 100, range_um = [3,7], print_for_um = [], flag_plot = True, ax = 0):
-    
+    materials (list with strings): a list with materials, selected from GVD_Materials
+    material_mms (list with floats): thicknesses to be calculated.
+    pulse_length_fss (list with floats): initial pulse lengths. 
+    plot_range_um (list, len=2): list with lower and upper wavelength (in micron)  
+    print_for_um (list): list with wavelengths to be printed (in micron)
+    flag_plot (bool): whether to make a plot
+    ax (0 or axis instance): if zero, a new plot will be generated. If a pyplot axis instance, it will be added to that particular axis.  
+
+    """   
     if ax == 0 and flag_plot == True:
         own_plot = True
         fig = plt.figure()
@@ -237,7 +360,7 @@ def pulse_length_function_wavelength_for(materials = [], material_mms = [], puls
         for material in materials:
             for material_mm in material_mms:
         
-                pulse_length_function_wavelength(material, material_mm = material_mm, pulse_length_fs = pulse_length_fs, range_um = range_um, print_for_um = print_for_um, flag_plot = flag_plot, ax = ax, n_steps = 1000)
+                pulse_length_function_wavelength(material, material_mm = material_mm, pulse_length_fs = pulse_length_fs, plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = flag_plot, ax = ax, n_steps = 1000)
         
     ax.set_title("Pulse length for different situations")
     ax.set_ylim(0, ax.get_ylim()[1])
@@ -255,47 +378,33 @@ if __name__ == "__main__":
     
     plt.close("all")
     
-    
+    # get material properties
     n, SC = GVDM.MaterialProperties("caf2")
-#   print(n, SC)
-    
-    
-#    range_L = [3,7]
-#    n_steps = 10
-#    print(calculate_gvd(range_L, n_steps, SC))
-    
+
+    # set some values
     material = "caf2"
-    range_um = [3,8]
+    plot_range_um = [3,8]
     print_for_um = [4,5,6]
     pulse_length_fs = 50
     material_mm = 2.0
-    
-    
-    
-#    fig = plt.figure()
-#    ax = fig.add_subplot(111)
-#    ax = 0
-    
-#    n_function_wavelength(material, range_um = range_um, print_for_um = print_for_um, flag_plot = True, ax = ax)
-#
-#    n_function_wavelength(material = "baf2", range_um = range_um, print_for_um = print_for_um, flag_plot = True, ax = ax)
+        
+#     plot_range_um, range_um = check_wavelength_range(plot_range_um = plot_range_um, print_for_um = print_for_um)
 
+#     n_function_wavelength(material, plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = True, ax = 0)
+
+#     n_function_wavelength(material = "baf2", plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = True, ax = ax)
+
+#     gvd_function_wavelength(material, plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = True, ax = 0)
+
+#    gvd_function_wavelength(material = "baf2", plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = True, ax = ax)
     
-#    gvd_function_wavelength(material, range_um = range_um, print_for_um = print_for_um, flag_plot = True, ax = ax)
-#
-#    gvd_function_wavelength(material = "baf2", range_um = range_um, print_for_um = print_for_um, flag_plot = True, ax = ax)
-    
-#    pulse_length_function_wavelength(material, pulse_length_fs = pulse_length_fs, material_mm = material_mm, range_um = range_um, print_for_um = print_for_um, flag_plot = True, ax = ax)
+#     pulse_length_function_wavelength(material, pulse_length_fs = pulse_length_fs, material_mm = material_mm, plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = True, ax = 0)
 
-#    pulse_length_function_wavelength(material = material, pulse_length_fs = 100, material_mm = material_mm, range_um = range_um, print_for_um = print_for_um, flag_plot = True, ax = ax)
+#    pulse_length_function_wavelength(material = material, pulse_length_fs = 100, material_mm = material_mm, plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = True, ax = ax)
 
-#    ax.set_ylim(0, ax.get_ylim()[1])
+#     gvd_function_wavelength_for_materials(materials = ["baf2", "caf2", "znse"], plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = True, ax = 0)
 
-    gvd_function_wavelength_for_materials(materials = ["baf2", "caf2", "znse"], range_um = range_um, print_for_um = print_for_um, flag_plot = True, ax = 0)
-
-#    pulse_length_function_wavelength_for(materials = ["caf2", "znse"], material_mms = [1.0, 2.0], pulse_length_fss = [100], range_um = [3,7], print_for_um = [6], flag_plot = True, ax = 0)
-
-#    GroupVelocityDispersion(material = "caf2", print_for_um = [4,5,6], range_um = [3,7], material_path_mm = 2, pulse_length_fs = 100, n_steps = 100, flag_plot_n = False, flag_plot_gvd = False, y_range_gvd = [0,0], flag_plot_pulse_length = True)
+#    pulse_length_function_wavelength_for(materials = ["caf2", "znse"], material_mms = [1.0, 2.0], pulse_length_fss = [100], plot_range_um = [3,7], print_for_um = [6], flag_plot = True, ax = 0)
 
     plt.show()
     
