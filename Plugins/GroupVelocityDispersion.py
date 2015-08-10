@@ -60,7 +60,7 @@ def calculate_gvd(range_L, n_steps, SC):
 
     # calculate the index of refraction over the defined range
     n_x = numpy.linspace(range_L[0], range_L[1], num = n_steps)
-    n_y = numpy.sqrt(E.Sellmeier(SC, n_x))
+    n_y = E.Sellmeier(SC, n_x)
     
     # calculate the derivatives
     [d1x, d1y] = numpy.array(M.derivative(n_x, n_y))
