@@ -5,6 +5,22 @@ The calculation of the index of refraction is done using the Sellmeier Equation,
 
 All wavelengths are in micron!
 
+The plotting function accept an axis ax. If ax == 0, a new plot will be instantiated. The plot is limited to that single call of the function. If you want to plot more things in a plot, then you need to create the figure and axis first and give the axis as input to the function. So:
+
+function(ax = 0)
+-> gives a plot
+
+function1(ax = 0)
+function2(ax = 0)
+-> gives two plots
+
+fig = plt.figure()
+ax = fig.add_subplot()
+function1(ax = ax)
+function1(ax = ax)
+-> Gives 1 plot with 2 lines. 
+
+
 SOURCES (for calculations):
 http://www.rp-photonics.com/chromatic_dispersion.html
 
@@ -390,9 +406,9 @@ if __name__ == "__main__":
         
 #     plot_range_um, range_um = check_wavelength_range(plot_range_um = plot_range_um, print_for_um = print_for_um)
 
-#     n_function_wavelength(material, plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = True, ax = 0)
+    n_function_wavelength(material, plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = True, ax = 0)
 
-#     n_function_wavelength(material = "baf2", plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = True, ax = ax)
+    n_function_wavelength(material = "baf2", plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = True, ax = 0)
 
 #     gvd_function_wavelength(material, plot_range_um = plot_range_um, print_for_um = print_for_um, flag_plot = True, ax = 0)
 
