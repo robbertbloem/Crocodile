@@ -103,16 +103,70 @@ def save_data_PE(path, base_filename, s = False, s_axis = False, r = False, r_ax
    
 
 
+def check_and_make_list(var, verbose = False):
+    """
+    numpy.loadtxt returns a 1 or more dimensional array. Here I make some sense from it. It also calculates the lengths of arrays. 
+    
+    if var is a python-list, return the list and the length
+    if var is an ndarray
+    
+    """
 
+    if verbose > 1:
+        print("pe_col.check_and_make_list:")
+        print(var)
+
+    if type(var) == "list":
+        n_var = len(var)
+    elif type(var) == numpy.ndarray:
+        n_var = numpy.shape(var)
+        if len(n_var) == 1:
+            n_var = n_var[0]
+    else:
+        var = numpy.array([var])
+        n_var = 1
+
+    return var, n_var 
  
 
 
+def find_LV_fileformat(base_folder, verbose = False):
+    """
+    Scans the directory for the LV_fileformat file. 
+    
+    INPUT:
+    - base_folder: folder with the measurement
+    
+    OUTPUT:
+    - fileformat_version, an integer
+    
+    
+    CHANGELOG:
+    20151028-RB: function uses regex
+    
+    """
+
+    fileformat_version = -1
+    
+    p = re.compile(r"LV_fileformat\.[0-9]*\Z")
+
+    for file in os.listdir(base_folder):
+        m = p.search(file)
+        if m != None:
+            fileformat_version = int(m.group()[14:])
+
+    if verbose > 1:
+        print("pe_col.find_LV_fileformat: %i" % fileformat_version)     
+
+    return fileformat_version
 
 
 
 
+if __name__ == '__main__':
 
-
+    pass
+#     find_LV_fileformat("")
 
 
 
