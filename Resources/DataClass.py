@@ -112,7 +112,9 @@ class dataclass(CT.ClassTools):
             self._time_stamp = "0" + self._time_stamp
         try:
             res = int(self._time_stamp)
-            if res >= 2400:
+            if len(self._time_stamp) == 4 and res >= 2400:
+                self.printWarning("time_stamp >= 2400. That's not an acceptable time.", inspect.stack())
+            elif len(self._time_stamp) == 6 and res >= 240000:
                 self.printWarning("time_stamp >= 2400. That's not an acceptable time.", inspect.stack())
         except ValueError:
             self.printWarning("time_stamp is not numerical. Please use 0000 or something.", inspect.stack())
