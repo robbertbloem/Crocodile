@@ -13,14 +13,16 @@ import Crocodile.Resources.Plotting as PL
 import Crocodile.Resources.Mathematics as MATH
 import Crocodile.Resources.IOMethods as IOM
 
+# import imp
+# imp.reload(DC)
 
 class pe(DC.dataclass):
     
-    def __init__(self, objectname, flag_verbose = False):
+    def __init__(self, objectname, measurements = 2, flag_verbose = False):
         
         self.verbose("New Pe.pe class", flag_verbose)
         
-        DC.dataclass.__init__(self, objectname, measurements = 2, dimensions = 3, flag_verbose = flag_verbose)
+        DC.dataclass.__init__(self, objectname, measurements = measurements, dimensions = 3, flag_verbose = flag_verbose)
 
 
 
