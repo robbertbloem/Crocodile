@@ -24,6 +24,7 @@ suite_list = [
     "Suite 1: Zeropad setters/getters",
     "Suite 2: LV file format",
     "Suite 3: find number of scans",
+    "Suite 4: find number of datastates",
 ]
 
 # add arguments
@@ -32,6 +33,7 @@ parser.add_argument("-r", "--reload", action = "store_true", help = "Reload modu
 parser.add_argument("-s1", "--skip1", action = "store_true", help = suite_list[0])
 parser.add_argument("-s2", "--skip2", action = "store_true", help = suite_list[1])
 parser.add_argument("-s3", "--skip3", action = "store_true", help = suite_list[2])
+parser.add_argument("-s4", "--skip4", action = "store_true", help = suite_list[3])
 
 # process
 args = parser.parse_args()
@@ -46,15 +48,117 @@ def execute(args):
 
     if args.skip1 == False:
         suite = unittest.TestLoader().loadTestsFromTestCase(Test_check_and_make_list)
-        unittest.TextTestRunner(verbosity=1).run(suite)  
-    elif args.skip2 == False:
+        unittest.TextTestRunner(verbosity=1).run(suite) 
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[0], True)
+        
+    if args.skip2 == False:
         suite = unittest.TestLoader().loadTestsFromTestCase(Test_find_LV_fileformat)
         unittest.TextTestRunner(verbosity=1).run(suite)  
-    elif args.skip3 == False:
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[1], True)
+        
+    if args.skip3 == False:
         suite = unittest.TestLoader().loadTestsFromTestCase(Test_find_number_of_scans)
         unittest.TextTestRunner(verbosity=1).run(suite)  
     else:
-        DEBUG.verbose("Skipping :" + suite_list[0], True)
+        DEBUG.verbose("Skipping: " + suite_list[2], True)
+        
+    if args.skip4 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_find_number_of_datastates)
+        unittest.TextTestRunner(verbosity=1).run(suite)  
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[3], True)
+        
+
+
+class Test_find_number_of_datastates(unittest.TestCase):
+    """
+
+    CHANGELOG:
+    20151103/RB: started the suite
+
+    """
+    #############
+    ### SETUP ###
+    #############
+    def setUp(self):
+        self.flag_verbose = args.verbose    
+
+    def test_individual_strings(self):
+        base_folder = ""
+        test_input = [
+            # simplest case
+            {"input": [            
+"azide_intensity_175815_count_ds0_sp0_sm0_de0_du0_0.csv",
+], 
+"result": 1, 
+"base_filename":"scan", 
+"extension":".csv", 
+"test": "equal"},
+            # fail test
+            {"input": [            
+"azide_intensity_175815_count_ds0_sp0_sm0_de0_du0_0.csv",
+], 
+"result": 2, 
+"base_filename":"scan", 
+"extension":".csv", 
+"test": "not equal"},
+            # simple case
+            {"input": [            
+"azide_intensity_175815_count_ds0_sp0_sm0_de0_du0_0.csv",
+"azide_intensity_175815_count_ds0_sp0_sm0_de0_du0_1.csv",
+"azide_intensity_175815_count_ds1_sp0_sm0_de0_du0_0.csv",
+"azide_intensity_175815_count_ds1_sp0_sm0_de0_du0_1.csv",
+"azide_intensity_175815_intensity_ds0_sp0_sm0_de0_du0_0.csv",
+"azide_intensity_175815_intensity_ds0_sp0_sm0_de0_du0_1.csv",
+"azide_intensity_175815_intensity_ds1_sp0_sm0_de0_du0_0.csv",
+"azide_intensity_175815_intensity_ds1_sp0_sm0_de0_du0_1.csv",
+], 
+"result": 2, 
+"base_filename":"scan", 
+"extension":".csv", 
+"test": "equal"},
+            # long filenames
+            {"input": [            
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_count_ds0_sp0_sm0_de0_du0_0.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_count_ds0_sp0_sm0_de0_du0_1.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_count_ds1_sp0_sm0_de0_du0_0.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_count_ds1_sp0_sm0_de0_du0_1.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_intensity_ds0_sp0_sm0_de0_du0_0.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_intensity_ds0_sp0_sm0_de0_du0_1.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_intensity_ds1_sp0_sm0_de0_du0_0.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_intensity_ds1_sp0_sm0_de0_du0_1.csv",
+], 
+"result": 2, 
+"base_filename":"scan", 
+"extension":".csv", 
+"test": "equal"},
+            # long filenames, higher numbers
+            {"input": [            
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_count_ds10_sp0_sm0_de0_du0_0.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_count_ds10_sp0_sm0_de0_du0_1.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_count_ds11_sp0_sm0_de0_du0_0.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_count_ds11_sp0_sm0_de0_du0_1.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_intensity_ds10_sp0_sm0_de0_du0_0.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_intensity_ds10_sp0_sm0_de0_du0_1.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_intensity_ds11_sp0_sm0_de0_du0_0.csv",
+"/Users/robbert/Desktop/20151006/azide_intensity_175815/azide_intensity_175815_intensity_ds11_sp0_sm0_de0_du0_1.csv",
+], 
+"result": 12, 
+"base_filename":"scan", 
+"extension":".csv", 
+"test": "equal"},
+        ]
+        
+        for i in range(len(test_input)):
+            res = IOM.find_number_of_datastates(base_folder = "", verbose = False, test_input = test_input[i]["input"])
+            if test_input[i]["test"] == "equal":
+                self.assertEqual(res, test_input[i]["result"])
+            elif test_input[i]["test"] == "not equal":
+                self.assertNotEqual(res, test_input[i]["result"])
+            else:
+                print("Invalid test")
 
 
 
@@ -92,7 +196,7 @@ class Test_find_number_of_scans(unittest.TestCase):
         ]
         
         for i in range(len(test_input)):
-            res = IOM.find_number_of_scans(base_filename = test_input[i]["base_filename"], extension = test_input[i]["extension"], verbose = False, test_input = test_input[i]["input"])
+            res = IOM.find_number_of_scans(base_folder = "", base_filename = test_input[i]["base_filename"], extension = test_input[i]["extension"], verbose = False, test_input = test_input[i]["input"])
             if test_input[i]["test"] == "equal":
                 self.assertEqual(res, test_input[i]["result"])
             elif test_input[i]["test"] == "not equal":

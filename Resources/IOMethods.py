@@ -101,9 +101,6 @@ def save_data_PE(path, base_filename, s = False, s_axis = False, r = False, r_ax
         path_and_filename = path + base_filename + "_r_w3.csv"
         numpy.savetxt(path_and_filename, r_axis[2], delimiter = ",")      
 
-   
-
-
 def check_and_make_list(var, verbose = False):
     """
     numpy.loadtxt returns a 1 or more dimensional array. Here I make some sense from it. It also calculates the lengths of arrays. 
@@ -129,8 +126,6 @@ def check_and_make_list(var, verbose = False):
 
     return var, n_var 
  
-
-
 def find_LV_fileformat(base_folder, verbose = False, test_input = False):
     """
     Scans the directory for the LV_fileformat file. 
@@ -169,8 +164,10 @@ def find_LV_fileformat(base_folder, verbose = False, test_input = False):
 
     return fileformat_version
 
-
-def find_number_of_scans(base_filename, extension, verbose = False, test_input = False):
+def find_number_of_scans(base_folder, base_filename, extension, verbose = False, test_input = False):
+    """
+    Looks for the last number in the file string. It will return the largest number + 1 (because we start at zero). 
+    """
 
     if extension[0] == ".":
         extension = "\\" + extension
@@ -203,6 +200,51 @@ def find_number_of_scans(base_filename, extension, verbose = False, test_input =
     n_scans += 1
 
     return n_scans
+
+def find_number_of_datastates(base_folder, verbose = False, test_input = False):
+
+    n_ds = -1
+    
+    s = r"_ds[0-9]*_"
+    p1 = re.compile(s)
+
+    if test_input == False:
+        files = os.listdir(base_folder)
+    else:
+        if type(test_input) == str:
+            files = [test_input]
+        elif type(test_input) == list:
+            files = test_input
+
+    for file in files:
+        m1 = p1.search(file)
+        if m1 != None:
+            temp = int(m1.group(0)[3:-1])
+            if temp > n_ds:
+                n_ds = temp
+    n_ds += 1 
+    return n_ds    
+
+def check_basename_extension_suffix(file_dict, extension, suffix, verbose):
+    """
+    Normalizes the basename, extension and suffix. 
+    """
+    
+    if extension[0] != ".":
+        extension = "." + extension
+
+    if basename[-1] != "_":
+        basename += "_"
+
+    if suffix[0] == "_":
+        suffix = suffix[1:]
+    
+    if suffix[-1] == "_":
+        suffix = suffix[:-1]
+        
+    return basename, extension, suffix
+
+
 
 
 
