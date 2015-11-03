@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 import inspect
 import time
+import os
 
 import numpy
 
@@ -43,7 +44,9 @@ class dataclass(CT.ClassTools):
             "date": "",
             "basename": "",
             "timestamp": "",
-            "path": ""
+            "base_folder": "",
+            "base_filename": "",
+            "extension": "",
         }
 
         # file stuff
@@ -51,6 +54,7 @@ class dataclass(CT.ClassTools):
         self._date = "" 
         self._basename = ""
         self._timestamp = ""
+        self._extension = ""
 
         # organizational stuff
         dimensions = 7
@@ -114,37 +118,83 @@ class dataclass(CT.ClassTools):
         return self._data_folder
     @data_folder.setter
     def data_folder(self, text):
+        if os.name == "posix":
+            if text[-1] != "/":
+                text += "/"
+        elif os.name == "nt":
+            if text[-2:] != "\\\\":
+                if text[-1] != "\\":
+                    text += r"\\\\"  
+                else:
+                    text += "\\"  
+        else:
+            print("unknown operating system")
+            
+        self._data_folder = text
         self._file_dict["data_folder"] = text
+        self.construct_file_paths()
 
     @property
     def date(self):
         return self._date   
     @date.setter
     def date(self, text):
+        self._date  = text
         self._file_dict["date"] = text
+        self.construct_file_paths()
         
     @property
     def basename(self):
         return self._basename
     @basename.setter
     def basename(self, text):
+        self._basename = text
         self._file_dict["basename"] = text
+        self.construct_file_paths()
 
     @property
     def timestamp(self):
         return self._timestamp
     @timestamp.setter
     def timestamp(self, text):
+        self._timestamp = text
         self._file_dict["timestamp"] = text
+        self.construct_file_paths()
 
-    def set_file_dict(self, data_folder, date, basename, timestamp):
-        self._file_dict = {
-            "data_folder": data_folder,
-            "date": date,
-            "basename": basename,
-            "timestamp": timestamp,
-            "path": ""
-        }       
+    @property
+    def extension(self):
+        return self._extension   
+    @date.setter
+    def extension(self, text):
+        if text[0] == ".":
+            text = text[1:]
+        self._extension = text
+        self._file_dict["extension"] = text
+        self.construct_file_paths()
+
+    def set_file_dict(self, data_folder, date, basename, timestamp, extension = "csv"):
+    
+        self.data_folder = data_folder
+        self.date = date
+        self.basename = basename
+        self.timestamp = timestamp
+        self.extension = extension
+
+        
+
+    def construct_file_paths(self):
+
+        if os.name == "posix":
+            sep = "/"
+        elif os.name == "nt":
+            sep = r"\\"
+        else:
+            print("unknown operating system")
+        
+        self._file_dict["base_folder"] = self._file_dict["data_folder"] + self._file_dict["date"] + sep + self._file_dict["basename"] + "_" + self._file_dict["timestamp"] + sep
+        
+        self._file_dict["base_filename"] = self._file_dict["base_folder"] + self._file_dict["basename"] + "_" + self._file_dict["timestamp"]
+      
 
 
     # comments
