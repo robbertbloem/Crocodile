@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 import inspect
 import re
+import os
 
 import numpy
 import matplotlib 
@@ -130,7 +131,7 @@ def check_and_make_list(var, verbose = False):
  
 
 
-def find_LV_fileformat(base_folder, verbose = False):
+def find_LV_fileformat(base_folder, verbose = False, test_input = False):
     """
     Scans the directory for the LV_fileformat file. 
     
@@ -150,7 +151,15 @@ def find_LV_fileformat(base_folder, verbose = False):
     
     p = re.compile(r"LV_fileformat\.[0-9]*\Z")
 
-    for file in os.listdir(base_folder):
+    if test_input == False:
+        files = os.listdir(base_folder)
+    else:
+        if type(test_input) == str:
+            files = [test_input]
+        elif type(test_input) == list:
+            files = test_input
+            
+    for file in files:
         m = p.search(file)
         if m != None:
             fileformat_version = int(m.group()[14:])
@@ -160,6 +169,40 @@ def find_LV_fileformat(base_folder, verbose = False):
 
     return fileformat_version
 
+
+def find_number_of_scans(base_filename, extension, verbose = False, test_input = False):
+
+    if extension[0] == ".":
+        extension = "\\" + extension
+    else:
+        extension = r"\\\." + extension
+
+    n_scans = -1
+    
+    s = base_filename + r"_[0-9]*" + extension + "\Z"
+    p1 = re.compile(s)
+    s = r"[0-9]*" + extension + "\Z"
+    p2 = re.compile(s)
+
+    if test_input == False:
+        files = os.listdir(base_folder)
+    else:
+        if type(test_input) == str:
+            files = [test_input]
+        elif type(test_input) == list:
+            files = test_input
+
+    for file in files:
+        m1 = p1.search(file)
+        if m1 != None:
+            m2 = p2.search(m1.group(0))
+            if m2 != None:
+                temp = int(m2.group(0)[:-(len(extension)-1)])
+                if temp > n_scans:
+                    n_scans = temp
+    n_scans += 1
+
+    return n_scans
 
 
 
