@@ -96,21 +96,21 @@ class Test_import_supporting_files_LV3(unittest.TestCase):
         self.file_dict_A = {
             "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
             "date": "20010101",
-            "basename": "azide_intensity",
+            "basename": "A",
             "timestamp": "123456",
             "extension": ".csv",
-            "base_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_intensity_123456/",
-            "base_filename": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_intensity_123456/azide_intensity_123456", 
+            "base_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/A_123456/",
+            "base_filename": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/A_123456/A_123456", 
         }
         
         self.file_dict_B = {
             "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
             "date": "20010101",
-            "basename": "azide",
+            "basename": "B",
             "timestamp": "234506",
             "extension": ".csv",
-            "base_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_intensity_234506/",
-            "base_filename": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_234506/azide_234506", 
+            "base_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/B_234506/",
+            "base_filename": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/B_234506/B_234506", 
         }
         
         self.fileformat = 3
@@ -157,6 +157,17 @@ class Test_import_supporting_files_LV3(unittest.TestCase):
         self.assertEqual(n_t1_bins, 855)
         self.assertEqual(n_t1_fs, 712)
         self.assertEqual(t1_zero_index, 143)        
+
+    def test_import_nspectra(self):
+        
+        n_spectra = IOM.import_nspectra(file_dict_A, self.fileformat, flag_verbose = self.flag_verbose)
+        self.assertEqual(n_spectra, 1)
+
+
+
+
+
+
 
 
 

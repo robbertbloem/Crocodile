@@ -305,7 +305,14 @@ def import_bins(file_dict, fileformat, flag_verbose = False):
 
     return t1_bins, t1_fs, bin_sign, n_t1_bins, n_t1_fs, t1_zero_index
 
-
+def import_nspectra(file_dict, fileformat, flag_verbose = False):
+    """
+    Import the number of spectra
+    """
+    suffix = "Nspectra"
+    data = import_file(file_dict, suffix, flag_verbose)
+    n_spectra, shape = check_and_make_list(data, flag_verbose)    
+    return int(n_spectra)
 
 if __name__ == '__main__':
 
