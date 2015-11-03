@@ -225,7 +225,7 @@ def find_number_of_datastates(base_folder, flag_verbose = False, test_input = Fa
     n_ds += 1 
     return n_ds    
 
-def check_basename_extension_suffix(file_dict, extension, suffix, flag_verbose):
+def check_basename_extension_suffix(file_dict, extension, suffix, flag_verbose = False):
     """
     Normalizes the basename, extension and suffix. 
     """
@@ -360,6 +360,62 @@ def import_wavelengths(file_dict, fileformat, flag_verbose = False):
     data = import_file(file_dict, suffix, flag_verbose)
     wl, n_wl = check_and_make_list(data, flag_verbose)     
     return wl, n_wl
+
+
+def import_slow_modulation(file_dict, fileformat, flag_verbose = False):
+    """
+    Import the slow modulation file.
+    
+    OUTPUT:
+    sm (2D ndarray): values 
+    sm_names (list): the names
+    n_sm (int): number of slow modulation states
+    """
+    filename = file_dict["base_filename"] + "_slowModulation" +  file_dict["extension"]
+    # read all lines and strip the newline character         
+    lines = [line.rstrip('\n') for line in open(filename)]
+    sm, sm_names, n_sm = extract_slow_modulation(lines)
+    return sm, sm_names, n_sm
+
+
+
+def extract_slow_modulation(lines, flag_verbose = False):     
+
+    n_sm = int(lines[0])
+    n_lines = len(lines)-1
+    sm = numpy.zeros((n_lines, n_sm))       
+    sm_names = [""] * n_lines # if we make this an ndarray, it will become a string
+
+    p = re.compile(r'\[|\]')
+    r = re.compile(r',')
+    q = re.compile(r':')
+    for _l in range(n_lines):
+        m = p.split(lines[_l+1])            
+        n = r.split(m[1])            
+        sm_names[_l] = q.split(m[0])[0]    
+        for _sm in range(n_sm):
+            if n[_sm] == "NaN":
+                sm[_l,_sm] = numpy.nan
+            else:
+                sm[_l,_sm] = int(n[_sm])  
+    
+    sm_names = numpy.array(sm_names)
+
+    idx = []
+    for _l in range(n_lines):
+        if not numpy.any(numpy.isnan(sm[_l])):
+            idx.append(_l)
+
+    if idx == []:
+        sm = numpy.array([[]]) 
+        sm_names = numpy.array([[]])
+    else:
+        sm = sm[idx,:] 
+        sm_names = sm_names[idx]       
+    
+    return sm, sm_names, n_sm
+
+
 
 if __name__ == '__main__':
 

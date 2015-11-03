@@ -26,6 +26,7 @@ suite_list = [
     "Suite 3: find number of scans",
     "Suite 4: find number of datastates",
     "Suite 5: import supporting files", 
+    "Suite 6: slow modulation", 
 ]
 
 # add arguments
@@ -36,6 +37,7 @@ parser.add_argument("-s2", "--skip2", action = "store_true", help = suite_list[1
 parser.add_argument("-s3", "--skip3", action = "store_true", help = suite_list[2])
 parser.add_argument("-s4", "--skip4", action = "store_true", help = suite_list[3])
 parser.add_argument("-s5", "--skip5", action = "store_true", help = suite_list[4])
+parser.add_argument("-s6", "--skip6", action = "store_true", help = suite_list[5])
 
 # process
 args = parser.parse_args()
@@ -77,6 +79,77 @@ def execute(args):
         unittest.TextTestRunner(verbosity=1).run(suite)  
     else:
         DEBUG.verbose("Skipping: " + suite_list[4], True)
+
+    if args.skip6 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_import_slowModulation)
+        unittest.TextTestRunner(verbosity=1).run(suite)  
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[5], True)
+
+
+class Test_import_slowModulation(unittest.TestCase):
+    """
+
+    CHANGELOG:
+    20151103/RB: started the suite
+
+    """
+    #############
+    ### SETUP ###
+    #############
+    def setUp(self):
+        
+        self.flag_verbose = args.verbose 
+        
+        self.file_dict_A = {
+            "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
+            "date": "20010101",
+            "basename": "A",
+            "timestamp": "123456",
+            "extension": ".csv",
+            "base_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/A_123456/",
+            "base_filename": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/A_123456/A_123456", 
+        }
+        
+        self.file_dict_B = {
+            "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
+            "date": "20010101",
+            "basename": "B",
+            "timestamp": "234506",
+            "extension": ".csv",
+            "base_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/B_234506/",
+            "base_filename": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/B_234506/B_234506", 
+        }
+        
+        self.fileformat = 3
+        
+
+    def test_import_slowModulation_A(self):
+        
+        sm, sm_names, n_sm = IOM.import_slow_modulation(self.file_dict_A, self.fileformat, flag_verbose = self.flag_verbose)
+
+        print(sm, sm_names, n_sm)
+        
+        self.assertEqual(sm, numpy.array([]))
+        self.assertEqual(sm_names, numpy.array([]))
+        self.assertEqual(n_sm, 1)
+
+        
+        
+        
+        
+#     def test_lines(self):
+#     
+#         tests = [
+#             {"input": ["1", "Mod A: [NaN]", "Mod B: [NaN]", "Mod C: [NaN]", "Spectrometer: [NaN]"], "sm":"", "sm_names":"", "n_sm":""}
+#             {"input": ["2", "Mod A: [NaN,NaN]", "Mod B: [0,1]", "Mod C: [NaN,NaN]", "Spectrometer: [NaN,NaN]"], "sm":"", "sm_names":"", "n_sm":""}
+#         ]
+#         
+#         for test in tests:
+#             sm, sm_names, n_sm = IOM.extract_slow_modulation(test["input"], flag_verbose = self.flag_verbose)
+#             self.assertEqual(sm, test["sm"])
+#             self.assertEqual(sm_names, test["sm_names"])
+#             self.assertEqual(n_sm, test["n_sm"])
 
 
 class Test_import_supporting_files_LV3(unittest.TestCase):
