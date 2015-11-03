@@ -158,14 +158,32 @@ class Test_import_supporting_files_LV3(unittest.TestCase):
         self.assertEqual(n_t1_fs, 712)
         self.assertEqual(t1_zero_index, 143)        
 
+
     def test_import_nspectra(self):
         
-        n_spectra = IOM.import_nspectra(file_dict_A, self.fileformat, flag_verbose = self.flag_verbose)
-        self.assertEqual(n_spectra, 1)
+        n_sp = IOM.import_nspectra(self.file_dict_A, self.fileformat, flag_verbose = self.flag_verbose)
+        self.assertEqual(n_sp, 1)
 
 
+    def test_import_ndatastates_1(self):
+        
+        n_ds = IOM.import_ndatastates(self.file_dict_A, self.fileformat, flag_verbose = self.flag_verbose)
+        self.assertEqual(n_ds, 1)
+        
 
-
+    def test_import_ndatastates_2(self):
+        
+        n_ds = IOM.import_ndatastates(self.file_dict_B, self.fileformat, flag_verbose = self.flag_verbose)
+        self.assertEqual(n_ds, 2)
+    
+    
+    def test_import_wavenumbers(self):
+        
+        w3_axis_wn, n_w3 = IOM.import_wavenumbers(self.file_dict_A, self.fileformat, flag_verbose = self.flag_verbose)
+        
+        self.assertEqual(n_w3, 32)
+        self.assertEqual(w3_axis_wn[0], 1969.110381)
+        self.assertEqual(w3_axis_wn[-1], 2144.561837)
 
 
 

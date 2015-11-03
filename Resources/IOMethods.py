@@ -314,6 +314,30 @@ def import_nspectra(file_dict, fileformat, flag_verbose = False):
     n_spectra, shape = check_and_make_list(data, flag_verbose)    
     return int(n_spectra)
 
+
+def import_ndatastates(file_dict, fileformat, flag_verbose = False):
+    """
+    Import the number of datastates
+    """
+    suffix = "Ndatastates"
+    data = import_file(file_dict, suffix, flag_verbose)
+    n_ds, shape = check_and_make_list(data, flag_verbose)      
+    return int(n_ds)
+
+
+def import_wavenumbers(file_dict, fileformat, flag_verbose = False):
+    """
+    Import the spectrometer axis
+    """
+    suffix = "wavenumbers"
+    data = import_file(file_dict, suffix, flag_verbose)
+    w3_axis_wn, n_w3 = check_and_make_list(data, flag_verbose)     
+    return w3_axis_wn, n_w3
+
+
+
+
+
 if __name__ == '__main__':
 
     pass
