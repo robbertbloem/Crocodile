@@ -101,7 +101,7 @@ def save_data_PE(path, base_filename, s = False, s_axis = False, r = False, r_ax
         path_and_filename = path + base_filename + "_r_w3.csv"
         numpy.savetxt(path_and_filename, r_axis[2], delimiter = ",")      
 
-def check_and_make_list(var, verbose = False):
+def check_and_make_list(var, flag_verbose = False):
     """
     numpy.loadtxt returns a 1 or more dimensional array. Here I make some sense from it. It also calculates the lengths of arrays. 
     
@@ -110,7 +110,7 @@ def check_and_make_list(var, verbose = False):
     
     """
 
-    if verbose > 1:
+    if flag_verbose:
         print("pe_col.check_and_make_list:")
         print(var)
 
@@ -126,7 +126,7 @@ def check_and_make_list(var, verbose = False):
 
     return var, n_var 
  
-def find_LV_fileformat(base_folder, verbose = False, test_input = False):
+def find_LV_fileformat(base_folder, flag_verbose = False, test_input = False):
     """
     Scans the directory for the LV_fileformat file. 
     
@@ -159,12 +159,12 @@ def find_LV_fileformat(base_folder, verbose = False, test_input = False):
         if m != None:
             fileformat_version = int(m.group()[14:])
 
-    if verbose > 1:
+    if flag_verbose:
         print("pe_col.find_LV_fileformat: %i" % fileformat_version)     
 
     return fileformat_version
 
-def find_number_of_scans(base_folder, base_filename, extension, verbose = False, test_input = False):
+def find_number_of_scans(base_folder, base_filename, extension, flag_verbose = False, test_input = False):
     """
     Looks for the last number in the file string. It will return the largest number + 1 (because we start at zero). 
     """
@@ -201,7 +201,7 @@ def find_number_of_scans(base_folder, base_filename, extension, verbose = False,
 
     return n_scans
 
-def find_number_of_datastates(base_folder, verbose = False, test_input = False):
+def find_number_of_datastates(base_folder, flag_verbose = False, test_input = False):
 
     n_ds = -1
     
@@ -225,7 +225,7 @@ def find_number_of_datastates(base_folder, verbose = False, test_input = False):
     n_ds += 1 
     return n_ds    
 
-def check_basename_extension_suffix(file_dict, extension, suffix, verbose):
+def check_basename_extension_suffix(file_dict, extension, suffix, flag_verbose):
     """
     Normalizes the basename, extension and suffix. 
     """
@@ -245,6 +245,65 @@ def check_basename_extension_suffix(file_dict, extension, suffix, verbose):
     return basename, extension, suffix
 
 
+def import_file(file_dict, suffix, flag_verbose = False):
+    """
+    This does the actual importing. It is very general and does no checking.
+    """
+
+#     basename, extension, suffix = check_basename_extension_suffix(basename, extension, suffix, verbose)
+
+    filename = file_dict["file_basename"] + suffix + file_dict["extension"]
+    
+    if flag_verbose:
+        print("IOMethods.import_file: %s" % filename)
+    
+    data = numpy.loadtxt(filename, delimiter = ",", ndmin = 1)
+
+    if flag_verbose:
+        print("pe_col.import_file: done")
+
+    return data  
+
+def import_bins(file_dict, fileformat, flag_verbose = False):
+    """
+    Import the bins. Column 0 are the bins, column 1 are the associated times. 
+    
+    The bins are actually boring: they start at 0 and continue to bin N-1. 
+    
+    OUTPUT:
+    t1_bins (1D ndarray): list with bins
+    t1_fs (1D ndarray): list with times
+    bin_sign (Boolean): The times can run in two directions: from low to high (bin_sign = False) or from high to low (bin_sign = True). In these scripts it is assumed that the time runs from low to high. When importing fast scans bin_sign should be checked and, when needed, the time axis should be reversed. 
+    n_t1_bins (int): number of bins 
+    n_t1_fs (int): number of steps where time >= 0
+    t1_zero_index: index of the bin where t1 = 0
+    
+    """
+
+    suffix = "bins"  
+    data = import_file(file_dict, suffix, flag_verbose)
+    data, shape = check_and_make_list(data, flag_verbose)
+
+    # extract the bins and the times
+    t1_bins = data[:,0]
+    t1_fs = data[:,1]
+    
+    # if the bins and times are opposite, reverse the time axis. 
+    # set bin_sign to True, reverse other time axes as well.
+    if t1_fs[0] > t1_fs[1]:
+        bin_sign = True
+        t1_fs = t1_fs[::-1]
+    else:
+        bin_sign = False
+
+    # bin where t1 = 0
+    t1_zero_index = numpy.where(t1_fs >= 0)[0][0]
+    
+    # length of bins and length 
+    n_t1_bins = len(t1_bins)
+    n_t1_fs = n_t1_bins - t1_zero_index
+
+    return t1_bins, t1_fs, bin_sign, n_t1_bins, n_t1_fs, t1_zero_index
 
 
 
