@@ -25,6 +25,7 @@ suite_list = [
     "Suite 2: LV file format",
     "Suite 3: find number of scans",
     "Suite 4: find number of datastates",
+    "Suite 5: import supporting files", 
 ]
 
 # add arguments
@@ -34,6 +35,7 @@ parser.add_argument("-s1", "--skip1", action = "store_true", help = suite_list[0
 parser.add_argument("-s2", "--skip2", action = "store_true", help = suite_list[1])
 parser.add_argument("-s3", "--skip3", action = "store_true", help = suite_list[2])
 parser.add_argument("-s4", "--skip4", action = "store_true", help = suite_list[3])
+parser.add_argument("-s5", "--skip5", action = "store_true", help = suite_list[4])
 
 # process
 args = parser.parse_args()
@@ -70,6 +72,92 @@ def execute(args):
     else:
         DEBUG.verbose("Skipping: " + suite_list[3], True)
         
+    if args.skip5 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_import_supporting_files_LV3)
+        unittest.TextTestRunner(verbosity=1).run(suite)  
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[4], True)
+
+
+class Test_import_supporting_files_LV3(unittest.TestCase):
+    """
+
+    CHANGELOG:
+    20151103/RB: started the suite
+
+    """
+    #############
+    ### SETUP ###
+    #############
+    def setUp(self):
+        
+        self.flag_verbose = args.verbose  
+
+        self.file_dict_A = {
+            "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
+            "date": "20010101",
+            "basename": "azide_intensity",
+            "timestamp": "123456",
+            "extension": ".csv",
+            "base_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_intensity_123456/",
+            "base_filename": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_intensity_123456/azide_intensity_123456", 
+        }
+        
+        self.file_dict_B = {
+            "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
+            "date": "20010101",
+            "basename": "azide",
+            "timestamp": "234506",
+            "extension": ".csv",
+            "base_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_intensity_234506/",
+            "base_filename": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_234506/azide_234506", 
+        }
+        
+        self.fileformat = 3
+        
+        
+    def test_import_bins(self):
+        """
+        Bins and times have the same direction
+        """
+        
+        t1_bins, t1_fs, bin_sign, n_t1_bins, n_t1_fs, t1_zero_index = IOM.import_bins(file_dict = self.file_dict_A, fileformat = self.fileformat, flag_verbose = self.flag_verbose)
+        
+        self.assertFalse(bin_sign)
+        
+        self.assertEqual(t1_bins[0], 0)
+        self.assertEqual(t1_bins[-1], 854)
+        self.assertEqual(numpy.shape(t1_bins)[0], 855)
+        
+        self.assertEqual(t1_fs[0], -301.843484)
+        self.assertEqual(t1_fs[-1], 1500.774246)
+        self.assertEqual(numpy.shape(t1_fs)[0], 855)
+        
+        self.assertEqual(n_t1_bins, 855)
+        self.assertEqual(n_t1_fs, 712)
+        self.assertEqual(t1_zero_index, 143)
+
+
+    def test_import_bins_inverted(self):
+        """
+        Bins and times have the opposite direction
+        """       
+        t1_bins, t1_fs, bin_sign, n_t1_bins, n_t1_fs, t1_zero_index = IOM.import_bins(file_dict = self.file_dict_B, fileformat = self.fileformat, flag_verbose = self.flag_verbose)
+        
+        self.assertTrue(bin_sign)
+        
+        self.assertEqual(t1_bins[0], 0)
+        self.assertEqual(t1_bins[-1], 854)
+        self.assertEqual(numpy.shape(t1_bins)[0], 855)
+        
+        self.assertEqual(t1_fs[0], -301.843484)
+        self.assertEqual(t1_fs[-1], 1500.774246)
+        self.assertEqual(numpy.shape(t1_fs)[0], 855)
+        
+        self.assertEqual(n_t1_bins, 855)
+        self.assertEqual(n_t1_fs, 712)
+        self.assertEqual(t1_zero_index, 143)        
+
 
 
 class Test_find_number_of_datastates(unittest.TestCase):

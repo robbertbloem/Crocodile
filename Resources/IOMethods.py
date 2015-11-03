@@ -252,7 +252,7 @@ def import_file(file_dict, suffix, flag_verbose = False):
 
 #     basename, extension, suffix = check_basename_extension_suffix(basename, extension, suffix, verbose)
 
-    filename = file_dict["file_basename"] + suffix + file_dict["extension"]
+    filename = file_dict["base_filename"] + "_" + suffix +  file_dict["extension"]
     
     if flag_verbose:
         print("IOMethods.import_file: %s" % filename)
