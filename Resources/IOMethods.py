@@ -334,9 +334,32 @@ def import_wavenumbers(file_dict, fileformat, flag_verbose = False):
     w3_axis_wn, n_w3 = check_and_make_list(data, flag_verbose)     
     return w3_axis_wn, n_w3
 
+def import_delays(file_dict, fileformat, flag_verbose = False):
+    """
+    Import the delays of the IR delay. 
+    """
+    suffix = "delays"
+    data = import_file(file_dict, suffix, flag_verbose)
+    delays, n_delays = check_and_make_list(data, flag_verbose)     
+    return delays, n_delays
 
+def import_nshots(file_dict, fileformat, flag_verbose = False):
+    """
+    Import the number of shots
+    """
+    suffix = "Nshots"
+    data = import_file(file_dict, suffix, flag_verbose)
+    n_shots, temp = check_and_make_list(data, flag_verbose)     
+    return int(n_shots)
 
-
+def import_wavelengths(file_dict, fileformat, flag_verbose = False):
+    """
+    The center wavelengths used in Scan Spectrum.
+    """
+    suffix = "wavelengths"
+    data = import_file(file_dict, suffix, flag_verbose)
+    wl, n_wl = check_and_make_list(data, flag_verbose)     
+    return wl, n_wl
 
 if __name__ == '__main__':
 

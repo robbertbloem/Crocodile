@@ -166,27 +166,56 @@ class Test_import_supporting_files_LV3(unittest.TestCase):
 
 
     def test_import_ndatastates_1(self):
-        
+        """
+        1 datastate
+        """
         n_ds = IOM.import_ndatastates(self.file_dict_A, self.fileformat, flag_verbose = self.flag_verbose)
         self.assertEqual(n_ds, 1)
         
 
     def test_import_ndatastates_2(self):
-        
+        """
+        2 datastates
+        """
         n_ds = IOM.import_ndatastates(self.file_dict_B, self.fileformat, flag_verbose = self.flag_verbose)
         self.assertEqual(n_ds, 2)
     
     
     def test_import_wavenumbers(self):
-        
         w3_axis_wn, n_w3 = IOM.import_wavenumbers(self.file_dict_A, self.fileformat, flag_verbose = self.flag_verbose)
-        
         self.assertEqual(n_w3, 32)
         self.assertEqual(w3_axis_wn[0], 1969.110381)
         self.assertEqual(w3_axis_wn[-1], 2144.561837)
 
 
+    def test_import_delays_A(self):    
+        """
+        Multiple delays
+        """
+        de, n_de = IOM.import_delays(self.file_dict_A, self.fileformat, flag_verbose = self.flag_verbose)
+        self.assertEqual(n_de, 5)
+        self.assertEqual(de[0], 0)
+        self.assertEqual(de[-1], 400)
 
+    def test_import_delays_B(self):  
+        """
+        Single delay
+        """
+        de, n_de = IOM.import_delays(self.file_dict_B, self.fileformat, flag_verbose = self.flag_verbose)
+        self.assertEqual(n_de, 1)
+        self.assertEqual(de[0], 300)
+        self.assertEqual(de[-1], 300)
+
+
+    def test_import_wavelengths(self):
+        wl, n_wl = IOM.import_wavelengths(self.file_dict_A, self.fileformat, flag_verbose = self.flag_verbose)    
+        self.assertEqual(n_wl, 32)
+        self.assertEqual(wl[0], 5078.435469)
+        self.assertEqual(wl[-1], 4662.957173)
+
+    def test_import_nshots(self):
+        n_sh = IOM.import_nshots(self.file_dict_A, self.fileformat, flag_verbose = self.flag_verbose)
+        self.assertEqual(n_sh, 100)
 
 
 class Test_find_number_of_datastates(unittest.TestCase):
@@ -269,7 +298,7 @@ class Test_find_number_of_datastates(unittest.TestCase):
         ]
         
         for i in range(len(test_input)):
-            res = IOM.find_number_of_datastates(base_folder = "", verbose = False, test_input = test_input[i]["input"])
+            res = IOM.find_number_of_datastates(base_folder = "", flag_verbose = self.flag_verbose, test_input = test_input[i]["input"])
             if test_input[i]["test"] == "equal":
                 self.assertEqual(res, test_input[i]["result"])
             elif test_input[i]["test"] == "not equal":
@@ -313,7 +342,7 @@ class Test_find_number_of_scans(unittest.TestCase):
         ]
         
         for i in range(len(test_input)):
-            res = IOM.find_number_of_scans(base_folder = "", base_filename = test_input[i]["base_filename"], extension = test_input[i]["extension"], verbose = False, test_input = test_input[i]["input"])
+            res = IOM.find_number_of_scans(base_folder = "", base_filename = test_input[i]["base_filename"], extension = test_input[i]["extension"], flag_verbose = self.flag_verbose, test_input = test_input[i]["input"])
             if test_input[i]["test"] == "equal":
                 self.assertEqual(res, test_input[i]["result"])
             elif test_input[i]["test"] == "not equal":
@@ -348,7 +377,7 @@ class Test_find_LV_fileformat(unittest.TestCase):
         ]
         
         for i in range(len(test_input)):
-            res = IOM.find_LV_fileformat(base_folder, verbose = False, test_input = test_input[i]["input"])
+            res = IOM.find_LV_fileformat(base_folder, flag_verbose = self.flag_verbose, test_input = test_input[i]["input"])
             if test_input[i]["test"] == "equal":
                 self.assertEqual(res, test_input[i]["result"])
             elif test_input[i]["test"] == "not equal":
@@ -364,7 +393,7 @@ class Test_find_LV_fileformat(unittest.TestCase):
         ]
         
         for i in range(len(test_input)):
-            res = IOM.find_LV_fileformat(base_folder, verbose = False, test_input = test_input[i]["input"])
+            res = IOM.find_LV_fileformat(base_folder, flag_verbose = self.flag_verbose, test_input = test_input[i]["input"])
             if test_input[i]["test"] == "equal":
                 self.assertEqual(res, test_input[i]["result"])
             elif test_input[i]["test"] == "not equal":
@@ -392,7 +421,7 @@ class Test_check_and_make_list(unittest.TestCase):
         """  
         n_var_in = (4,8)
         var_in = numpy.zeros(n_var_in)
-        var_out, n_var_out = IOM.check_and_make_list(var_in, verbose = self.flag_verbose)        
+        var_out, n_var_out = IOM.check_and_make_list(var_in, flag_verbose = self.flag_verbose)        
         self.assertEqual(n_var_in, n_var_out)
         res = numpy.all(var_in == var_out)
         self.assertTrue(res)
@@ -403,7 +432,7 @@ class Test_check_and_make_list(unittest.TestCase):
         """  
         n_var_in = (4)
         var_in = numpy.zeros(n_var_in)
-        var_out, n_var_out = IOM.check_and_make_list(var_in, verbose = self.flag_verbose)      
+        var_out, n_var_out = IOM.check_and_make_list(var_in, flag_verbose = self.flag_verbose)      
         self.assertEqual(n_var_in, n_var_out)
         res = numpy.all(var_in == var_out)
         self.assertTrue(res)
@@ -414,7 +443,7 @@ class Test_check_and_make_list(unittest.TestCase):
         """  
         n_var_in = (4,1)
         var_in = numpy.zeros(n_var_in)
-        var_out, n_var_out = IOM.check_and_make_list(var_in, verbose = self.flag_verbose)    
+        var_out, n_var_out = IOM.check_and_make_list(var_in, flag_verbose = self.flag_verbose)    
         self.assertEqual(n_var_in, n_var_out)
         res = numpy.all(var_in == var_out)
         self.assertTrue(res)
@@ -425,7 +454,7 @@ class Test_check_and_make_list(unittest.TestCase):
         """  
         n_var_in = (1,4)
         var_in = numpy.zeros(n_var_in)
-        var_out, n_var_out = IOM.check_and_make_list(var_in, verbose = self.flag_verbose)      
+        var_out, n_var_out = IOM.check_and_make_list(var_in, flag_verbose = self.flag_verbose)      
         self.assertEqual(n_var_in, n_var_out)
         res = numpy.all(var_in == var_out)
         self.assertTrue(res)
