@@ -109,7 +109,20 @@ class Test_of_importing(unittest.TestCase):
         objectname = "test C"      
         self.C = PC.pe_col(objectname, flag_verbose = self.flag_verbose)
         self.C.set_file_info(self.file_dict_C["data_folder"], self.file_dict_C["date"], self.file_dict_C["basename"], self.file_dict_C["timestamp"])
-       
+
+        self.file_dict_D= {
+            "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
+            "date": "20010101",
+            "basename": "azide_intensity",
+            "timestamp": "175321",
+            "extension": ".csv",
+            "base_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_intensity_175321",
+            "base_filename": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_intensity_175321/azide_intensity_175321", 
+        }       
+        objectname = "test D"      
+        self.D = PC.pe_col(objectname, flag_verbose = self.flag_verbose)
+        self.D.set_file_info(self.file_dict_D["data_folder"], self.file_dict_D["date"], self.file_dict_D["basename"], self.file_dict_D["timestamp"])
+
 #         print(self.A)
 
 
@@ -150,11 +163,26 @@ class Test_of_importing(unittest.TestCase):
         """
         When the file_dict is set, importing should return True
         """        
-        res = self.C.import_data(import_temp_scans = True)   
-        print(self.C)    
+        res = self.C.import_data(import_temp_scans = False) 
+        self.C.b_to_r()
+#         self.C.calculate_phase()
+          
+#         print(self.C)    
         print(numpy.shape(self.C.r))
         self.assertTrue(res)
 
+
+    def test_importing_D(self):
+        """
+        When the file_dict is set, importing should return True
+        """        
+        res = self.D.import_data(import_temp_scans = False) 
+        self.D.b_to_r()
+#         self.D.calculate_phase()
+          
+#         print(self.D)    
+        print(numpy.shape(self.D.r))
+        self.assertTrue(res)
 
 class Test_of_init(unittest.TestCase):
     """
