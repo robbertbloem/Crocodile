@@ -37,20 +37,36 @@ class pe_col(DCC.dataclass):
         self.set_file_dict(data_folder, date, basename, timestamp)    
 
 
+    def import_data(self):
+        """
+        This method splits up file importing for supporting files and measurement files. It first finds the file format file. It will use this to test if file_dict is correct. 
+        """
+    
+        if self._file_dict["base_folder"] == "" or self._file_dict["base_filename"] == "":
+            self.printError("No file information set.", inspect.stack()) 
+            return False   
 
+        try: 
+            self.file_format = IOM.find_LV_fileformat(
+                base_folder = self._file_dict["base_folder"], 
+                flag_verbose = self.flag_verbose
+            )   
+            if self.file_format == -1:  
+                self.printError("File_format file found, but was not able to parse it.", inspect.stack()) 
+                return False  
+        except FileNotFoundError:
+            self.printError("File_format file not found.", inspect.stack()) 
+            return False 
+             
 
-#         PE.pe.__init__(self, objectname, measurements = 1, flag_verbose = flag_verbose)
-
-#         self.time_stamp = timestamp 
-# 
-#         if MacOSX:
-#             self.basename = base_folder + date + "/" + base_filename + "_" + timestamp + "/" + base_filename + "_" + timestamp
-#         else:
-#             self.basename = base_folder + date + "\\" + base_filename + "_" + timestamp + "\\" + base_filename + "_" + timestamp
-#         
-#         
-#         
-# 
-#     
-#     
+   
+        self.import_supporting_data()
         
+        return True  
+
+
+
+    def import_supporting_data(self):
+        
+        w3_axis_wn, n_w3 = IOM.import_wavenumbers(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+  
