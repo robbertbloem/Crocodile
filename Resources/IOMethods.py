@@ -176,7 +176,8 @@ def find_number_of_scans(base_folder, base_filename, extension, flag_verbose = F
 
     n_scans = -1
     
-    s = base_filename + r"_[0-9]*" + extension + "\Z"
+#     s = base_filename + 
+    s = r"_[0-9]*" + extension + "\Z"
     p1 = re.compile(s)
     s = r"[0-9]*" + extension + "\Z"
     p2 = re.compile(s)
@@ -197,7 +198,11 @@ def find_number_of_scans(base_folder, base_filename, extension, flag_verbose = F
                 temp = int(m2.group(0)[:-(len(extension)-1)])
                 if temp > n_scans:
                     n_scans = temp
+
     n_scans += 1
+
+    if flag_verbose:    
+        print("IOMethods.find_number_of_scans: number of scans found: %i" % n_scans)
 
     return n_scans
 
@@ -360,6 +365,22 @@ def import_wavelengths(file_dict, fileformat, flag_verbose = False):
     data = import_file(file_dict, suffix, flag_verbose)
     wl, n_wl = check_and_make_list(data, flag_verbose)     
     return wl, n_wl
+
+def import_spectraAndDatastates(file_dict, fileformat, flag_verbose = False):
+    
+    suffix = "spectraAndDatastates"
+    spds = import_file(file_dict, suffix, flag_verbose)
+#     self.spds = self.import_file(suffix = "_spectraAndDatastates")   
+    
+    # we want it to be a 2D array
+    temp = numpy.shape(spds)
+    if len(temp) == 1:
+        spds = numpy.array([spds])
+
+    n_sp = len(numpy.unique(spds[:,0]))
+    n_ds = len(numpy.unique(spds[:,1]))
+
+    return spds, n_sp, n_ds
 
 
 def import_slow_modulation(file_dict, fileformat, flag_verbose = False):
