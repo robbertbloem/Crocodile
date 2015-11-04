@@ -26,19 +26,46 @@ class dataclass(CT.ClassTools):
         - objectname: the name
         - dimensions: the number of axes. Linear/2D/3D = 1/2/3. If something is measured in frequency and time (certain pump-probe) the dimension is also 2.
         - measurements: number of diagrams. Is 1 for everything except 2D-PE (=2) or 3D (=4?)
-
+        
+        
+        REMARKS:
+        
+        There are 4 stages for the data:
+        b: bins, measurement not yet divided by count ("save as intensity")
+        r: response ("save as signal" or b/count)
+        f: fourier transformed
+        s: spectra    
+        
+        As in LabVIEW, there are 7 dimensions:
+        0. pi: pixels
+        1. sh/bi: shots or bins, for 2D measurements always bins
+        2. ds: datastates
+        3. sp: spectra
+        4. sm: slow modulation
+        5. de: delays
+        6. du: dummies
+        7. sc: scans
+        
+        Every stage has a some data:
+        no suffix: the data, 7D 
+        _count is the bin count, 6D (pixels are missing)
+        _axes are the axes, 7D
+        _intf is the interferogram, 7D
+        
         CHANGELOG:
         20130131/RB: cleaned up version from croc. The specific experimental details have been moved to their respective classes. 
         
         """
         
         self.verbose("New dataclass", flag_verbose)
+        self.flag_verbose = flag_verbose
         
         self.obj_id = objectname
         self.sub_type = ""
         
         self.objectname = objectname
 
+        # file stuff
         self._file_dict = {
             "data_folder": "",
             "date": "",
@@ -49,12 +76,15 @@ class dataclass(CT.ClassTools):
             "extension": "",
         }
 
-        # file stuff
+        # this allows us to use getter/setter methods
         self._data_folder = ""
         self._date = "" 
         self._basename = ""
         self._timestamp = ""
         self._extension = ""
+        
+        self.file_format = -1
+        self.measuremnt_type = ""
 
         # organizational stuff
         dimensions = 7
@@ -63,38 +93,25 @@ class dataclass(CT.ClassTools):
         self.dimensions = dimensions
         self.measurements = measurements    
 
-        # data
-        # b: bins
-        # r: response, time domain
-        # f: fourier transformed
-        # s: spectra     
-        # _count is the bin count
-        # _axis is the axes   
+
         
-        self.b = [0] * measurements
-        self.b_axis = [0] * dimensions
-        self.b_count = [0] * measurements
+        self.b = False
+        self.b_axes = False
+        self.b_count = False
+        self.b_intf = False
         
-        self.r = [0] * measurements       
-        self.r_axis = [0] * dimensions    
-
-        self.f = [0] * measurements 
-        self.f_axis = [0] * dimensions  
-
-        self.s = [0]                    
-        self.s_axis = [0] * dimensions    
-
-        # _units: cm-1, fs etc.
-        # _resolution: _axis[i] - _axis[i-1]
-        self.r_units = [0] * dimensions
-        self.r_resolution = [0] * measurements 
-
-        self.s_units = [0] * dimensions
-        self.s_resolution = [0] * dimensions   
+        self.r = False
+        self.r_axes = False
+        self.r_intf = False
+        self.r_units = False
         
-        # correct spectrometer inaccuracies
-        self.r_correction = [0] * dimensions  
-        self.r_correction_applied = [0] * dimensions
+        self.f = False
+        self.f_axes = False
+        self.f_intf = False
+
+        self.s = False
+        self.s_axes = False
+        self.s_units = False
 
         self.n_scans = 0
 
@@ -103,6 +120,7 @@ class dataclass(CT.ClassTools):
         self._zeropad_to = None
         self._phase_degrees = None         
         self.undersampling = False
+
         self._comment = ""
 
     # file stuff
@@ -166,8 +184,8 @@ class dataclass(CT.ClassTools):
         return self._extension   
     @date.setter
     def extension(self, text):
-        if text[0] == ".":
-            text = text[1:]
+        if text[0] != ".":
+            text = "." + text
         self._extension = text
         self._file_dict["extension"] = text
         self.construct_file_paths()
