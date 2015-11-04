@@ -25,14 +25,19 @@ class pe_col(DCC.dataclass):
     
     """
 
-    def __init__(self, objectname, base_folder, date, base_filename, timestamp, MacOSX, flag_verbose = False):
+    def __init__(self, objectname, flag_verbose = False):
 
         self.verbose("New pe_col class", flag_verbose)
     
         DCC.dataclass.__init__(self, objectname = objectname, flag_verbose = flag_verbose)
 
 
-#         set_file_dict(data_folder, date, basename, timestamp):      
+    def set_file_info(self, data_folder, date, basename, timestamp):
+    
+        self.set_file_dict(data_folder, date, basename, timestamp)    
+
+
+
 
 #         PE.pe.__init__(self, objectname, measurements = 1, flag_verbose = flag_verbose)
 
