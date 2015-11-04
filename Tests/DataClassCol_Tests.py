@@ -108,7 +108,6 @@ class Test_setting_file_stuff(unittest.TestCase):
             x.timestamp = test_input[i]["timestamp"]
 
             res = x._file_dict["base_folder"]
-            print(res)
             if test_input[i]["test"] == "equal":
                 self.assertEqual(res, test_input[i]["res_base_folder"])
             elif test_input[i]["test"] == "not equal":
@@ -117,7 +116,6 @@ class Test_setting_file_stuff(unittest.TestCase):
                 print("Invalid test")        
 
             res = x._file_dict["base_filename"]
-            print(res)
             if test_input[i]["test"] == "equal":
                 self.assertEqual(res, test_input[i]["res_base_filename"])
             elif test_input[i]["test"] == "not equal":
