@@ -280,7 +280,7 @@ class pe_col(DCC.dataclass):
                                             count[self.ds[ds]] += 1
             
             
-                                b_intf_temp = temp_intf / (count[0] + count[1])
+                                b_intf_temp[bi, 0, sp, sm, de, du, sc]  = temp_intf / (count[0] + count[1])
             
                                 if count[0] > 0 and count[1] > 0:
                                     b_temp[:, bi, 0, sp, sm, de, du, sc] = (temp[:, 0] / count[0]) / (temp[:, 1] / count[1])     
@@ -292,140 +292,19 @@ class pe_col(DCC.dataclass):
                                     pass                                                
 
             self.r = b_temp[:,self.t1_zero_index:,:,:,:,:,:,:]
-
+            self.r_intf = b_intf_temp[:,:,:,:,:,:,:]
+            
 
         else:
             self.r = self.b[:,self.t1_zero_index:,:,:,:,:,:,:]
+            self.r_intf = self.b_intf[:,:,:,:,:,:,:]
         
         print(numpy.shape(self.r))
 
 
 
 
-       
-#         if self.measurement_type == "signal":
-#             self.printWarning("You already have the signal. This function is not needed.", inspect.stack())
-#             return False
-#        
-#         # initialize the data structures 
-#         r = numpy.zeros((self.n_pixels, self.n_t1, self.n_sp, self.n_sm, self.n_t2, self.n_du))     
-#         intf = numpy.zeros((self.n_t1, self.n_sp, self.n_sm, self.n_t2, self.n_du))  
-# 
-#         # decide what to do with the datastates
-#         ds_val = numpy.zeros(self.n_ds)
-#         for ds in range(self.n_ds):
-#             if self.spds[ds,1] == -1:
-#                 ds_val[ds] = 1
-#         print(ds_val)            
-# 
-#         for sm in range(self.n_sm):
-#             for de in range(self.n_t2): 
-#                 for du in range(self.n_du):
-# 
-#                     for sp in range(self.n_sp):
-#                         for bi in range(self.n_t1): 
-#                         
-#                             temp = numpy.zeros((self.n_pixels, 2))
-#                             temp_intf = 0
-#                             count = numpy.zeros((2))
-#                             
-#                             for ds in range(self.n_ds):
-#                                   
-#                                 if self.count[bi,ds,sp,sm,de,du] != 0:     
-#     
-#                                     temp[:, ds_val[ds]] += self.r[:,bi,2*ds,sp,sm,de,du] / self.r[:,bi,2*ds+1,sp,sm,de,du]
-#                                     count[ds_val[ds]] += 1
-#                                     
-#                                     temp_intf += self.intf[bi,ds,sp,sm,de,du] / self.count[bi,ds,sp,sm,de,du]
-#                                     
-#                             intf[bi,sp,sm,de,du] = temp_intf / (count[0] + count[1])
-#                             
-#                             if count[0] > 0 and count[1] > 0:
-#                                 r[:,bi,sp,sm,de,du] = (temp[:, 0] / count[0]) / (temp[:, 1] / count[1])     
-#                             elif count[0] == 0 and count[1] > 0:
-#                                 r[:,bi,sp,sm,de,du] = 1 / (temp[:, 1] / count[1]) 
-#                             elif count[0] > 0 and count[1] == 0:
-#                                 r[:,bi,sp,sm,de,du] = (temp[:, 0] / count[0])  
-#                             else:  
-#                                 pass        
-# 
-#         self.r = r
-#         self.intf = intf
 
-
-# 
-# 
-#     def find_phase(self, f, w_axis, n_points, i_range = [0,-1]):
-#         """
-#         This function finds the phase. It uses two tricks.
-#         
-#         The user can set the number of points used to calculate the phase. 
-#         
-#         1. Finding peaks
-#         I find the index of the maximum of the real values. If the measurement has a lot of problems there may be false peaks. 
-#         
-#         - For an odd n_points, I simply take the values to the left and right. So for n_points = 5 and a maximum at index 100, I use indices [98,99,100,101,102]. 
-#         - For an even n_points, I look at the value of the neighboring datapoints. I place the center between the maximum and the highest of the two neighbors. So for y=[3,1,2,5,4,3] and n_points = 2, I use indices [3,4].
-#         
-#         Comparison with LabView: LabView can find peaks in between indices, at 'index' 111.3 for example (it doesn't consider the x-axis indices).
-#         
-#         2. Handling angle around 180 degrees. 
-#         The angle in numpy is limited from -180 to 180 degrees. That is a problem when the angles are [-175, -179, 181]. I first check if all individual elements of the selection are between -135 and +135 degrees. If so, there shouldn't be a problem. If not, I phase shift the fourier-array, calculate  the angles again and then subtract the phase shift again. 
-#         
-#         Comparison with LabView: LabView can unpack the angle so that it is not limited to +/- 180 degrees. 
-#         
-#         """
-#         
-#         y = numpy.real(f)
-#         i_max = numpy.argmax(y[i_range[0]:i_range[1]])
-#         idx = numpy.arange(i_max, i_max + n_points)
-#         
-#         i_max += i_range[0]
-#         
-#         if n_points % 2 == 0:        
-#             if y[i_max-1] > y[i_max+1]:
-#                 idx -= (n_points/2)
-#             else:
-#                 idx -= (n_points/2 - 1)           
-#         else:
-#             idx -= int(n_points/2)
-#         
-#         idx += i_range[0]
-# 
-# 
-# #         if False:
-# #             x = (180 - 47) * numpy.pi / 180 #####
-# #             f = f * numpy.exp(1j*x)#####
-# # 
-# #         if False:
-# #             x = (90 - 47) * numpy.pi / 180 #####
-# #             f = f * numpy.exp(1j*x)#####
-# # 
-# #         if False:
-# #             x = (270 - 47) * numpy.pi / 180 #####
-# #             f = f * numpy.exp(1j*x)#####
-# #             
-# #         if False:
-# #             x = (360 - 47) * numpy.pi / 180 #####
-# #             f = f * numpy.exp(1j*x)#####
-# 
-#         angle = numpy.angle(f)
-#         check_angle = numpy.angle(f * numpy.exp(1j*numpy.pi/2))
-# 
-#         if numpy.all(angle[idx] > -3*numpy.pi/4) and numpy.all(angle[idx] < 3*numpy.pi/4):
-#             self.phase_rad = numpy.mean(angle[idx])
-#         else:
-#             self.phase_rad = numpy.mean(check_angle[idx]) - numpy.pi/2
-#         
-# #         print(angle[idx] * 180 / numpy.pi)
-# #         print(check_angle[idx] * 180 / numpy.pi)
-# 
-#         print("Phase in degrees: %.1f" % (self.phase_rad * 180 / numpy.pi))
-# 
-# #         plt.plot(w_axis, angle)
-# #         plt.plot(w_axis[idx], angle[idx], lw = 2)
-# #         plt.show()
-# 
 
 
     def calculate_phase(self, n_points = 5, w_range = [0,-1]):
@@ -459,28 +338,86 @@ class pe_col(DCC.dataclass):
             i_range[1] = numpy.where(w_axis > w_range[1])[0][0]      
             self.verbose("calculate_phase: peak searching between indices %i and %i (%.1f and %.1f cm-1)" % (i_range[0], i_range[1], w_axis[i_range[0]], w_axis[i_range[1]]), self.flag_verbose)
 
-
-            
-#         for ds in range(self.b_n[2]):    
-#             for sp in range(self.b_n[3]):
-#                 for sm in range(self.b_n[4]):
-#                     for de in range(self.b_n[5]): 
-#                         for du in range(self.b_n[6]):
-#                             for sc in range(self.b_n[7]):   
+        r_intf = numpy.zeros(self.r_n[1])
+        for bi in range(self.r_n[1]): 
+            r_intf[bi] = numpy.mean(self.r_intf[bi,:,:,:,:,:,:])
+        r_intf = numpy.roll(r_intf, -self.t1_zero_index)
+        f = numpy.fft.fft(r_intf)
+        f = f[:N_bins_half] 
         
-#         
-#         for sp in range(self.n_sp):
-#             for sm in range(self.n_sm):
-#                 for de in range(self.n_t2): 
-#                     for du in range(self.n_du):
-#                         temp = self.intf[:,sp,sm,de,du]
-#                         temp -= numpy.mean(temp)       
-#                         temp = numpy.roll(temp, -index_zero_bin)
-#                         f = numpy.fft.fft(temp)
-#                         f = f[:N_bins_half]
-#                         
-#                         self.find_phase(f, w_axis, n_points, i_range)
+        self.find_phase(f, w_axis, n_points, i_range)   
+        
+
+
+    def find_phase(self, f, w_axis, n_points, i_range = [0,-1]):
+        """
+        This function finds the phase. It uses two tricks.
+        
+        The user can set the number of points used to calculate the phase. 
+        
+        1. Finding peaks
+        I find the index of the maximum of the real values. If the measurement has a lot of problems there may be false peaks. 
+        
+        - For an odd n_points, I simply take the values to the left and right. So for n_points = 5 and a maximum at index 100, I use indices [98,99,100,101,102]. 
+        - For an even n_points, I look at the value of the neighboring datapoints. I place the center between the maximum and the highest of the two neighbors. So for y=[3,1,2,5,4,3] and n_points = 2, I use indices [3,4].
+        
+        Comparison with LabView: LabView can find peaks in between indices, at 'index' 111.3 for example (it doesn't consider the x-axis indices).
+        
+        2. Handling angle around 180 degrees. 
+        The angle in numpy is limited from -180 to 180 degrees. That is a problem when the angles are [-175, -179, 181]. I first check if all individual elements of the selection are between -135 and +135 degrees. If so, there shouldn't be a problem. If not, I phase shift the fourier-array, calculate  the angles again and then subtract the phase shift again. 
+        
+        Comparison with LabView: LabView can unpack the angle so that it is not limited to +/- 180 degrees. 
+        
+        """
+        
+        y = numpy.real(f)
+        i_max = numpy.argmax(y[i_range[0]:i_range[1]])
+        idx = numpy.arange(i_max, i_max + n_points)
+        
+        i_max += i_range[0]
+        
+        if n_points % 2 == 0:        
+            if y[i_max-1] > y[i_max+1]:
+                idx -= (n_points/2)
+            else:
+                idx -= (n_points/2 - 1)           
+        else:
+            idx -= int(n_points/2)
+        
+        idx += i_range[0]
+
+#         if False:
+#             x = (180 - 47) * numpy.pi / 180 #####
+#             f = f * numpy.exp(1j*x)#####
 # 
+#         if False:
+#             x = (90 - 47) * numpy.pi / 180 #####
+#             f = f * numpy.exp(1j*x)#####
+# 
+#         if False:
+#             x = (270 - 47) * numpy.pi / 180 #####
+#             f = f * numpy.exp(1j*x)#####
+#             
+#         if False:
+#             x = (360 - 47) * numpy.pi / 180 #####
+#             f = f * numpy.exp(1j*x)#####
+
+        angle = numpy.angle(f)
+        check_angle = numpy.angle(f * numpy.exp(1j*numpy.pi/2))
+
+        if numpy.all(angle[idx] > -3*numpy.pi/4) and numpy.all(angle[idx] < 3*numpy.pi/4):
+            self.phase_rad = numpy.mean(angle[idx])
+        else:
+            self.phase_rad = numpy.mean(check_angle[idx]) - numpy.pi/2
+        
+#         print(angle[idx] * 180 / numpy.pi)
+#         print(check_angle[idx] * 180 / numpy.pi)
+
+        print("Phase in degrees: %.1f" % (self.phase_rad * 180 / numpy.pi))
+
+#         plt.plot(w_axis, angle)
+#         plt.plot(w_axis[idx], angle[idx], lw = 2)
+#         plt.show()
 
 
 
