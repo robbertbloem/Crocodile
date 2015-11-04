@@ -96,7 +96,20 @@ class Test_of_importing(unittest.TestCase):
         objectname = "test B"      
         self.B = PC.pe_col(objectname, flag_verbose = self.flag_verbose)
         self.B.set_file_info(self.file_dict_B["data_folder"], self.file_dict_B["date"], self.file_dict_B["basename"], self.file_dict_B["timestamp"])
-        
+
+        self.file_dict_C = {
+            "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
+            "date": "20010101",
+            "basename": "azide",
+            "timestamp": "174608",
+            "extension": ".csv",
+            "base_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_174608",
+            "base_filename": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_174608/azide_174608", 
+        }       
+        objectname = "test C"      
+        self.C = PC.pe_col(objectname, flag_verbose = self.flag_verbose)
+        self.C.set_file_info(self.file_dict_C["data_folder"], self.file_dict_C["date"], self.file_dict_C["basename"], self.file_dict_C["timestamp"])
+       
 #         print(self.A)
 
 
@@ -126,11 +139,20 @@ class Test_of_importing(unittest.TestCase):
         self.assertFalse(res)
 
 
-    def test_importing(self):
+#     def test_importing_A(self):
+#         """
+#         When the file_dict is set, importing should return True
+#         """        
+#         res = self.A.import_data()         
+#         self.assertTrue(res)
+
+    def test_importing_C(self):
         """
         When the file_dict is set, importing should return True
         """        
-        res = self.A.import_data() 
+        res = self.C.import_data(import_temp_scans = True)   
+        print(self.C)    
+        print(numpy.shape(self.C.r))
         self.assertTrue(res)
 
 
