@@ -22,20 +22,14 @@ imp.reload(IOM)
 class pe_col(DCC.dataclass):
     """
     pe_col: implementation class for colinear 2D-IR setup. This includes all importing functions.
-    
-    
-    
     """
 
     def __init__(self, objectname, flag_verbose = False):
-
         self.verbose("New pe_col class", flag_verbose)
-    
         DCC.dataclass.__init__(self, objectname = objectname, flag_verbose = flag_verbose)
 
 
     def set_file_info(self, data_folder, date, basename, timestamp):
-    
         self.set_file_dict(data_folder, date, basename, timestamp)    
 
 
@@ -43,11 +37,12 @@ class pe_col(DCC.dataclass):
         """
         This method splits up file importing for supporting files and measurement files. It first finds the file format file. It will use this to test if file_dict is correct. 
         """
-    
+        # check if _file_dict is set
         if self._file_dict["base_folder"] == "" or self._file_dict["base_filename"] == "":
             self.printError("No file information set.", inspect.stack()) 
             return False   
-
+        
+        # find LV_file_format, also a check if _file_dict is correct
         try: 
             self.file_format = IOM.find_LV_fileformat(
                 base_folder = self._file_dict["base_folder"], 
@@ -59,14 +54,11 @@ class pe_col(DCC.dataclass):
         except FileNotFoundError:
             self.printError("File_format file not found.", inspect.stack()) 
             return False 
-             
-
-   
+        
+        # import data
         self.import_supporting_data(import_temp_scans)
         self.import_measurement_data()
-        
         return True  
-
 
 
     def import_supporting_data(self, import_temp_scans = False):
@@ -191,7 +183,6 @@ class pe_col(DCC.dataclass):
                                 # import files
                                 suffix = "signal_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du) + "_" + str(sc)
                                 self.b[:,:,0,sp,sm,de,du,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose).T
-
 
                                 # import interferogram
                                 suffix = "interferogram_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du) + "_" + str(sc)

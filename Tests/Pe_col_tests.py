@@ -123,6 +123,19 @@ class Test_of_importing(unittest.TestCase):
         self.D = PC.pe_col(objectname, flag_verbose = self.flag_verbose)
         self.D.set_file_info(self.file_dict_D["data_folder"], self.file_dict_D["date"], self.file_dict_D["basename"], self.file_dict_D["timestamp"])
 
+        self.file_dict_E= {
+            "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
+            "date": "20010101",
+            "basename": "azide_chopper",
+            "timestamp": "111833",
+            "extension": ".csv",
+            "base_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_chopper_111833",
+            "base_filename": "/Users/robbert/Developer/Crocodile/Tests/Test_resources/20010101/azide_chopper_111833/azide_chopper_111833", 
+        }       
+        objectname = "test E"      
+        self.E= PC.pe_col(objectname, flag_verbose = self.flag_verbose)
+        self.E.set_file_info(self.file_dict_E["data_folder"], self.file_dict_E["date"], self.file_dict_E["basename"], self.file_dict_E["timestamp"])
+
 #         print(self.A)
 
 
@@ -152,41 +165,45 @@ class Test_of_importing(unittest.TestCase):
         self.assertFalse(res)
 
 
-#     def test_importing_A(self):
-#         """
-#         When the file_dict is set, importing should return True
-#         """        
-#         res = self.A.import_data()         
-#         self.assertTrue(res)
 
-#     def test_importing_C(self):
-#         """
-#         When the file_dict is set, importing should return True
-#         """        
-#         res = self.C.import_data(import_temp_scans = False) 
-#         self.C.b_to_r()
-#         self.C.calculate_phase()
-#         self.C.make_fft()
-#         self.C.make_plots()
-#           
-# #         print(self.C)    
-#         print(numpy.shape(self.C.r))
-#         self.assertTrue(res)
+
+    def test_importing_C(self):
+        """
+        Signal, no chopper
+        """        
+        res = self.C.import_data(import_temp_scans = False) 
+        self.C.b_to_r()
+        self.C.calculate_phase()
+        self.C.make_fft()
+        self.C.make_plots()
+        
+        self.assertTrue(res)
 
 
     def test_importing_D(self):
         """
-        When the file_dict is set, importing should return True
+        Intensity, no chopper
         """        
         res = self.D.import_data(import_temp_scans = False) 
         self.D.b_to_r()
         self.D.calculate_phase()
         self.D.make_fft(phase_cheat_deg = 45)
-#         print(self.D)
         self.D.make_plots()
-#         print(self.D)    
         print(numpy.shape(self.D.r))
         self.assertTrue(res)
+
+    def test_importing_E(self):
+        """
+        Signal, chopper
+        """        
+        res = self.E.import_data(import_temp_scans = False) 
+        self.E.b_to_r()
+        self.E.calculate_phase()
+        self.E.make_fft()
+        self.E.make_plots()
+        self.assertTrue(res)
+
+
 
 class Test_of_init(unittest.TestCase):
     """
