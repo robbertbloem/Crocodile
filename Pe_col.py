@@ -73,6 +73,8 @@ class pe_col(DCC.dataclass):
         
         t1_bins, t1_fs, bin_sign, n_t1_bins, n_t1_fs, t1_zero_index = IOM.import_bins(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
         
+        self.bin_sign = bin_sign
+        
         n_ds = IOM.import_ndatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
         
         n_sp = IOM.import_nspectra(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
@@ -140,9 +142,6 @@ class pe_col(DCC.dataclass):
         
     def import_measurement_data(self):
         
-        print(self.measurement_type)
-        print(self.b_n[7])
-        
         if self.measurement_type == "signal" and self.b_n[7] == 1:  
             self.verbose("Average scan, signal", self.flag_verbose)
                 
@@ -154,7 +153,6 @@ class pe_col(DCC.dataclass):
                             # import files
                             suffix = "signal_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du)
                             self.b[:,:,0,sp,sm,de,du,0] = IOM.import_file(self._file_dict, suffix, self.flag_verbose).T
-
 
                             # import interferogram
                             suffix = "interferogram_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du)
@@ -230,36 +228,12 @@ class pe_col(DCC.dataclass):
         else:
             self.printError("Failed to import measurement files", inspect.stack())                    
 
-#         elif self.measurement_type == "intensity" and self.b_n[7] > 1:
-#                 
-#             for sp in range(self.b_n[3]):
-#                 for sm in range(self.b_n[4]):
-#                     for de in range(self.b_n[5]): 
-#                         for du in range(self.b_n[6]):
-#                             for sc in range(self.b_n[7]):
-#                     
-#                                 # import files
-#                                 suffix = "signal_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du) + "_" + str(sc)
-#                                 self.b[:,:,0,sp,sm,de,du,0] = IOM.import_file(self._file_dict, suffix, self.flag_verbose).T
-# 
-# 
-#                                 # import interferogram
-#                                 suffix = "interferogram_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du) + "_" + str(sc)
-#                                 self.b_intf[:,0,sp,sm,de,du,0] = IOM.import_file(self._file_dict, suffix, self.flag_verbose).T    
 
-                            
-                            
-# 
-#             if self.sign_bins == False:
-#                 self.r = self.r[:,::-1,:,:,:,:]
-#                 self.intf = self.intf[::-1,:,:,:,:]
-#                 
-#             # truncate the data if the number of bins is odd
-#             if self.n_t1 % 2 == 1:
-#                 self.r = self.r[:,:-1,:,:,:,:]  
-#                 self.intf = self.intf[:-1,:,:,:,:]  
-# 
-# 
+        if self.bin_sign:
+            self.b = self.b[:,::-1,:,:,:,:,:,:]
+            self.b_intf = self.intf[::-1,:,:,:,:,:,:]
+            self.b_count = self.b_count[:,::-1,:,:,:,:,:,:]
+
 
 
 
