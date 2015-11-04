@@ -31,8 +31,11 @@ class dataclass(CT.ClassTools):
         REMARKS:
         
         There are 4 stages for the data:
-        b: bins, measurement not yet divided by count ("save as intensity")
-        r: response ("save as signal" or b/count)
+        b: bins, the raw measurement. 
+            - The signal may or may not have been calculated
+            - This may or may not be divided by the count. 
+            - The extra bins (t1<0) are not yet removed.
+        r: response. Divided by the count and only t1>=0
         f: fourier transformed
         s: spectra    
         
@@ -84,7 +87,7 @@ class dataclass(CT.ClassTools):
         self._extension = ""
         
         self.file_format = -1
-        self.measuremnt_type = ""
+        self.measurement_type = ""
 
         # organizational stuff
         dimensions = 7
@@ -93,25 +96,41 @@ class dataclass(CT.ClassTools):
         self.dimensions = dimensions
         self.measurements = measurements    
 
-
-        
         self.b = False
         self.b_axes = False
         self.b_count = False
-        self.b_intf = False
-        
+        self.b_units = False
+        self.b_n = False
+          
         self.r = False
-        self.r_axes = False
-        self.r_intf = False
+        self.r_axes = False  
         self.r_units = False
+        self.r_n = False
         
         self.f = False
         self.f_axes = False
-        self.f_intf = False
-
+        self.f_units = False
+        self.f_n = False
+        
         self.s = False
         self.s_axes = False
         self.s_units = False
+        self.s_n = False
+
+        self.b_intf = False
+        self.b_intf_axes = False
+        self.b_intf_n = False
+        self.b_intf_units = False
+        
+        self.r_intf = False
+        self.r_intf_axes = False
+        self.r_intf_n = False
+        self.r_intf_units = False
+        
+        self.f_intf = False
+        self.f_intf_axes = False
+        self.f_intf_n = False
+        self.f_intf_units = False
 
         self.n_scans = 0
 
