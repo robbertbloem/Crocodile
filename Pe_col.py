@@ -14,6 +14,7 @@ import Crocodile.Resources.DataClassCol as DCC
 import Crocodile.Resources.IOMethods as IOM
 import Crocodile.Resources.Constants as CONST
 import Crocodile.Resources.Mathematics as MATH
+import Crocodile.Resources.Plotting as PL
 
 imp.reload(DCC)
 imp.reload(IOM)
@@ -109,12 +110,13 @@ class pe_col(DCC.dataclass):
             n_sc = 1
         sc = numpy.arange(n_sc)
 
-        # bin axis
-        # signal may not have been calculated
-        # maybe not yet divided by count
         if self.measurement_type == "signal":
+            # data already divided by count
+            # 1 data state: the signal
             _n_ds = 1
         else:
+            # data not yet divided by count
+            # 2*n_datastates
             _n_ds = 2 * n_ds
         
         self.b_n = [n_w3, n_t1_bins, _n_ds, n_sp, n_sm, n_de, n_du, n_sc]
@@ -123,7 +125,7 @@ class pe_col(DCC.dataclass):
         self.b = numpy.empty(self.b_n)
         self.b_count = numpy.empty(self.b_n[1:]) 
         self.b_axes = [w3_axis, t1_bins, spds[:,1], spds[:,0], sm, de, du, sc]
-        self.b_units = ["Wavenumbers (cm-1)", "T1 (bins)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
+        self.b_units = ["w3 (cm-1)", "T1 (bins)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
 
         self.b_intf = numpy.empty(self.b_intf_n)
         self.b_intf_axes = [t1_bins, spds[:,1], spds[:,0], sm, de, du, sc]
@@ -132,7 +134,16 @@ class pe_col(DCC.dataclass):
         self.r_n = [n_w3, n_t1_fs, 1, n_sp, n_sm, n_de, n_du, n_sc]
         self.r = numpy.empty(self.r_n)
         self.r_axes = [w3_axis, t1_fs, [0], spds[:,0], sm, de, du, sc]
-        self.r_units = ["Wavenumbers (cm-1)", "T1 (fs)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
+        self.r_units = ["w3 (cm-1)", "T1 (fs)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
+
+        self.f_n = [n_w3, -1, 1, n_sp, n_sm, n_de, n_du, n_sc]
+        self.f_axes = [w3_axis, [0], [0], spds[:,0], sm, de, du, sc]
+        self.f_units = ["w3 (cm-1)", "w1 (cm-1)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
+
+        self.s_n = [n_w3, -1, 1, n_sp, n_sm, n_de, n_du, n_sc]
+        self.s_axes = [w3_axis, [0], [0], spds[:,0], sm, de, du, sc]
+        self.s_units = ["w3 (cm-1)", "w1 (cm-1)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
+
 
         # probe and reference are saved separately
         if self.measurement_type == "signal":
@@ -299,7 +310,7 @@ class pe_col(DCC.dataclass):
             self.r = self.b[:,self.t1_zero_index:,:,:,:,:,:,:]
             self.r_intf = self.b_intf[:,:,:,:,:,:,:]
         
-        print(numpy.shape(self.r))
+
 
 
 
@@ -421,10 +432,68 @@ class pe_col(DCC.dataclass):
 
 
 
+    def make_fft(self, phase_cheat_deg = 0):
+
+        phase_rad = self.phase_rad + phase_cheat_deg * numpy.pi / 180
+
+        if phase_cheat_deg != 0:
+            self.printWarning("Phase cheating with %.1f degrees. Used phase is %.1f" % (phase_cheat_deg, phase_rad * 180 / numpy.pi))
+
+        N_FFT_bins = self.r_n[1]
+        N_FFT_half = int(N_FFT_bins / 2)
+        N_FFT_bins = 2 * N_FFT_half
+
+        w1_axis = MATH.make_ft_axis(N_FFT_bins, dt = self.r_axes[1][1] - self.r_axes[1][0], undersampling = 0, normalized_to_period = 0, zero_in_middle = False, flag_verbose = self.flag_verbose)
+        self.f_axes[1] = w1_axis
+        
+        w1_axis = w1_axis[:N_FFT_half]
+        self.s_axes[1] = w1_axis
+
+        self.f_n[1] = N_FFT_bins
+        self.s_n[1] = N_FFT_half
+        
+        self.f = numpy.zeros(self.f_n, dtype = "complex")
+        self.s = numpy.zeros(self.s_n)
+
+        ds = 0
+        for pi in range(self.r_n[0]):  
+            for sp in range(self.r_n[3]):
+                for sm in range(self.r_n[4]):
+                    for de in range(self.r_n[5]): 
+                        for du in range(self.r_n[6]):
+                            for sc in range(self.r_n[7]):
+                                r = self.r[pi, :, ds, sp, sm, de, du, sc]
+                                f = numpy.fft.fft(r)                      
+                                self.f[pi, :, ds, sp, sm, de, du, sc] = f
+                                s = numpy.real(numpy.exp(-1j * phase_rad) * f[:N_FFT_half])
+                                self.s[pi, :, ds, sp, sm, de, du, sc] = s
+                     
 
 
+    def make_plots(self, x_range = [0,0], invert_colors = False, flip_spectrum = False):
+ 
+        inv = 1
+        if invert_colors:
+            inv = -1
 
 
+        for sp in range(self.s_n[3]):
+            for sm in range(self.s_n[4]):
+                for de in range(self.s_n[5]): 
+                    for du in range(self.s_n[6]):
+                        for sc in range(self.s_n[7]):
+
+                            fig = plt.figure()
+                            ax = fig.add_subplot(111)        
+                            ax.set_aspect("equal")
+                        
+                            title = "%s %s fs" % (self._basename, self.s_axes[5][de])
+                            if flip_spectrum:
+                                PL.contourplot(inv * self.s[:, :, 0, sp, sm, de, du, sc], self.s_axes[1], self.s_axes[0], y_range = [0,0], x_range = x_range, y_label = "w3 (cm-1)", x_label = "w1 (cm-1)", title = title, ax = ax)                        
+                            else:
+                                PL.contourplot(inv * self.s[:, :, 0, sp, sm, de, du, sc].T, self.s_axes[0], self.s_axes[1], x_range = x_range, y_range = [0,-1], x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", title = title, ax = ax)
+
+        plt.show()
 
 
 

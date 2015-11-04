@@ -159,17 +159,19 @@ class Test_of_importing(unittest.TestCase):
 #         res = self.A.import_data()         
 #         self.assertTrue(res)
 
-    def test_importing_C(self):
-        """
-        When the file_dict is set, importing should return True
-        """        
-        res = self.C.import_data(import_temp_scans = False) 
-        self.C.b_to_r()
-        self.C.calculate_phase()
-          
-#         print(self.C)    
-        print(numpy.shape(self.C.r))
-        self.assertTrue(res)
+#     def test_importing_C(self):
+#         """
+#         When the file_dict is set, importing should return True
+#         """        
+#         res = self.C.import_data(import_temp_scans = False) 
+#         self.C.b_to_r()
+#         self.C.calculate_phase()
+#         self.C.make_fft()
+#         self.C.make_plots()
+#           
+# #         print(self.C)    
+#         print(numpy.shape(self.C.r))
+#         self.assertTrue(res)
 
 
     def test_importing_D(self):
@@ -179,7 +181,9 @@ class Test_of_importing(unittest.TestCase):
         res = self.D.import_data(import_temp_scans = False) 
         self.D.b_to_r()
         self.D.calculate_phase()
-          
+        self.D.make_fft(phase_cheat_deg = 45)
+#         print(self.D)
+        self.D.make_plots()
 #         print(self.D)    
         print(numpy.shape(self.D.r))
         self.assertTrue(res)
