@@ -290,6 +290,19 @@ class Test_import_supporting_files_LV3(unittest.TestCase):
         n_sh = IOM.import_nshots(self.file_dict_A, self.fileformat, flag_verbose = self.flag_verbose)
         self.assertEqual(n_sh, 100)
 
+    def test_import_spectraAndDatastates_A(self):
+        spds, n_sp, n_ds = IOM.import_spectraAndDatastates(self.file_dict_A, self.fileformat, flag_verbose = self.flag_verbose)
+        self.assertEqual(n_ds, 1)
+        self.assertEqual(n_sp, 1)
+        self.assertTrue(numpy.all(spds == numpy.array([[0,1]])))
+        
+    def test_import_spectraAndDatastates_B(self):
+        spds, n_sp, n_ds = IOM.import_spectraAndDatastates(self.file_dict_B, self.fileformat, flag_verbose = self.flag_verbose)
+        self.assertEqual(n_ds, 2)
+        self.assertEqual(n_sp, 1)
+        self.assertTrue(numpy.all(spds == numpy.array([[0,1],[0,-1]])))
+
+
 
 class Test_find_number_of_datastates(unittest.TestCase):
     """
