@@ -85,7 +85,7 @@ class Test_show_spectrum(unittest.TestCase):
         A = MM.show_spectrum(objectname, flag_verbose = self.flag_verbose)
         A.set_file_dict(file_dict_A["data_folder"], file_dict_A["date"], file_dict_A["basename"], file_dict_A["timestamp"])
         A.import_data()
-#         A.make_plot()
+        A.make_plot()
         print(A.file_format)
 
     def test_pp(self):
