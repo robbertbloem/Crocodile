@@ -34,9 +34,9 @@ class pe_col(DCC.dataclass):
         self.verbose("New pe_col class", flag_verbose)
         DCC.dataclass.__init__(self, objectname = objectname, flag_verbose = flag_verbose)
 
-
-    def set_file_info(self, data_folder, date, basename, timestamp):
-        self.set_file_dict(data_folder, date, basename, timestamp)    
+# 
+#     def set_file_info(self, data_folder, date, basename, timestamp):
+#         self.set_file_dict(data_folder, date, basename, timestamp)    
 
 
     def import_data(self, import_temp_scans = False):

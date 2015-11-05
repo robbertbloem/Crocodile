@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 import Crocodile.Pe_col as PC
 import PythonTools.Debug as DEBUG
 
+plt.close("all")
+
 # init argument parser
 parser = argparse.ArgumentParser(description='Command line arguments')
 
@@ -82,7 +84,7 @@ class Test_of_importing(unittest.TestCase):
         }  
         objectname = "test A"   
         self.A = PC.pe_col(objectname, flag_verbose = self.flag_verbose)
-        self.A.set_file_info(self.file_dict_A["data_folder"], self.file_dict_A["date"], self.file_dict_A["basename"], self.file_dict_A["timestamp"])
+        self.A.set_file_dict(self.file_dict_A["data_folder"], self.file_dict_A["date"], self.file_dict_A["basename"], self.file_dict_A["timestamp"])
 
         self.file_dict_B = {
             "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
@@ -95,7 +97,7 @@ class Test_of_importing(unittest.TestCase):
         }       
         objectname = "test B"      
         self.B = PC.pe_col(objectname, flag_verbose = self.flag_verbose)
-        self.B.set_file_info(self.file_dict_B["data_folder"], self.file_dict_B["date"], self.file_dict_B["basename"], self.file_dict_B["timestamp"])
+        self.B.set_file_dict(self.file_dict_B["data_folder"], self.file_dict_B["date"], self.file_dict_B["basename"], self.file_dict_B["timestamp"])
 
         self.file_dict_C = {
             "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
@@ -108,7 +110,7 @@ class Test_of_importing(unittest.TestCase):
         }       
         objectname = "test C"      
         self.C = PC.pe_col(objectname, flag_verbose = self.flag_verbose)
-        self.C.set_file_info(self.file_dict_C["data_folder"], self.file_dict_C["date"], self.file_dict_C["basename"], self.file_dict_C["timestamp"])
+        self.C.set_file_dict(self.file_dict_C["data_folder"], self.file_dict_C["date"], self.file_dict_C["basename"], self.file_dict_C["timestamp"])
 
         self.file_dict_D= {
             "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
@@ -121,7 +123,7 @@ class Test_of_importing(unittest.TestCase):
         }       
         objectname = "test D"      
         self.D = PC.pe_col(objectname, flag_verbose = self.flag_verbose)
-        self.D.set_file_info(self.file_dict_D["data_folder"], self.file_dict_D["date"], self.file_dict_D["basename"], self.file_dict_D["timestamp"])
+        self.D.set_file_dict(self.file_dict_D["data_folder"], self.file_dict_D["date"], self.file_dict_D["basename"], self.file_dict_D["timestamp"])
 
         self.file_dict_E= {
             "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
@@ -134,7 +136,7 @@ class Test_of_importing(unittest.TestCase):
         }       
         objectname = "test E"      
         self.E= PC.pe_col(objectname, flag_verbose = self.flag_verbose)
-        self.E.set_file_info(self.file_dict_E["data_folder"], self.file_dict_E["date"], self.file_dict_E["basename"], self.file_dict_E["timestamp"])
+        self.E.set_file_dict(self.file_dict_E["data_folder"], self.file_dict_E["date"], self.file_dict_E["basename"], self.file_dict_E["timestamp"])
 
 #         print(self.A)
 
@@ -152,7 +154,7 @@ class Test_of_importing(unittest.TestCase):
         """
         When the file_dict is incorrect (it points to a non-existing folder) it should return False.
         """       
-        self.A.set_file_info("Not a folder", self.file_dict_A["date"], self.file_dict_A["basename"], self.file_dict_A["timestamp"])
+        self.A.set_file_dict("Not a folder", self.file_dict_A["date"], self.file_dict_A["basename"], self.file_dict_A["timestamp"])
         res = self.A.import_data()
         self.assertFalse(res)
 
@@ -230,7 +232,7 @@ class Test_of_init(unittest.TestCase):
         
         x = PC.pe_col(objectname, flag_verbose = self.flag_verbose)
 
-        x.set_file_info(data_folder, date, basename, timestamp)
+        x.set_file_dict(data_folder, date, basename, timestamp)
         
         self.assertEqual(x.file_dict["base_filename"], "/User/Robbert/Bla/20010101/foo_123456/foo_123456")
 
