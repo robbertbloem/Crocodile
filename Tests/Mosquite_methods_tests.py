@@ -70,20 +70,39 @@ class Test_show_shots(unittest.TestCase):
     #############
     def setUp(self):
         self.flag_verbose = args.verbose  
+
+        
+    def test_f1(self):
+
+        file_dict_A = {
+            "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
+            "date": "20010101",
+            "basename": "show_shots_f1",
+            "timestamp": "140921",
+            "extension": ".csv",
+        }  
+        objectname = "test A"   
+        A = MM.show_shots(objectname, flag_verbose = self.flag_verbose)
+        A.set_file_dict(file_dict_A["data_folder"], file_dict_A["date"], file_dict_A["basename"], file_dict_A["timestamp"])
+        A.import_data()
+        A.make_plot()
+        print(A.file_format)
+
         
     def test_pp(self):
 
         file_dict_A = {
-            "data_folder": "/Users/robbert/Dropbox/Amsterdam/",
-            "date": "20151029",
+            "data_folder": "/Users/robbert/Developer/Crocodile/Tests/Test_resources",
+            "date": "20010101",
             "basename": "show_shots_pp",
             "timestamp": "143606",
             "extension": ".csv",
         }  
         objectname = "test A"   
         A = MM.show_shots(objectname, flag_verbose = self.flag_verbose)
-        A.set_file_info(file_dict_A["data_folder"], file_dict_A["date"], file_dict_A["basename"], file_dict_A["timestamp"])
+        A.set_file_dict(file_dict_A["data_folder"], file_dict_A["date"], file_dict_A["basename"], file_dict_A["timestamp"])
         A.import_data()
+        A.make_plot()
         print(A.file_format)
     
  

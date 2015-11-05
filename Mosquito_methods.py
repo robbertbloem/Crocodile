@@ -57,38 +57,34 @@ class show_shots(DCC.dataclass):
 
         w3_axis, n_w3 = IOM.import_wavenumbers(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
 
-
-        n_sh = 100
-        n_ds = 2
-        n_sp = 1
-#         n_sh = IOM.import_nshots(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        n_sh = IOM.import_nshots(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
         sh = numpy.arange(n_sh)
 
-#         n_ds = IOM.import_ndatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        n_ds = IOM.import_ndatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
         
-#         n_sp = IOM.import_nspectra(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        n_sp = IOM.import_nspectra(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
 
-#         spds, dump, dump = IOM.import_spectraAndDatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-#         
-#         self.sp = spds[:,0]
-#         self.ds = spds[:,1]
-#         for i in range(n_ds):
-#             if self.ds[i] == "-1":
-#                 self.ds[i] = 1
-#             else:
-#                 self.ds[i] = 0
-#         self.ds = numpy.array(self.ds, dtype = "int")
-
-        self.ds = [0,1]
-        self.sp = [0]
+        spds, dump, dump = IOM.import_spectraAndDatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        
+        self.sp = spds[:,0]
+        self.ds = spds[:,1]
+        for i in range(n_ds):
+            if self.ds[i] == "-1":
+                self.ds[i] = 1
+            else:
+                self.ds[i] = 0
+        self.ds = numpy.array(self.ds, dtype = "int")
 
         n_sc = IOM.find_number_of_scans(self._file_dict["base_folder"], self._file_dict["base_filename"], self._file_dict["extension"], flag_verbose = self.flag_verbose)
         sc = numpy.arange(n_sc)
          
-        self.b_n = [n_w3, n_sh, n_ds, n_sp, n_sc]
+        self.b_n = [n_w3, n_sh, 2*n_ds, n_sp, n_sc]
         self.b = numpy.empty(self.b_n)
         self.b_axes = [w3_axis, sh, self.ds, self.sp, sc]
         self.b_units = ["w3 (cm-1)", "Shots", "Datastates", "Spectra", "Scans"]
+        
+#         self.b_n = [n_w3, n_sh, n_ds, n_sp, n_sc]
+
 
         self.b_choppers = numpy.zeros([3, n_sh, n_sc])
         self.b_specials = numpy.zeros([15, n_sh, n_sc])
@@ -103,12 +99,25 @@ class show_shots(DCC.dataclass):
             
             for ds in range(self.b_n[2]): 
                 for sp in range(self.b_n[3]): 
-                
-                    # import files
+                    # import probe
                     suffix = "sp" + str(sp) + "_ds" + str(ds) + "_pixels_" + str(sc)
-                    self.b[:,:,ds,sp,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose)                  
-                
+                    self.b[:,:,ds,sp,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose)  
+  
+
+    def make_plot(self):  
+
+        axes = numpy.arange(self.b_n[1])
         
+        fig = plt.figure()
+        ax = fig.add_subplot(111)    
+        
+        for ds in range(self.b_n[2]):
+            for sc in range(self.b_n[4]):
+                data = self.b[15,:,ds,0,sc]
+                mask = numpy.isfinite(data)            
+                ax.plot(axes[mask], data[mask], marker = ".", linestyle = "none")
+            
+        plt.show()
 
 
 
