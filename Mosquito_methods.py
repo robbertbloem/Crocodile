@@ -82,7 +82,6 @@ class show_shots(DCC.dataclass):
         self.ds = [0,1]
         self.sp = [0]
 
-
         n_sc = IOM.find_number_of_scans(self._file_dict["base_folder"], self._file_dict["base_filename"], self._file_dict["extension"], flag_verbose = self.flag_verbose)
         sc = numpy.arange(n_sc)
          
@@ -91,13 +90,16 @@ class show_shots(DCC.dataclass):
         self.b_axes = [w3_axis, sh, self.ds, self.sp, sc]
         self.b_units = ["w3 (cm-1)", "Shots", "Datastates", "Spectra", "Scans"]
 
-        self.b_choppers = [3, n_sh, n_sc]
-        self.b_specials = [15, n_sh, n_sc]
+        self.b_choppers = numpy.zeros([3, n_sh, n_sc])
+        self.b_specials = numpy.zeros([15, n_sh, n_sc])
 
         for sc in range(self.b_n[4]): 
         
             suffix = "specials_" + str(sc)
-            self.b_specials[:,:,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose) 
+            self.b_specials[:,:,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose).T
+            
+            suffix = "choppers_" + str(sc)
+            self.b_choppers[:,:,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose)
             
             for ds in range(self.b_n[2]): 
                 for sp in range(self.b_n[3]): 
@@ -106,7 +108,7 @@ class show_shots(DCC.dataclass):
                     suffix = "sp" + str(sp) + "_ds" + str(ds) + "_pixels_" + str(sc)
                     self.b[:,:,ds,sp,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose)                  
                 
-
+        
 
 
 
