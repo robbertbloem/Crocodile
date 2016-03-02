@@ -6,6 +6,8 @@ import inspect
 import os
 import imp
 
+import enum
+
 import numpy
 import matplotlib 
 import matplotlib.pyplot as plt
@@ -19,6 +21,25 @@ import Crocodile.Resources.Plotting as PL
 imp.reload(DCC)
 imp.reload(IOM)
 
+class MeasurementMethod(enum.Enum):
+    show_shots = 0
+    show_spectrum = 1
+    scan_spectrum = 2
+    find_t0_interference_intensity = 3
+    find_t0_interference = 4
+    find_t0_crystal = 5
+    find_t0_find_phase = 6
+    find_t0_interferogram = 7
+    find_t0_fast = 8
+    scan_spectrum = 9
+    point_cloud = 10
+    2d_ir = 11
+    pp = 12
+    
+    
+    
+    
+
 class Mosquito(DCC.dataclass):
     
     def __init__(self, objectname, flag_verbose = False):
@@ -31,63 +52,114 @@ class Mosquito(DCC.dataclass):
         This method splits up file importing for supporting files and measurement files. It first finds the file format file. It will use this to test if file_dict is correct. 
         """
         
+        # all methods
         # find the file format
         # quit on error
         if find_file_format(self) == False:
             return False
 
+        # all methods
+        # for scan spectrum this is the array with all the wavelengths -- it is not necessarily the same as the number of pixels
         w3_axis, n_w3 = IOM.import_wavenumbers(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
 
-        # fast scan
-        t1_bins, t1_fs, bin_sign, n_t1_bins, n_t1_fs, t1_zero_index = IOM.import_bins(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        # shots or bins
+        if measurement_method in [
+            MeasurementMethod["find_t0_fast"], 
+            MeasurementMethod["2d_ir"],
+        ]:
+            # fast scan
+            t1_bins, t1_fs, bin_sign, n_t1_bins, n_t1_fs, t1_zero_index = IOM.import_bins(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
         
-        self.bin_sign = bin_sign
-        self.t1_zero_index = t1_zero_index
+            self.bin_sign = bin_sign
+            self.t1_zero_index = t1_zero_index
 
-        # non-fast scan
-        n_sh = IOM.import_nshots(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-        sh = numpy.arange(n_sh)
-
-        n_ds = IOM.import_ndatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-        
-        n_sp = IOM.import_nspectra(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-
-        spds, n_sp_2, n_ds_2 = IOM.import_spectraAndDatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-        
-        self.ds = spds[:,1]
-        for i in range(n_ds):
-            if self.ds[i] == "-1":
-                self.ds[i] = 1
-            else:
-                self.ds[i] = 0
-        self.ds = numpy.array(self.ds, dtype = "int")
-        
-        if n_ds == n_ds_2:
-            self.measurement_type = "intensity"
         else:
-            self.measurement_type = "signal"
+            # non-fast scan
+            n_sh = IOM.import_nshots(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+            sh = numpy.arange(n_sh)
 
-        sm, sm_names, n_sm = IOM.import_slow_modulation(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        if measurement_method in [
+            MeasurementMethod["pp"], 
+            MeasurementMethod["2d_ir"],
+        ]:
+            # datastates, as written to files
+            # 0: signal
+            # >0: intensity
+            n_ds = IOM.import_ndatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
         
-        de, n_de = IOM.import_delays(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+            # spectra
+            n_sp = IOM.import_nspectra(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+
+            # datastates, originally in the measurement
+            # if the signal is saved, this is different from n_ds
+            spds, n_sp_2, n_ds_2 = IOM.import_spectraAndDatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
         
+            self.ds = spds[:,1]
+            for i in range(n_ds):
+                if self.ds[i] == "-1":
+                    self.ds[i] = 1
+                else:
+                    self.ds[i] = 0
+            self.ds = numpy.array(self.ds, dtype = "int")
+        
+            if n_ds == n_ds_2:
+                self.measurement_type = "intensity"
+            else:
+                self.measurement_type = "signal"
+
+            if self.measurement_type == "signal":
+                # data already divided by count
+                # 1 data state: the signal
+                _n_ds = 1
+            else:
+                # data not yet divided by count
+                # 2*n_datastates
+                _n_ds = 2 * n_ds
+
+        else:
+            self.n_ds = 1
+            self.ds = numpy.array([0])
+
+        # slow modulation
+        if measurement_method in [
+            MeasurementMethod["pp"], 
+            MeasurementMethod["2d_ir"],
+        ]:
+            sm, sm_names, n_sm = IOM.import_slow_modulation(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        
+        else:
+            n_sm = 1
+            sm_names = ["none"]
+            sm = numpy.zeros((1,1)) 
+        
+        if measurement_method in [
+            MeasurementMethod["pp"], 
+            MeasurementMethod["2d_ir"], 
+            MeasurementMethod["find_t0"], 
+            MeasurementMethod["find_t0_fast"],
+        ]:
+            de, n_de = IOM.import_delays(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+            
+        else:
+            de = [0]
+            n_de = 1
+        
+        # dummy dimension
         du = numpy.array([0])
         n_du = 1
 
-        if import_temp_scans:
+        # number of scans
+        # 
+        if import_temp_scans or measurement_method in [
+            MeasurementMethod["show_shots"], 
+            MeasurementMethod["show_spectrum"],
+        ]:
             n_sc = IOM.find_number_of_scans(self._file_dict["base_folder"], self._file_dict["base_filename"], self._file_dict["extension"], flag_verbose = self.flag_verbose)
         else:
             n_sc = 1
         sc = numpy.arange(n_sc)
 
-        if self.measurement_type == "signal":
-            # data already divided by count
-            # 1 data state: the signal
-            _n_ds = 1
-        else:
-            # data not yet divided by count
-            # 2*n_datastates
-            _n_ds = 2 * n_ds
+
 
 #         n_sc = IOM.find_number_of_scans(self._file_dict["base_folder"], self._file_dict["base_filename"], self._file_dict["extension"], flag_verbose = self.flag_verbose)
 #         sc = numpy.arange(n_sc)
