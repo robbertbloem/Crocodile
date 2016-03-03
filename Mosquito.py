@@ -6,16 +6,16 @@ import numpy
 import matplotlib 
 import matplotlib.pyplot as plt
 
-import Resources.Mosquito_helper_methods as MHM
+import Resources.MosquitoHelper as MH
 
-class show_shots(MHM.MosquitoHelperMethods):
+class show_shots(MH.MosquitoHelperMethods):
     """
     show_shots
     """
 
     def __init__(self, objectname, flag_verbose = False):
         self.verbose("New show_shots class", flag_verbose)
-        MHM.MosquitoHelperMethods.__init__(self, objectname = objectname, flag_verbose = flag_verbose)
+        MH.MosquitoHelperMethods.__init__(self, objectname = objectname, flag_verbose = flag_verbose)
 
 # 
 #     def set_file_info(self, data_folder, date, basename, timestamp):
@@ -38,14 +38,14 @@ class show_shots(MHM.MosquitoHelperMethods):
 
 
 
-class show_spectrum(MHM.MosquitoHelperMethods):
+class show_spectrum(MH.MosquitoHelperMethods):
     """
     show_spectrum
     """
 
     def __init__(self, objectname, flag_verbose = False):
         self.verbose("New show_spectrum class", flag_verbose)
-        MHM.MosquitoHelperMethods.__init__(self, objectname = objectname, flag_verbose = flag_verbose)
+        MH.MosquitoHelperMethods.__init__(self, objectname = objectname, flag_verbose = flag_verbose)
 
 
     def import_data(self):
@@ -143,14 +143,14 @@ class show_spectrum(MHM.MosquitoHelperMethods):
 
 
 
-class find_t0_fast(MHM.MosquitoHelperMethods):
+class find_t0_fast(MH.MosquitoHelperMethods):
     """
     find_t0_fast
     """
 
     def __init__(self, objectname, flag_verbose = False):
         self.verbose("New find_t0_fast class", flag_verbose)
-        MHM.MosquitoHelperMethods.__init__(self, objectname = objectname, flag_verbose = flag_verbose)
+        MH.MosquitoHelperMethods.__init__(self, objectname = objectname, flag_verbose = flag_verbose)
 
 
     def import_data(self):
