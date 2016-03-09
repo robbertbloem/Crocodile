@@ -35,6 +35,7 @@ class MeasurementMethod(enum.Enum):
     point_cloud = 10
     2d_ir = 11
     pp = 12
+    vcd = 13
     
     
 
