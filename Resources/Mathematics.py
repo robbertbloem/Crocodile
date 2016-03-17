@@ -344,14 +344,56 @@ def correlation(array, maxtau = 200, step_type = "tau", flag_normalize = True, f
 
 
 
-def correlation_fft(array, flag_normalize = True, flag_verbose = False):
+# def correlation_fft(array, flag_normalize = True, flag_verbose = False):
+#     """
+#     Calculate the autocorrelation using fft.
+#     
+#     This method was verified using a naive implementation in C. 
+#     
+#     INPUT:
+#     - array (ndarray): the data
+#     - flag_normalizae (Bool, True): if True, the starting value of the autocorrelation is 1. If not, it is an absolute value.
+#     - flag_verbose (Bool, False): if True, print some debugging stuff
+#     
+#     OUTPUT:
+#     - autocorrelation of array, normalized to the length or to 1, the real values   
+#     
+#     201202xx/RB: started function
+#     20130205/RB: the function now uses an actual Fourier transform
+#     20130207/RB: take the first part of the array, not the last part reversed. This was done to agree with Jan's correlation method, but now it seems that one is wrong.
+#     20130515/RB: the result is now always divided by the length of the array and it gives the actual absolute value. Added some documentation
+#     
+#     """
+#     
+#     DEBUG.verbose("correlation_fft", flag_verbose)
+# 
+#     # by subtracting the mean, the autocorrelation decays to zero
+#     array -= numpy.mean(array)
+# 
+#     # zeropad to closest 2^n to prevent aliasing
+#     l = 2 ** int(1+numpy.log2(len(array) * 2))
+# 
+#     # calculate autocorrelation
+#     s = numpy.fft.fft(array, n=l)
+#     r = numpy.fft.ifft(s * numpy.conjugate(s))
+# 
+#     # normalize to length
+#     r = r[:len(array)] / len(array)
+# 
+#     # return value
+#     if flag_normalize:
+#         return numpy.real(r/r[0])
+#     else:
+#         return numpy.real(r)
+
+def correlation_fft(a, v = -1, flag_normalize = True, flag_verbose = False):
     """
     Calculate the autocorrelation using fft.
     
     This method was verified using a naive implementation in C. 
     
     INPUT:
-    - array (ndarray): the data
+    - a, v (ndarray): the data, 1D array. If v == 1, the autocorrelation of a with a will be calculated. 
     - flag_normalizae (Bool, True): if True, the starting value of the autocorrelation is 1. If not, it is an absolute value.
     - flag_verbose (Bool, False): if True, print some debugging stuff
     
@@ -362,31 +404,46 @@ def correlation_fft(array, flag_normalize = True, flag_verbose = False):
     20130205/RB: the function now uses an actual Fourier transform
     20130207/RB: take the first part of the array, not the last part reversed. This was done to agree with Jan's correlation method, but now it seems that one is wrong.
     20130515/RB: the result is now always divided by the length of the array and it gives the actual absolute value. Added some documentation
+    20160317/RB: added v, to calculate the correlation between two arrays. 
     
     """
     
-    DEBUG.verbose("correlation_fft", flag_verbose)
+#     DEBUG.verbose("correlation_fft", flag_verbose)
+
+    if v == -1:
+        v = a[:]
 
     # by subtracting the mean, the autocorrelation decays to zero
-    array -= numpy.mean(array)
+    a -= numpy.mean(a)
+    v -= numpy.mean(v)
+
+    l_a = len(a)
+    l_v = len(v)
+    
+    if l_a > l_v:
+        l_pad = 2 ** int(1+numpy.log2(l_a * 2))
+        l_min = l_v
+    else:
+        l_pad = 2 ** int(1+numpy.log2(l_v * 2))
+        l_min = l_a
 
     # zeropad to closest 2^n to prevent aliasing
-    l = 2 ** int(1+numpy.log2(len(array) * 2))
+    a = numpy.pad(a, (0, l_pad-l_a), "constant", constant_values = 0)
+    v = numpy.pad(v, (0, l_pad-l_v), "constant", constant_values = 0)
 
     # calculate autocorrelation
-    s = numpy.fft.fft(array, n=l)
-    r = numpy.fft.ifft(s * numpy.conjugate(s))
+    s_a = numpy.fft.fft(a)
+    s_v = numpy.conjugate(numpy.fft.fft(v))
+    r = numpy.fft.ifft(s_a * s_v)
 
     # normalize to length
-    r = r[:len(array)] / len(array)
+    r = r[:l_min] / l_min
 
     # return value
     if flag_normalize:
         return numpy.real(r/r[0])
     else:
         return numpy.real(r)
-
-
 
 ### DERIVATIVE ###
 
