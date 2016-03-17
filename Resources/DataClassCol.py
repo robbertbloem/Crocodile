@@ -2,6 +2,8 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+import enum
+
 import inspect
 import time
 import os
@@ -12,13 +14,30 @@ import Crocodile
 import PythonTools.ClassTools as CT
 
 
+class MeasurementMethod(enum.Enum):
+    show_shots = 0
+    show_spectrum = 1
+    scan_spectrum = 2
+    find_t0_interference_intensity = 3
+    find_t0_interference = 4
+    find_t0_crystal = 5
+    find_t0_find_phase = 6
+    find_t0_interferogram = 7
+    find_t0_fast = 8
+#     scan_spectrum = 9
+    point_cloud = 10
+    ft_2d_ir = 11
+    pp = 12
+    vcd = 13
+
+
 class dataclass(CT.ClassTools):
     """
     This class stores all the data. 
     Most of the variables are lists which point to ndarrays with the real data.
     """
 
-    def __init__(self, objectname, flag_verbose = False):
+    def __init__(self, objectname, measurement_method, flag_verbose = False):
         """
         croc.DataClasses.messdata
 
@@ -87,10 +106,11 @@ class dataclass(CT.ClassTools):
         self._extension = ""
         
         self.file_format = -1
+        self.measurement_method = measurement_method
         self.measurement_type = ""
 
         # organizational stuff
-        dimensions = 7
+        dimensions = 8
         measurements = 1
         
         self.dimensions = dimensions
