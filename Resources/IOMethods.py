@@ -370,17 +370,31 @@ def import_spectraAndDatastates(file_dict, fileformat, flag_verbose = False):
     
     suffix = "spectraAndDatastates"
     spds = import_file(file_dict, suffix, flag_verbose)
-#     self.spds = self.import_file(suffix = "_spectraAndDatastates")   
+
+    if fileformat < 4:
     
-    # we want it to be a 2D array
-    temp = numpy.shape(spds)
-    if len(temp) == 1:
-        spds = numpy.array([spds])
+        # we want it to be a 2D array
+        temp = numpy.shape(spds)
+        if len(temp) == 1:
+            spds = numpy.array([spds])
+            
+        n_sig = len(numpy.unique(spds[:,1]))
+        add_ds = True
+
+    else:
+        n_sig = spds[-1,0]
+        if spds[-1,1]:
+            add_ds = True
+        else:
+            add_ds = False
+#         sig_type = spds[-1,1]
+        spds = spds[:-1,:]
+        
 
     n_sp = len(numpy.unique(spds[:,0]))
     n_ds = len(numpy.unique(spds[:,1]))
 
-    return spds, n_sp, n_ds
+    return spds, n_sp, n_ds, n_sig, add_ds
 
 
 def import_slow_modulation(file_dict, fileformat, flag_verbose = False):
@@ -395,12 +409,12 @@ def import_slow_modulation(file_dict, fileformat, flag_verbose = False):
     filename = file_dict["base_filename"] + "_slowModulation" +  file_dict["extension"]
     # read all lines and strip the newline character         
     lines = [line.rstrip('\n') for line in open(filename)]
-    sm, sm_names, n_sm = extract_slow_modulation(lines)
+    sm, sm_names, n_sm = extract_slow_modulation(lines, fileformat, flag_verbose = flag_verbose)
     return sm, sm_names, n_sm
 
 
 
-def extract_slow_modulation(lines, flag_verbose = False):     
+def extract_slow_modulation(lines, fileformat, flag_verbose = False):     
 
     n_sm = int(lines[0])
     n_lines = len(lines)-1

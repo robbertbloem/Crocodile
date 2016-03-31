@@ -31,72 +31,184 @@ class MosquitoHelperMethods(DCC.dataclass):
         self.verbose("New Mosquito class", flag_verbose)
                 
         DCC.dataclass.__init__(self, objectname = objectname, measurement_method = measurement_method, flag_verbose = flag_verbose)  
+
+
+
+    def assign_axes(self, dim, axes, units, size):
+
+        self.b_axes[dim] = self.r_axes[dim] = self.f_axes[dim] = self.s_axes[dim] = axis
+        self.b_units[dim] = self.r_units[dim] = self.f_units[dim] = self.s_units[dim] = units
+        self.b_n[dim] = self.r_n[dim] = self.f_n[dim] = self.s_n[dim] = size
+        
+#     def assign_b_axes(self, dim, axes, units, size):
+# 
+#         self.b_axes[dim] = axis
+#         self.b_units[dim] = units
+#         self.b_n[dim] = size
+# 
+#     def assign_r_axes(self, dim, axes, units, size):
+# 
+#         self.r_axes[dim] = axis
+#         self.r_units[dim] = units
+#         self.r_n[dim] = size
+#    
+#     def assign_f_axes(self, dim, axes, units, size):
+# 
+#         self.f_axes[dim] = axis
+#         self.f_units[dim] = units
+#         self.f_n[dim] = size
+#         
+#     def assign_s_axes(self, dim, axes, units, size):
+# 
+#         self.s_axes[dim] = axis
+#         self.s_units[dim] = units
+#         self.s_n[dim] = size
+# 
+#     def import_data(self, import_temp_scans = False, ssh_reload_data = False):
+#         """
+#         This method splits up file importing for supporting files and measurement files. It first finds the file format file. It will use this to test if file_dict is correct. 
+#         
+#         INPUT:
+#         import_temp_scans (Bool, False): 
+#         ssh_reload_data (Bool, False): show shots. Data imported from csv will be saved as a numpy array. If False, if the numpy array file exists, this will be used. Otherwise, or when True, the data will be imported from csv (again). 
+#         """
+#         
+#         MM = DCC.MeasurementMethod
+#         
+#         # all methods
+#         # find the file format
+#         # quit on error
+#         if self.find_file_format() == False:
+#             return False
+#         
+#         # all methods
+#         # for scan spectrum this is the array with all the wavelengths -- it is not necessarily the same as the number of pixels
+#         w3_axis, n_w3 = IOM.import_wavenumbers(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)     
+#         
+#         dim = 0
+#         self.assign_axes(dim, w3_axes, units = "w3 (cm-1)", size = n_w3)
+# 
+# 
+#         # number of scans
+#         if import_temp_scans or self.measurement_method in [
+#             MM["show_shots"], 
+#             MM["show_spectrum"],
+#         ]:
+#             n_sc = IOM.find_number_of_scans(self._file_dict["base_folder"], self._file_dict["base_filename"], self._file_dict["extension"], flag_verbose = self.flag_verbose)
+#         else:
+#             n_sc = 1
+#         dim = 7
+#         self.assign_axes(dim, numpy.arange(n_sc), units = "scans", size = n_sc)
+# 
+# 
+# #         n_sc = IOM.find_number_of_scans(self._file_dict["base_folder"], self._file_dict["base_filename"], self._file_dict["extension"], flag_verbose = self.flag_verbose)
+# #         sc = numpy.arange(n_sc)        
+#         
+#         # shots or bins
+#         if self.measurement_method in [
+#             MM["find_t0_fast"], 
+#             MM["ft_2d_ir"],
+#         ]:
+#             # fast scan
+#             t1_bins, t1_fs, self.bin_sign, n_t1_bins, n_t1_fs, self.t1_zero_index = IOM.import_bins(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+# 
+#             dim = 1
+#             self.assign_b_axes(dim, t1_bins, units = "t1 (bins)", size = n_t1_bins)    
+#             self.assign_r_axes(dim, t1_fs, units = "t1 (fs)", size = n_t1_fs)    
+#             
+# 
+#         elif self.measurement_method in [
+#             MM["show_shots"],
+#         ]:
+# 
+#             n_sh = IOM.import_nshots(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+#             sh = numpy.arange(n_sh) 
+#             
+#             dim = 1
+#             self.assign_r_axes(dim, numpy.arange(n_sc * n_sh), units = "shots", size = n_sc * n_sh)  
+#             
+#             n_sc = 1
+#             dim = 7
+#             self.assign_axes(dim, numpy.arange(n_sc), units = "scans", size = n_sc)
+#             
+#         else:
+#             n_sh = 1
+#             sh = numpy.array([0])
         
         
-        
-        
-    def import_data(self, import_temp_scans = False):
+    def import_data(self, import_temp_scans = False, ssh_reload_data = False):
         """
         This method splits up file importing for supporting files and measurement files. It first finds the file format file. It will use this to test if file_dict is correct. 
+        
+        INPUT:
+        import_temp_scans (Bool, False): 
+        ssh_reload_data (Bool, False): show shots. Data imported from csv will be saved as a numpy array. If False, if the numpy array file exists, this will be used. Otherwise, or when True, the data will be imported from csv (again). 
         """
+        
+        MM = DCC.MeasurementMethod
         
         # all methods
         # find the file format
         # quit on error
         if self.find_file_format() == False:
             return False
-
+        
         # all methods
         # for scan spectrum this is the array with all the wavelengths -- it is not necessarily the same as the number of pixels
         w3_axis, n_w3 = IOM.import_wavenumbers(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
 
-        mm = DCC.MeasurementMethod
-
+        
         # shots or bins
         if self.measurement_method in [
-            DCC.MeasurementMethod["find_t0_fast"], 
-            DCC.MeasurementMethod["ft_2d_ir"],
+            MM["find_t0_fast"], 
+            MM["ft_2d_ir"],
         ]:
             # fast scan
-            t1_bins, t1_fs, bin_sign, n_t1_bins, n_t1_fs, t1_zero_index = IOM.import_bins(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-        
-            self.bin_sign = bin_sign
-            self.t1_zero_index = t1_zero_index
+            t1_bins, t1_fs, self.bin_sign, n_t1_bins, n_t1_fs, self.t1_zero_index = IOM.import_bins(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
 
         elif self.measurement_method in [
-            DCC.MeasurementMethod["show_shots"],
+            MM["show_shots"],
         ]:
             # non-fast scan
             n_sh = IOM.import_nshots(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-            sh = numpy.arange(n_sh)        
+#             sh = numpy.arange(n_sh)        
         else:
             n_sh = 1
-            sh = numpy.array([0])
+#             sh = numpy.array([0])
 
-
-#         if self.measurement_method in [
-#             DCC.MeasurementMethod["pp"], 
-#             DCC.MeasurementMethod["ft_2d_ir"],
-#         ]:
         # datastates, as written to files
         # 0: signal
         # >0: intensity
         n_ds = IOM.import_ndatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        if n_ds == 0:
+            self.measurement_type = "signal"
+        else:
+            self.measurement_type = "intensity"
         ds = numpy.arange(n_ds)
     
         # spectra
         n_sp = IOM.import_nspectra(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
         sp = numpy.arange(n_sp)
 
+        # the spds file is about how the signal is calculated
+        # self.n_sig and self.add_ds were introduced in LV_fileformat 4. For pp and 2D-IR this is handled in the importer method
+        # for show shots/spectrum etc the spds file was saved from LV_fileformat 4 onward. 
+        
+        if (self.measurement_method in [
+            MM["pump_probe"], 
+            MM["ft_2d_ir"],
+        ]) or (
+            self.measurement_method in [
+                MM["show_shots"],
+                MM["show_spectrum"],
+                MM["scan_spectrum"],
+            ] and self.file_format >= 4
+        ):
 
-        if self.measurement_method in [
-            DCC.MeasurementMethod["pp"], 
-            DCC.MeasurementMethod["ft_2d_ir"],
-        ]:
 
             # datastates, originally in the measurement
             # if the signal is saved, this is different from n_ds
-            spds, n_sp_2, n_ds_2 = IOM.import_spectraAndDatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+            spds, n_sp_2, n_ds_2, self.n_sig, self.add_ds = IOM.import_spectraAndDatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
         
             ds = spds[:,1]
             for i in range(n_ds):
@@ -111,25 +223,30 @@ class MosquitoHelperMethods(DCC.dataclass):
             else:
                 self.measurement_type = "signal"
 
-            if self.measurement_type == "signal":
-                # data already divided by count
-                # 1 data state: the signal
-                _n_ds = 1
-            else:
-                # data not yet divided by count
-                # 2*n_datastates
-                _n_ds = 2 * n_ds
+#             if self.measurement_type == "signal":
+#                 # data already divided by count
+#                 # 1 data state: the signal
+#                 _n_ds = 1
+#             else:
+#                 # data not yet divided by count
+#                 # 2*n_datastates
+#                 _n_ds = 2 * n_ds
 
-#         else:
-#             n_ds = 1
-#             ds = numpy.array([0])
-#             n_sp = 1
-#             sp = numpy.array([0])
+        elif self.measurement_method in [
+                MM["show_shots"],
+                MM["show_spectrum"],
+                MM["scan_spectrum"],
+            ] and self.file_format < 4:
+            
+            # for compatibility with some measurements with the VCD setup
+            self.n_sig = 6
+            self.add_ds = False
+            
 
         # slow modulation
         if self.measurement_method in [
-            DCC.MeasurementMethod["pp"], 
-            DCC.MeasurementMethod["ft_2d_ir"],
+            MM["pump_probe"], 
+            MM["ft_2d_ir"],
         ]:
             sm, sm_names, n_sm = IOM.import_slow_modulation(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
         
@@ -138,15 +255,16 @@ class MosquitoHelperMethods(DCC.dataclass):
             sm_names = ["none"]
             sm = numpy.zeros((1,1)) 
         
+        # delays
         if self.measurement_method in [
-            DCC.MeasurementMethod["pp"], 
-            DCC.MeasurementMethod["ft_2d_ir"], 
-            DCC.MeasurementMethod["find_t0_fast"],
+            MM["pump_probe"], 
+            MM["ft_2d_ir"], 
+            MM["find_t0_fast"],
         ]:
             de, n_de = IOM.import_delays(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
             
         else:
-            de = [0]
+            de = numpy.array([0])
             n_de = 1
         
         # dummy dimension
@@ -154,10 +272,9 @@ class MosquitoHelperMethods(DCC.dataclass):
         n_du = 1
 
         # number of scans
-        # 
         if import_temp_scans or self.measurement_method in [
-            DCC.MeasurementMethod["show_shots"], 
-            DCC.MeasurementMethod["show_spectrum"],
+            MM["show_shots"], 
+            MM["show_spectrum"],
         ]:
             n_sc = IOM.find_number_of_scans(self._file_dict["base_folder"], self._file_dict["base_filename"], self._file_dict["extension"], flag_verbose = self.flag_verbose)
         else:
@@ -172,57 +289,165 @@ class MosquitoHelperMethods(DCC.dataclass):
         #### IMPORT THE DATA ####
         
         if self.measurement_method in [
-            DCC.MeasurementMethod["show_shots"],
+            MM["show_shots"],
         ]:
-        
-            self.b_n = [n_w3, n_sh, 2*n_ds, n_sp, n_sm, n_de, n_du, n_sc]
-            self.b = numpy.empty(self.b_n)
-            self.b_axes = [w3_axis, sh, ds, sp, sm, de, du, sc]
-            self.b_units = ["w3 (cm-1)", "Shots", "Datastates", "Spectra", "x", "x", "x", "Scans"]
-        
-            for sc in range(self.b_n[7]): 
-        
-                suffix = "specials_" + str(sc)
-                temp_s = IOM.import_file(self._file_dict, suffix, self.flag_verbose).T
+#             n_sc = 1
 
-                suffix = "choppers_" + str(sc)
-                temp_c = IOM.import_file(self._file_dict, suffix, self.flag_verbose)
+            total_shots = n_sh * n_sc
+            n_signals = int(n_sc * n_sh / self.n_sig)
+            
+            self.r_n = [n_w3, total_shots, 2*n_ds, n_sp, n_sm, n_de, n_du, 1]
+            self.r = numpy.empty(self.r_n)
+            self.r_axes = [w3_axis, numpy.arange(total_shots), ds, sp, sm, de, du, numpy.array([0])]
+            self.r_units = ["w3 (cm-1)", "Shots", "Datastates", "Spectra", "x", "x", "x", "Scans"]
+            
+            self.f_n = [n_w3, n_signals, 2*n_ds, n_sp, n_sm, n_de, n_du, 1]
+            self.f = numpy.empty(self.r_n)
+            self.f_axes = [w3_axis, numpy.arange(n_signals), ds, sp, sm, de, du, numpy.array([0])]
+            self.f_units = ["w3 (cm-1)", "Signals", "Datastates", "Spectra", "x", "x", "x", "Scans"]
+            
+            self.s_n = [n_w3, n_signals, 1, n_sp, n_sm, n_de, n_du, 1]
+            self.s = numpy.empty(self.r_n)
+            self.s_axes = [w3_axis, numpy.arange(n_signals), ds, sp, sm, de, du, numpy.array([0])]
+            self.s_units = ["w3 (cm-1)", "Signals", "x", "Spectra", "x", "x", "x", "Scans"]
+            
+            paf = self.file_dict["base_filename"] + "_f.npy"
+            
+            if os.path.isfile(paf) and ssh_reload_data == False: 
+
+                self.f = numpy.load(paf, mmap_mode = "r")
+
+                paf = self.file_dict["base_filename"] + "_r_choppers.npy"
+                self.r_choppers = numpy.load(paf, mmap_mode = "r")
+
+                paf = self.file_dict["base_filename"] + "_r_specials.npy"
+                self.r_specials = numpy.load(paf, mmap_mode = "r")    
+        
+                paf = self.file_dict["base_filename"] + "_r.npy"
+                self.r = numpy.load(paf, mmap_mode = "r")    
+
+            else:
+
+                for _sc in range(n_sc): 
+        
+                    s = _sc * n_sh
+                    e = (_sc+1) * n_sh
+        
+                    suffix = "specials_" + str(_sc)
+                    temp_s = IOM.import_file(self._file_dict, suffix, self.flag_verbose).T
+
+                    suffix = "choppers_" + str(_sc)
+                    temp_c = IOM.import_file(self._file_dict, suffix, self.flag_verbose)
  
-                if sc == 0:
-                    n_specials, dump = numpy.shape(temp_s)
-                    n_choppers, dump = numpy.shape(temp_c)
-                    self.b_choppers = numpy.zeros([n_choppers, n_sh, n_sc])
-                    self.b_specials = numpy.zeros([n_specials, n_sh, n_sc])                  
+                    if sc == 0:
+                        n_specials, dump = numpy.shape(temp_s)
+                        n_choppers, dump = numpy.shape(temp_c)
+                        self.r_choppers = numpy.zeros([n_choppers, n_sh * n_sc])
+                        self.r_specials = numpy.zeros([n_specials, n_sh * n_sc])                  
                     
-                self.b_specials[:,:,sc] = temp_s
-                self.b_choppers[:,:,sc] = temp_c
+                    self.r_specials[:,s:e] = temp_s
+                    self.r_choppers[:,s:e] = temp_c
                 
-            
+                    for _ds in range(self.r_n[2]): 
+                        for _sp in range(self.r_n[3]): 
+                            # import probe
+                            suffix = "sp" + str(_sp) + "_ds" + str(_ds) + "_data_" + str(_sc)
+                            self.b[:, s:e, _ds, _sp, 0,0,0,0] = IOM.import_file(self._file_dict, suffix, self.flag_verbose)  
 
-            
-                for ds in range(self.b_n[2]): 
-                    for sp in range(self.b_n[3]): 
-                        # import probe
-                        suffix = "sp" + str(sp) + "_ds" + str(ds) + "_data_" + str(sc)
-                        self.b[:,:,ds,sp,0,0,0,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose)  
+
+                x = 1                
+                for _ch in range(n_choppers):        
+                    temp = numpy.amax(self.r_choppers[_ch,:])
+                    if temp > 0.5:
+                        self.r_choppers[_ch,:] /= temp
+                        self.r_choppers[_ch,:] *= x
+                    x *= 2
+                
+                ds_list = numpy.sum(self.r_choppers, axis = 0).astype(int)
+                
+                n_signals = int(n_sc * n_sh / self.n_sig)
+                
+                ds_count = numpy.zeros(n_ds)
+                for _ds in range(n_ds):
+                    ds_count[_ds] = len(numpy.where(ds_list == _ds)[0]) / n_signals
+                
+                
+                self.r = numpy.zeros((n_w3, n_signals, n_ds)) 
+                count = numpy.zeros((n_signals, n_ds)) 
+                
+                for sig in range(n_signals):
+                    s = sig * self.n_sig
+                    e = (sig+1) * self.n_sig
+    
+                    for _sh in range(self.n_sig):        
+                        self.r[:, sig, ds_list[s+_sh]] += (self.b[:, s+_sh, 2*ds_list[s+_sh], 0, 0, 0, 0, 0] / (self.b[:, s+_sh, 2*ds_list[s+_sh]+1, 0, 0, 0, 0, 0] * ds_count[ds_list[s+_sh]]))
+                        
+                paf = "{base_filename}_r.npy".format(base_filename = self.file_dict["base_filename"])
+                numpy.save(paf, self.r)
+
+                paf = "{base_filename}_f.npy".format(base_filename = self.file_dict["base_filename"])
+                numpy.save(paf, self.f)
+                
+                paf = "{base_filename}_r_choppers.npy".format(base_filename = self.file_dict["base_filename"])
+                numpy.save(paf, self.r_choppers)
+
+                paf = "{base_filename}_r_specials.npy".format(base_filename = self.file_dict["base_filename"])
+                numpy.save(paf, self.r_specials)
+                
 
 
         elif self.measurement_method in [
-            DCC.MeasurementMethod["ft_2d_ir"],
+            MM["show_spectrum"],
+        ]:
+            
+            self.r_n = [n_w3, 1, 2*n_ds, n_sp, n_sm, n_de, n_du, n_sc]
+            self.r = numpy.empty(self.r_n)
+            self.r_axes = [w3_axis, numpy.arange(total_shots), ds, sp, sm, de, du, numpy.array([0])]
+            self.r_units = ["w3 (cm-1)", "Shots", "Datastates", "Spectra", "x", "x", "x", "Scans"]
+            
+            self.s_n = [n_w3, 1, 1, n_sp, n_sm, n_de, n_du, n_sc]
+            self.s = numpy.empty(self.r_n)
+            self.s_axes = [w3_axis, numpy.arange(n_signals), ds, sp, sm, de, du, numpy.array([0])]
+            self.s_units = ["w3 (cm-1)", "Signals", "x", "Spectra", "x", "x", "x", "Scans"]            
+            
+            
+            
+            for _ds in range(self.r_n[2]): 
+                for _sp in range(self.r_n[3]): 
+                    if self.r_n[7] == 0:
+            
+                        suffix = "sp{sp}_ds{ds}_intensity".format(sp = _sp, ds = _ds)
+                        self.r[:, 0, _ds, _sp, 0,0,0,0] = IOM.import_file(self._file_dict, suffix, self.flag_verbose)    
+                        
+                    else:
+                        for _sc in range(self.r_n[7]): 
+                            suffix = "sp{sp}_ds{ds}_intensity_{sc}".format(sp = _sp, ds = _ds, sc = _sc)                
+                            self.r[:, 0, _ds, _sp, 0,0,0, _sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose)    
+             
+
+
+        elif self.measurement_method in [
+            MM["ft_2d_ir"],
         ]:
 
-            # 2d
-            self.b_n = [n_w3, n_t1_bins, _n_ds, n_sp, n_sm, n_de, n_du, n_sc]
-            self.b_intf_n = [n_t1_bins, _n_ds, n_sp, n_sm, n_de, n_du, n_sc]
+            # probe and reference are saved separately
+            if self.measurement_type == "signal":
+                _n_ds = 1
+                
+                self.b_n = [n_w3, n_t1_bins, _n_ds, n_sp, n_sm, n_de, n_du, n_sc]
+                self.b_intf_n = [n_t1_bins, _n_ds, n_sp, n_sm, n_de, n_du, n_sc]
 
-            self.b = numpy.empty(self.b_n)
-            self.b_count = numpy.empty(self.b_n[1:]) 
-            self.b_axes = [w3_axis, t1_bins, spds[:,1], spds[:,0], sm, de, du, sc]
-            self.b_units = ["w3 (cm-1)", "T1 (bins)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
+                self.b = numpy.empty(self.b_n)
+                self.b_count = numpy.empty(self.b_n[1:]) 
+                self.b_axes = [w3_axis, t1_bins, spds[:,1], spds[:,0], sm, de, du, sc]
+                self.b_units = ["w3 (cm-1)", "T1 (bins)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
 
-            self.b_intf = numpy.empty(self.b_intf_n)
-            self.b_intf_axes = [t1_bins, spds[:,1], spds[:,0], sm, de, du, sc]
-            self.b_intf_units = ["T1 (bins)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
+                self.b_intf = numpy.empty(self.b_intf_n)
+                self.b_intf_axes = [t1_bins, spds[:,1], spds[:,0], sm, de, du, sc]
+                self.b_intf_units = ["T1 (bins)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
+
+            else:
+                _n_ds = 2 * n_ds
 
             self.r_n = [n_w3, n_t1_fs, 1, n_sp, n_sm, n_de, n_du, n_sc]
             self.r = numpy.empty(self.r_n)
@@ -238,17 +463,31 @@ class MosquitoHelperMethods(DCC.dataclass):
             self.s_units = ["w3 (cm-1)", "w1 (cm-1)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
 
 
+        elif self.measurement_method in [
+            MM["pump_probe"],
+        ]:
+
             # probe and reference are saved separately
             if self.measurement_type == "signal":
                 _n_ds = 1
+                _ds = numpy.array([0])
+                
+                self.r_n = [n_w3, n_sh, _n_ds, n_sp, n_sm, n_de, n_du, n_sc]
+                self.r = numpy.empty(self.r_n)
+                self.r_axes = [w3_axis, sh, _ds, spds[:,0], sm, de, du, sc]
+                self.r_units = ["w3 (cm-1)", "Shots", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
+
             else:
                 _n_ds = n_ds
-        
-            self.b_n = [n_w3, n_t1_bins, _n_ds, n_sp, n_sm, n_de, n_du, n_sc]
-            self.b_intf_n = [n_t1_bins, _n_ds, n_sp, n_sm, n_de, n_du, n_sc]
+                _ds = ds
+
+                self.s_n = [n_w3, n_sh, _n_ds, n_sp, n_sm, n_de, n_du, n_sc]
+                self.s_axes = [w3_axis, sh, _ds, spds[:,0], sm, de, du, sc]
+                self.s_units = ["w3 (cm-1)", "w1 (cm-1)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
+
 
         elif self.measurement_method in [
-            DCC.MeasurementMethod["vcd"],
+            MM["vcd"],
         ]:
 
             # probe and reference are saved separately
@@ -273,7 +512,14 @@ class MosquitoHelperMethods(DCC.dataclass):
 #         
 #             self.b_n = [n_w3, n_t1_bins, _n_ds, n_sp, n_sm, n_de, n_du, n_sc]
 #             self.b_intf_n = [n_t1_bins, _n_ds, n_sp, n_sm, n_de, n_du, n_sc]
-        
+
+
+
+
+
+
+
+  
         return True
 
 
@@ -393,6 +639,10 @@ class MosquitoHelperMethods(DCC.dataclass):
             return False 
             
         return True
+
+
+    
+
 
     def b_to_r(self):
         """
@@ -586,6 +836,17 @@ class MosquitoHelperMethods(DCC.dataclass):
                      
 
 
+
+
+    def check_axis(self, ax):
+        
+        new_axis = False
+        if ax == False:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            new_axis = True
+            
+        return ax, new_axis
 
 
 if __name__ == "__main__": 

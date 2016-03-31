@@ -27,7 +27,7 @@ class MeasurementMethod(enum.Enum):
 #     scan_spectrum = 9
     point_cloud = 10
     ft_2d_ir = 11
-    pp = 12
+    pump_probe = 12
     vcd = 13
 
 
@@ -115,42 +115,50 @@ class dataclass(CT.ClassTools):
         
         self.dimensions = dimensions
         self.measurements = measurements    
+        self.add_datastates = True
+        self.n_sig = 0 # shots to calculate signal
 
-        self.b = False
-        self.b_axes = False
-        self.b_count = False
-        self.b_units = False
-        self.b_n = False
+
+        self.b = [0] * 8
+        self.b_noise = [0] * 8
+        self.b_axes = [0] * 8
+        self.b_count = [0] * 8
+        self.b_units = [""] * 8
+        self.b_n = [0] * 8
           
-        self.r = False
-        self.r_axes = False  
-        self.r_units = False
-        self.r_n = False
+        self.r = [0] * 8
+        self.r_noise = [0] * 8
+        self.r_axes = [0] * 8  
+        self.r_units = [""] * 8
+        self.f_n = [0] * 8
         
-        self.f = False
-        self.f_axes = False
-        self.f_units = False
-        self.f_n = False
+        self.f = [0] * 8
+        self.f_noise = [0] * 8
+        self.f_axes = [0] * 8
+        self.f_units = [""] * 8
+        self.f_n = [0] * 8
         
-        self.s = False
-        self.s_axes = False
-        self.s_units = False
-        self.s_n = False
+        self.s = [0] * 8
+        self.s_noise = [0] * 8
+        self.s_axes = [0] * 8
+        self.s_units = [""] * 8
+        self.s_n = [0] * 8
+        
 
-        self.b_intf = False
-        self.b_intf_axes = False
-        self.b_intf_n = False
-        self.b_intf_units = False
+        self.b_intf = [0] * 8
+        self.b_intf_axes = [0] * 8
+        self.b_intf_n = [0] * 8
+        self.b_intf_units = [0] * 8
         
-        self.r_intf = False
-        self.r_intf_axes = False
-        self.r_intf_n = False
-        self.r_intf_units = False
+        self.r_intf = [0] * 8
+        self.r_intf_axes = [0] * 8
+        self.r_intf_n = [0] * 8
+        self.r_intf_units = [0] * 8
         
-        self.f_intf = False
-        self.f_intf_axes = False
-        self.f_intf_n = False
-        self.f_intf_units = False
+        self.f_intf = [0] * 8
+        self.f_intf_axes = [0] * 8
+        self.f_intf_n = [0] * 8
+        self.f_intf_units = [0] * 8
 
         self.n_scans = 0
 

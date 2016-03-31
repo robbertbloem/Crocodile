@@ -44,9 +44,6 @@ class show_shots(MH.MosquitoHelperMethods):
         pixels (int, list or ndarray, default: 15): the pixel or pixels you want to view.
         scans (int, list or ndarray, default: -1): the scan or scans you want to view. If <0, all scans will be shown. 
         
-         
-        
-        
         """
 
         shot_axes = numpy.arange(self.b_n[1])
@@ -71,10 +68,11 @@ class show_shots(MH.MosquitoHelperMethods):
         else:
             pixel_range = numpy.array([15])
         
+        ax, new_axis = self.check_axis(ax)
             
-        if ax == False:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)    
+#         if ax == False:
+#             fig = plt.figure()
+#             ax = fig.add_subplot(111)    
         
         
         
@@ -95,7 +93,7 @@ class show_shots(MH.MosquitoHelperMethods):
         plt.show()
 
 
-    def plot_signal(self):
+    def plot_signal(self, ax = False):
         
         pixels = numpy.arange(32)
         
@@ -111,6 +109,8 @@ class show_shots(MH.MosquitoHelperMethods):
         signals_per_scan = int(self.b_n[1] / shots_per_signal)
         
         pi = 12
+        
+        ax, new_axis = self.check_axis(ax)
         
         sig_counter = 0
         for sc in range(self.b_n[7]):   
@@ -139,54 +139,20 @@ class show_shots(MH.MosquitoHelperMethods):
                     half_signals[pi, :, sig_counter] = numpy.array([L0, R0, L1, R1])
                     
                     signals[pi, sig_counter] = -numpy.log10((L1 * R0) / (R1 * L0))
-                    
-#                     if sig_counter in [332, 336] and pi in [12,25]:
-#                         print(sig_counter, pi, L1, R1, L0, R0, L1/R1, L0/R0, (L1 * R0), (R1 * L0))
 
-#                     if pi == 12:
-#                         if signals[pi, sig_counter] > 0:
-#                             index = 1
-#                         else:
-#                             index = 0
-#                         s[index,:] += numpy.array([L1,R1,L0,R0])
-#                         c[index] += 1
                     
                 sig_counter += 1
             
 
-#         print(s[0,:]/c[0], s[1,:]/c[1]) 
-        
+class pump_probe(MH.MosquitoHelperMethods):
+    """
+    pump probe
+    """
 
-#         numpy.save("/Users/robbert/Temp/20160310/halfsignals.npy", half_signals)
-        
-        
-#         show = [12,25]
-#         fig = plt.figure()
-#         ax = fig.add_subplot(111)     
-#         for pi in show:
-#             ax.plot(signals[pi,:], marker = ".", linewidth = 0)
-#         plt.show()
-### 336
+    def __init__(self, objectname, flag_verbose = False):
+        self.verbose("New pump_probe class", flag_verbose)
+        MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["pump_probe"], flag_verbose = flag_verbose)
 
-        
-
-          
-#         print(numpy.max(signals))
-#         print(numpy.min(signals))
-        
-#         fig = plt.figure()
-#         ax = fig.add_subplot(111)     
-#         levels = numpy.linspace(-0.025, 0.025, 21)
-#         ax.contourf(signals, cmap = FU.rwb_cmap, levels = levels)
-#         plt.show()
-
-        
-#         spectrum = numpy.mean(signals, axis = 1)
-#         fig = plt.figure()
-#         ax = fig.add_subplot(111)     
-# #         for pi in pixels:
-#         ax.plot(spectrum)
-#         plt.show()
 
 
 # class show_spectrum(MH.MosquitoHelperMethods):
