@@ -10,6 +10,7 @@ import Crocodile.Resources.DataClassCol as DCC
 import Crocodile.Resources.MosquitoHelper as MH
 import Crocodile.Resources.IOMethods as IOM
 import Crocodile.Resources.Functions as FU
+import Crocodile.Resources.Plotting as PL
 
 import imp
 
@@ -18,7 +19,7 @@ imp.reload(IOM)
 
 class VCD(MH.MosquitoHelperMethods):
 
-    def __init__(self, objectname, flag_verbose = False):
+    def __init__(self, objectname, flag_verbose = 0):
         self.verbose("New VCD class", flag_verbose)
         MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["vcd"], flag_verbose = flag_verbose)
         
@@ -27,37 +28,64 @@ class VCD(MH.MosquitoHelperMethods):
 class show_shots(MH.MosquitoHelperMethods):
     """
     show_shots
+    
+    r: the individual shots, separated by their datastate
+    f: average shots for a datastate. I.e. in the VCD experiment, some datastates are measured twice and others only once. 
+    s: the signals. 
+    
+    NORMAL CHOPPED MEASUREMENT  
+    100 shots
+    datastates = [0,1]
+    r: 4 datastates, 50 shots for each
+    f: as r
+    s: 50 signals
+    
+    VCD MEASUREMENT
+    120 shots
+    datastates = [0,1,0,2,3,2]
+    r: 4 datastates, 40 shots for each
+    f: 4 datastates with either 40 or 80 shots
+    s: 40 signals
+    
+    
+    
     """
 
-    def __init__(self, objectname, flag_verbose = False):
+    def __init__(self, objectname, flag_verbose = 0):
         self.verbose("New show_shots class", flag_verbose)
         MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["show_shots"], flag_verbose = flag_verbose)
         
         self.ss_colors = ["k", "r", "green", "blue", "yellow", "orange", "gold", "purple", "brown", "pink", "darkgreen", "lightblue", "grey"]
 
+    def import_data(self, reload_data = False):
+        self.import_data_show_shots(reload_data = reload_data)
 
-    def make_plot(self, ax = False, pixels = 15, scans = -1, concat = True):  
+
+    def plot_shots(self, ax = False, pixels = 15, shots = -1):  
         """
         
         INPUT:
         ax (matplotlib axes object, default: False): If False, a new figure will be made.
         pixels (int, list or ndarray, default: 15): the pixel or pixels you want to view.
-        scans (int, list or ndarray, default: -1): the scan or scans you want to view. If <0, all scans will be shown. 
+        shots (int, list or ndarray, default: -1): the range of shots to be plotted. If shots < 0, all will be plotted. If type(shots) = int, shots 0 to int are plotted. If shots is a list [a,b], shots a to b will be plotted. 
         
         """
 
-        shot_axes = numpy.arange(self.b_n[1])
-        
-        if scans < 0:
-            scan_range = numpy.arange(self.b_n[7])
-        elif type(scans) == "int":
-            scan_range = numpy.array[scans]
-        elif type(scans) == numpy.ndarray:
-            scan_range = scans
-        elif type(scans) == "list":
-            scan_range = numpy.array(scans)
+        if type(shots) == int:
+            if shots < 0:
+                s = 0
+                e = self.r_n[1]
+            else:
+                s = 0
+                e = shots
+        elif type(shots) == numpy.ndarray or type(shots) == list:
+            s = shots[0]
+            e = shots[1]
         else:
-            scan_range = numpy.arange(self.b_n[7])
+            s = 0
+            e = self.r_n[1]
+        
+        shot_axes = numpy.arange(self.r_n[1])[s:e]
         
         if type(pixels) == "int":
             pixel_range = numpy.array([pixels])
@@ -70,78 +98,82 @@ class show_shots(MH.MosquitoHelperMethods):
         
         ax, new_axis = self.check_axis(ax)
             
-#         if ax == False:
-#             fig = plt.figure()
-#             ax = fig.add_subplot(111)    
+        if ax == False:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)    
         
-        
-        
-        for ds in range(self.b_n[2]):
+        for ds in range(self.r_n[2]):
             color = self.ss_colors[ds]
             for pi in pixel_range:
-                for sc in scan_range:
-                    data = self.b[pi,:,ds,0,0,0,0,sc]
-                    mask = numpy.isfinite(data)   
-                
-                    if concat:
-                        temp = sc * self.b_n[1]
-                    else:
-                        temp = 0
 
-                    ax.plot(shot_axes[mask] + temp, data[mask], marker = ".", linestyle = "none", color = color)
+                data = self.r[pi,s:e,ds,0,0,0,0,0]
+                mask = numpy.isfinite(data)   
+
+                ax.plot(shot_axes[mask], data[mask], marker = ".", linestyle = "none", color = color)
+                
+        ax.set_xlabel("Shots")
+        ax.set_ylabel("V")
             
         plt.show()
 
 
-    def plot_signal(self, ax = False):
+    def plot_signals(self, ax = False, pixels = 15, range = -1):  
+        """
         
-        pixels = numpy.arange(32)
+        INPUT:
+        ax (matplotlib axes object, default: False): If False, a new figure will be made.
+        pixels (int, list or ndarray, default: 15): the pixel or pixels you want to view.
+        signals (int, list or ndarray, default: -1): the range of signals to be plotted. If signals < 0, all will be plotted. If type(signals) = int, signals 0 to int are plotted. If signals is a list [a,b], signals a to b will be plotted. 
         
-        shots_per_signal = 6
+        """
+
+        if type(range) == int:
+            if range < 0:
+                s = 0
+                e = self.s_n[1]
+            else:
+                s = 0
+                e = range
+        elif type(range) == numpy.ndarray or type(range) == list:
+            s = range[0]
+            e = range[1]
+        else:
+            s = 0
+            e = self.s_n[1]
         
-        total_shots = self.b_n[1] * self.b_n[7]
+        shot_axes = numpy.arange(self.s_n[1])[s:e]
         
-        total_signals = int(total_shots / shots_per_signal)
-        signals = numpy.zeros((32, total_signals))
-        
-        half_signals = numpy.zeros((32, 4, total_signals))
-        
-        signals_per_scan = int(self.b_n[1] / shots_per_signal)
-        
-        pi = 12
+        if type(pixels) == "int":
+            pixel_range = numpy.array([pixels])
+        elif type(pixels) == numpy.ndarray:
+            pixel_range = pixels
+        elif type(pixels) == "list":
+            pixel_range = numpy.array(pixels)
+        else:
+            pixel_range = numpy.array([15])
         
         ax, new_axis = self.check_axis(ax)
-        
-        sig_counter = 0
-        for sc in range(self.b_n[7]):   
-            for sh in range(signals_per_scan):
-                sh_s = sh * shots_per_signal
-                sh_e = sh_s + shots_per_signal
-                
-                if sc == 0 and sh == 0:
-                    print(self.b[pi,sh_s:sh_e, :, 0,0,0,0,sc])
-                
-                for pi in pixels:
-                    L0p = numpy.nanmean(self.b[pi,sh_s:sh_e, 0, 0,0,0,0,sc])
-                    L0r = numpy.nanmean(self.b[pi,sh_s:sh_e, 1, 0,0,0,0,sc])
-                    R0p = numpy.nanmean(self.b[pi,sh_s:sh_e, 2, 0,0,0,0,sc])
-                    R0r = numpy.nanmean(self.b[pi,sh_s:sh_e, 3, 0,0,0,0,sc])
-                    L1p = numpy.nanmean(self.b[pi,sh_s:sh_e, 4, 0,0,0,0,sc])
-                    L1r = numpy.nanmean(self.b[pi,sh_s:sh_e, 5, 0,0,0,0,sc])
-                    R1p = numpy.nanmean(self.b[pi,sh_s:sh_e, 6, 0,0,0,0,sc])
-                    R1r = numpy.nanmean(self.b[pi,sh_s:sh_e, 7, 0,0,0,0,sc])
-                    
-                    L0 = L0p / L0r
-                    R0 = R0p / R0r
-                    L1 = L1p / L1r
-                    R1 = R1p / R1r
-                    
-                    half_signals[pi, :, sig_counter] = numpy.array([L0, R0, L1, R1])
-                    
-                    signals[pi, sig_counter] = -numpy.log10((L1 * R0) / (R1 * L0))
+            
+        if ax == False:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)    
 
+        for pi in pixel_range:
+
+            data = self.s[pi,s:e,0,0,0,0,0,0]
+            mask = numpy.isfinite(data)   
+
+            ax.plot(shot_axes[mask], data[mask], marker = ".", linestyle = "none", color = "b")
+
+        ax.set_xlabel("Signals")
+        ax.set_ylabel("mOD")
                     
-                sig_counter += 1
+        plt.show()
+
+
+
+
+
             
 
 class pump_probe(MH.MosquitoHelperMethods):
@@ -149,7 +181,7 @@ class pump_probe(MH.MosquitoHelperMethods):
     pump probe
     """
 
-    def __init__(self, objectname, flag_verbose = False):
+    def __init__(self, objectname, flag_verbose = 0):
         self.verbose("New pump_probe class", flag_verbose)
         MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["pump_probe"], flag_verbose = flag_verbose)
 
@@ -315,44 +347,47 @@ class pump_probe(MH.MosquitoHelperMethods):
 # #         self.b_intf_axes = [t1_bins, spds[:,1], self.ds]
 # #         self.b_intf_units = ["T1 (bins)", "Datastates", "Spectra"]
 # 
-# 
-# 
-# class FT2DIR(MH.MosquitoHelperMethods):
-#     """
-# 
-#     """
-# 
-#     def __init__(self, objectname, flag_verbose = False):
-#         self.verbose("New pe_col class", flag_verbose)
-#         DCC.dataclass.__init__(self, objectname = objectname, flag_verbose = flag_verbose)
-# 
-# 
-# 
-#     def make_plots(self, x_range = [0,0], invert_colors = False, flip_spectrum = False):
-#  
-#         inv = 1
-#         if invert_colors:
-#             inv = -1
-# 
-# 
-#         for sp in range(self.s_n[3]):
-#             for sm in range(self.s_n[4]):
-#                 for de in range(self.s_n[5]): 
-#                     for du in range(self.s_n[6]):
-#                         for sc in range(self.s_n[7]):
-# 
-#                             fig = plt.figure()
-#                             ax = fig.add_subplot(111)        
-#                             ax.set_aspect("equal")
-#                         
-#                             title = "%s %s fs" % (self._basename, self.s_axes[5][de])
-#                             if flip_spectrum:
-#                                 PL.contourplot(inv * self.s[:, :, 0, sp, sm, de, du, sc], self.s_axes[1], self.s_axes[0], y_range = [0,0], x_range = x_range, y_label = "w3 (cm-1)", x_label = "w1 (cm-1)", title = title, ax = ax)                        
-#                             else:
-#                                 PL.contourplot(inv * self.s[:, :, 0, sp, sm, de, du, sc].T, self.s_axes[0], self.s_axes[1], x_range = x_range, y_range = [0,-1], x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", title = title, ax = ax)
-# 
-#         plt.show()
-#    
+
+
+class FT2DIR(MH.MosquitoHelperMethods):
+    """
+
+    """
+
+    def __init__(self, objectname, flag_verbose = 0):
+        self.verbose("New pe_col class", flag_verbose)
+        DCC.dataclass.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["ft_2d_ir"], flag_verbose = flag_verbose)
+
+    def import_data(self, t1_offset = 0, import_temp_scans = False):
+        self.import_data_2dir(import_temp_scans = import_temp_scans, t1_offset = t1_offset)
+
+    def make_plots(self, x_range = [0,0], invert_colors = False, flip_spectrum = False, contours = 12):
+ 
+        inv = 1
+        if invert_colors:
+            inv = -1
+
+
+        for sp in range(self.s_n[3]):
+            for sm in range(self.s_n[4]):
+                for de in range(self.s_n[5]): 
+                    for du in range(self.s_n[6]):
+                        for sc in range(self.s_n[7]):
+
+                            fig = plt.figure()
+                            ax = fig.add_subplot(111)        
+                            ax.set_aspect("equal")
+                        
+                            title = "%s %s fs" % (self._basename, self.s_axes[5][de])
+                            if flip_spectrum:
+                                PL.contourplot(inv * self.s[:, :, 0, sp, sm, de, du, sc], self.s_axes[1], self.s_axes[0], y_range = [0,0], x_range = x_range, y_label = "w3 (cm-1)", x_label = "w1 (cm-1)", title = title, ax = ax, contours = contours)                        
+                            else:
+                                PL.contourplot(inv * self.s[:, :, 0, sp, sm, de, du, sc].T, self.s_axes[0], self.s_axes[1], x_range = x_range, y_range = [0,-1], x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", title = title, ax = ax, contours = contours)
+
+        plt.show()
+   
+
+
 
 
 

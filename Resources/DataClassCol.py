@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+# import imp
 import enum
 
 import inspect
@@ -13,6 +14,7 @@ import numpy
 import Crocodile
 import PythonTools.ClassTools as CT
 
+# imp.reload(CT)
 
 class MeasurementMethod(enum.Enum):
     show_shots = 0
@@ -37,7 +39,7 @@ class dataclass(CT.ClassTools):
     Most of the variables are lists which point to ndarrays with the real data.
     """
 
-    def __init__(self, objectname, measurement_method, flag_verbose = False):
+    def __init__(self, objectname, measurement_method, flag_verbose = 0):
         """
         croc.DataClasses.messdata
 
@@ -118,47 +120,47 @@ class dataclass(CT.ClassTools):
         self.add_datastates = True
         self.n_sig = 0 # shots to calculate signal
 
-
-        self.b = [0] * 8
-        self.b_noise = [0] * 8
-        self.b_axes = [0] * 8
-        self.b_count = [0] * 8
-        self.b_units = [""] * 8
-        self.b_n = [0] * 8
-          
-        self.r = [0] * 8
-        self.r_noise = [0] * 8
-        self.r_axes = [0] * 8  
-        self.r_units = [""] * 8
-        self.f_n = [0] * 8
-        
-        self.f = [0] * 8
-        self.f_noise = [0] * 8
-        self.f_axes = [0] * 8
-        self.f_units = [""] * 8
-        self.f_n = [0] * 8
-        
-        self.s = [0] * 8
-        self.s_noise = [0] * 8
-        self.s_axes = [0] * 8
-        self.s_units = [""] * 8
-        self.s_n = [0] * 8
-        
-
-        self.b_intf = [0] * 8
-        self.b_intf_axes = [0] * 8
-        self.b_intf_n = [0] * 8
-        self.b_intf_units = [0] * 8
-        
-        self.r_intf = [0] * 8
-        self.r_intf_axes = [0] * 8
-        self.r_intf_n = [0] * 8
-        self.r_intf_units = [0] * 8
-        
-        self.f_intf = [0] * 8
-        self.f_intf_axes = [0] * 8
-        self.f_intf_n = [0] * 8
-        self.f_intf_units = [0] * 8
+# 
+#         self.b = [0] * 8
+#         self.b_noise = [0] * 8
+#         self.b_axes = [0] * 8
+#         self.b_count = [0] * 8
+#         self.b_units = [""] * 8
+#         self.b_n = [0] * 8
+#           
+#         self.r = [0] * 8
+#         self.r_noise = [0] * 8
+#         self.r_axes = [0] * 8  
+#         self.r_units = [""] * 8
+#         self.f_n = [0] * 8
+#         
+#         self.f = [0] * 8
+#         self.f_noise = [0] * 8
+#         self.f_axes = [0] * 8
+#         self.f_units = [""] * 8
+#         self.f_n = [0] * 8
+#         
+#         self.s = [0] * 8
+#         self.s_noise = [0] * 8
+#         self.s_axes = [0] * 8
+#         self.s_units = [""] * 8
+#         self.s_n = [0] * 8
+#         
+# 
+#         self.b_intf = [0] * 8
+#         self.b_intf_axes = [0] * 8
+#         self.b_intf_n = [0] * 8
+#         self.b_intf_units = [0] * 8
+#         
+#         self.r_intf = [0] * 8
+#         self.r_intf_axes = [0] * 8
+#         self.r_intf_n = [0] * 8
+#         self.r_intf_units = [0] * 8
+#         
+#         self.f_intf = [0] * 8
+#         self.f_intf_axes = [0] * 8
+#         self.f_intf_n = [0] * 8
+#         self.f_intf_units = [0] * 8
 
         self.n_scans = 0
 
