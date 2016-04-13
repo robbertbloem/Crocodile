@@ -20,7 +20,8 @@ suite_list = [
     "Suite 1: Find axes",
     "Suite 2: Make contours",
     "Suite 3: Find axes indices",
-    "Suite 4: Truncate data"
+    "Suite 4: Truncate data",
+    "Suite 5: Find subplots"
 ]
 
 # add arguments
@@ -30,6 +31,7 @@ parser.add_argument("-s1", "--skip1", action = "store_true", help = suite_list[0
 parser.add_argument("-s2", "--skip2", action = "store_true", help = suite_list[1])
 parser.add_argument("-s3", "--skip3", action = "store_true", help = suite_list[2])
 parser.add_argument("-s4", "--skip4", action = "store_true", help = suite_list[3])
+parser.add_argument("-s5", "--skip5", action = "store_true", help = suite_list[4])
 
 # process
 args = parser.parse_args()
@@ -67,6 +69,59 @@ def execute(args):
         unittest.TextTestRunner(verbosity=1).run(suite)    
     else:
         DEBUG.verbose("Skipping: " + suite_list[3], True)  
+
+    if args.skip5 == False:
+        suite = unittest.TestLoader().loadTestsFromTestCase(Test_find_subplots)
+        unittest.TextTestRunner(verbosity=1).run(suite)    
+    else:
+        DEBUG.verbose("Skipping: " + suite_list[4], True)  
+
+
+class Test_find_subplots(unittest.TestCase):
+    """
+
+    CHANGELOG:
+    20160412/RB: started the suite
+
+    """
+
+    def test(self):
+        self.flag_verbose = args.verbose
+
+        par = [
+            [0,1,1],
+            [1,1,1],
+            [2,2,1],
+            [3,2,2],
+            [4,2,2],
+            [5,3,2],
+            [6,3,2],
+            [7,3,3],
+            [8,3,3],
+            [9,3,3],
+            [10,4,3],
+            [11,4,3],
+            [12,4,3],
+            [13,4,4],
+            [14,4,4],
+            [15,4,4],
+            [16,4,4],
+            [17,5,4],
+            [18,5,4],
+            [19,5,4],
+            [20,5,4],
+            [21,5,5],
+            [22,5,5],
+            [23,5,5],
+            [24,5,5],
+        ]
+        
+        for p in par:
+            x, y = FU.find_subplots(p[0])
+            print(p[0], x, y)
+            self.assertEqual(x, p[1])
+            self.assertEqual(y, p[2])
+            
 
 
 

@@ -213,3 +213,42 @@ def truncate_data(data, x_axis, y_axis, x_min_i, x_max_i, y_min_i, y_max_i, flag
         
     return data, x_axis, y_axis
 
+
+
+def find_subplots(n_plots, flag_verbose = 0):
+    """
+    x, y
+    1 plot: 1,1
+    2 plots: 2,1
+    3,4 plots: 2,2
+    5,6 plots: 3,2
+    7,8,9 plots: 3,3
+    10,11,12 plots: 4,3
+    13-16 plots: 4,4    
+    16-20 plots: 5,4
+    """
+    
+    numpy.sqrt(n_plots)
+    
+    return 2, 1
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
