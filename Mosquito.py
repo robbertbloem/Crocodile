@@ -11,6 +11,8 @@ import Crocodile.Resources.MosquitoHelper as MH
 import Crocodile.Resources.IOMethods as IOM
 import Crocodile.Resources.Functions as FU
 import Crocodile.Resources.Plotting as PL
+import Crocodile.Resources.Equations as EQ
+import Crocodile.Resources.Mathematics as M
 
 import imp
 
@@ -171,8 +173,11 @@ class show_shots(MH.MosquitoHelperMethods):
         plt.show()
 
 
-
-
+#     def print_stats(self):
+#         mean_s = numpy.mean(self.s)
+#         std_s = numpy.std(self.s)
+#         
+#         print(mean_s, std_s)
 
             
 
@@ -349,23 +354,76 @@ class pump_probe(MH.MosquitoHelperMethods):
 # 
 
 
+class scan_spectrum(MH.MosquitoHelperMethods):
+    """
+    
+    """
+    
+    def __init__(self, objectname, flag_verbose = 0):
+        self.verbose("New scan_spectrum class", flag_verbose)
+        DCC.dataclass.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["scan_spectrum"], flag_verbose = flag_verbose)
+
+    def import_data(self):
+        self.import_data_scan_spectrum()
+        
+    def make_plot(self, ax = False, normalize = False, fit = False):
+        
+        if ax == False:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+        
+        if normalize:
+            for ds in range(self.r_n[2]):
+                self.r[:,0,ds,0,0,0,0,0] -= numpy.nanmin(self.r[:,0,ds,0,0,0,0,0])
+                self.r[:,0,ds,0,0,0,0,0] /= numpy.nanmax(self.r[:,0,ds,0,0,0,0,0])
+
+        ax.plot(self.r_axes[0], self.r[:,0,0,0,0,0,0,0], color = "g")
+        ax.plot(self.r_axes[0], self.r[:,0,1,0,0,0,0,0], color = "r")
+             
+             
+        
+        if fit:
+            colors = ["lightgreen", "orange"]
+            labels = ["probe", "reference"]
+            sigma = (self.r_axes[0][0] - self.r_axes[0][-1]) / 4
+            A = [sigma,numpy.mean(self.r_axes[0]), 0, 1] # initial guess
+            
+            
+            print("           mu       sigma   offset    scale")
+            for ds in range(self.r_n[2]):
+                A_final = M.fit(self.r_axes[0], self.r[:,0,ds,0,0,0,0,0], EQ.rb_gaussian, A)
+                ax.plot(self.r_axes[0], EQ.rb_gaussian(A_final, self.r_axes[0]), color = colors[ds])
+                
+                print("{label:10} {mu:.5}   {sigma:.3}   {offset:.3}   {scale:.3}".format(label = labels[ds], mu = A_final[1], sigma = A_final[0], offset = A_final[2], scale = A_final[3]))
+                
+#                 print("mu: {mu}, sigma: {sigma}, offset: {os}, scale: {sc}".format())
+
+        
+
+
+        
+
+
 class FT2DIR(MH.MosquitoHelperMethods):
     """
 
     """
 
     def __init__(self, objectname, flag_verbose = 0):
-        self.verbose("New pe_col class", flag_verbose)
+        self.verbose("New FT2DIR class", flag_verbose)
         DCC.dataclass.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["ft_2d_ir"], flag_verbose = flag_verbose)
 
     def import_data(self, t1_offset = 0, import_temp_scans = False):
         self.import_data_2dir(import_temp_scans = import_temp_scans, t1_offset = t1_offset)
 
-    def make_plots(self, x_range = [0,0], invert_colors = False, flip_spectrum = False, contours = 12):
+    def make_plots(self, x_range = [0,0], y_range = [0,-1], invert_colors = False, flip_spectrum = False, contours = 12, aspect = "equal", single_plot = False):
  
         inv = 1
         if invert_colors:
             inv = -1
+            
+        if single_plot:
+            pass
 
 
         for sp in range(self.s_n[3]):
@@ -373,16 +431,18 @@ class FT2DIR(MH.MosquitoHelperMethods):
                 for de in range(self.s_n[5]): 
                     for du in range(self.s_n[6]):
                         for sc in range(self.s_n[7]):
-
+                            
+#                             if single_plot == False:
                             fig = plt.figure()
-                            ax = fig.add_subplot(111)        
-                            ax.set_aspect("equal")
+                            ax = fig.add_subplot(111)  
+                            if aspect:
+                                ax.set_aspect(aspect)
                         
                             title = "%s %s fs" % (self._basename, self.s_axes[5][de])
                             if flip_spectrum:
-                                PL.contourplot(inv * self.s[:, :, 0, sp, sm, de, du, sc], self.s_axes[1], self.s_axes[0], y_range = [0,0], x_range = x_range, y_label = "w3 (cm-1)", x_label = "w1 (cm-1)", title = title, ax = ax, contours = contours)                        
+                                PL.contourplot(inv * self.s[:, :, 0, sp, sm, de, du, sc], self.s_axes[1], self.s_axes[0], x_range = x_range, y_range = y_range, y_label = "w3 (cm-1)", x_label = "w1 (cm-1)", title = title, ax = ax, contours = contours)                        
                             else:
-                                PL.contourplot(inv * self.s[:, :, 0, sp, sm, de, du, sc].T, self.s_axes[0], self.s_axes[1], x_range = x_range, y_range = [0,-1], x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", title = title, ax = ax, contours = contours)
+                                PL.contourplot(inv * self.s[:, :, 0, sp, sm, de, du, sc].T, self.s_axes[0], self.s_axes[1], x_range = x_range, y_range = y_range, x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", title = title, ax = ax, contours = contours)
 
         plt.show()
    

@@ -33,8 +33,6 @@ class MosquitoHelperMethods(DCC.dataclass):
         DCC.dataclass.__init__(self, objectname = objectname, measurement_method = measurement_method, flag_verbose = flag_verbose)  
 
 
-
-
     def import_data_show_shots(self, reload_data = False):
 
         if self.find_file_format() == False:
@@ -74,7 +72,7 @@ class MosquitoHelperMethods(DCC.dataclass):
         self.r_units = ["w3 (cm-1)", "Shots", "Datastates", "Spectra", "x", "x", "x", "Scans"]
         
         self.f_n = [n_w3, n_signals, n_ds, n_sp, 1, 1, 1, 1]
-        self.f = numpy.empty(self.f_n)
+        self.f = numpy.zeros(self.f_n)
         self.f_axes = [w3_axis, numpy.arange(n_signals), numpy.arange(n_ds), numpy.arange(n_sp), empty_list, empty_list, empty_list, empty_list]
         self.f_units = ["w3 (cm-1)", "Signals", "Datastates", "Spectra", "x", "x", "x", "Scans"]
         
@@ -82,6 +80,8 @@ class MosquitoHelperMethods(DCC.dataclass):
         self.s = numpy.empty(self.s_n)
         self.s_axes = [w3_axis, numpy.arange(n_signals), empty_list, numpy.arange(n_sp), empty_list, empty_list, empty_list, empty_list]
         self.s_units = ["w3 (cm-1)", "Signals", "x", "Spectra", "x", "x", "x", "Scans"]
+        
+#         print(self.f[0,0,0,0,0,0,0,0])
         
         # import data
         
@@ -118,10 +118,10 @@ class MosquitoHelperMethods(DCC.dataclass):
                     n_choppers, dump = numpy.shape(temp_c)
                     self.r_choppers = numpy.zeros([n_choppers, n_sh * n_sc])
                     self.r_specials = numpy.zeros([n_specials, n_sh * n_sc])                  
-                
+
                 self.r_specials[:,s:e] = temp_s
                 self.r_choppers[:,s:e] = temp_c
-            
+                
                 for _ds in range(self.r_n[2]): 
                     for _sp in range(self.r_n[3]): 
                         # import probe
@@ -130,11 +130,17 @@ class MosquitoHelperMethods(DCC.dataclass):
 
 
             x = 1                
-            for _ch in range(n_choppers):        
-                temp = numpy.amax(self.r_choppers[_ch,:])
-                if temp > 0.5:
+            for _ch in range(n_choppers):      
+                # if chop_max is not >0.5, the chopper was not on
+                # if chop_min is not <0.5, it probably is the temperature alert. 
+                chop_max = numpy.amax(self.r_choppers[_ch,:])
+                chop_min = numpy.amin(self.r_choppers[_ch,:])
+                
+                if chop_max > 0.5 and chop_min < 0.5:
                     self.r_choppers[_ch,:] /= temp
                     self.r_choppers[_ch,:] *= x
+                else: 
+                    self.r_choppers[_ch,:] = 0
                 x *= 2
             
             ds_list = numpy.sum(self.r_choppers, axis = 0).astype(int)
@@ -146,7 +152,7 @@ class MosquitoHelperMethods(DCC.dataclass):
                 ds_count[_ds] = len(numpy.where(ds_list == _ds)[0]) / n_signals
 
             count = numpy.zeros((n_signals, n_ds)) 
-            
+
             for sig in range(n_signals):
                 s = sig * self.n_sig
                 e = (sig+1) * self.n_sig
@@ -165,7 +171,9 @@ class MosquitoHelperMethods(DCC.dataclass):
 
             paf = "{base_filename}_r_specials.npy".format(base_filename = self.file_dict["base_filename"])
             numpy.save(paf, self.r_specials)
-            
+        
+#         print(self.f[0,0,0,0,0,0,0,0])
+        
         if self.add_ds:
         
             N = numpy.zeros(self.s_n)
@@ -214,8 +222,6 @@ class MosquitoHelperMethods(DCC.dataclass):
                 else:
                     pass
                 
-        
-
 
     def import_data_2dir(self, import_temp_scans = False, t1_offset = 0):
         """
@@ -297,7 +303,7 @@ class MosquitoHelperMethods(DCC.dataclass):
             self.b_intf_units = ["T1 (bins)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
 
         self.r_n = [n_w3, n_t1_fs, 1, n_sp, n_sm, n_de, n_du, n_sc]
-        self.r = numpy.empty(self.r_n)
+        self.r = numpy.zeros(self.r_n)
         self.r_axes = [w3_axis, t1_fs, [0], spds[:,0], sm, de, du, sc]
         self.r_units = ["w3 (cm-1)", "T1 (bins)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
         
@@ -306,13 +312,13 @@ class MosquitoHelperMethods(DCC.dataclass):
         self.r_intf_axes = [t1_bins, spds[:,1], spds[:,0], sm, de, du, sc]
         self.r_intf_units = ["T1 (bins)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
 
-        self.f_n = [n_w3, n_t1_bins, 2, n_sp, n_sm, n_de, n_du, n_sc]
-        self.f = numpy.empty(self.f_n)
+        self.f_n = [n_w3, n_t1_fs, 2, n_sp, n_sm, n_de, n_du, n_sc]
+        self.f = numpy.zeros(self.f_n)
         self.f_axes = [w3_axis, [0], [0], spds[:,0], sm, de, du, sc]
         self.f_units = ["w3 (cm-1)", "w1 (cm-1)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
 
-        self.s_n = [n_w3, n_t1_bins, 1, n_sp, n_sm, n_de, n_du, n_sc]
-        self.s = numpy.empty(self.s_n)
+        self.s_n = [n_w3, n_t1_fs, 1, n_sp, n_sm, n_de, n_du, n_sc]
+        self.s = numpy.zeros(self.s_n)
         self.s_axes = [w3_axis, [0], [0], spds[:,0], sm, de, du, sc]
         self.s_units = ["w3 (cm-1)", "w1 (cm-1)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
         
@@ -426,8 +432,24 @@ class MosquitoHelperMethods(DCC.dataclass):
             self.b_count = self.b_count[:,::-1,:,:,:,:,:,:]            
 
 
+    def import_data_scan_spectrum(self):
+    
+    
+        wl, n_wl = IOM.import_wavelengths(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        
+        wl = 1e7 / wl
+        
+        empty = numpy.arange(1)
+        self.r_n = [n_wl, 1, 2, 1, 1, 1, 1, 1]
+        self.r = numpy.empty(self.r_n)
+        self.r_axes = [wl, empty, numpy.arange(2), empty, empty, empty, empty, empty]
+        self.r_units = ["wl (cm-1)", "x", "Datastates", "x", "x", "x", "x", "x"] 
+        
+        suffix = "data_0"
+        self.r[:,0,:,0,0,0,0,0] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1).T
+        
 
-
+    
 
     def find_file_format(self, flag_verbose = False):
         """
@@ -462,11 +484,9 @@ class MosquitoHelperMethods(DCC.dataclass):
         return True
 
 
-    
-
-
     def b_to_r(self):
         """
+        2D-IR
         Calculate the signal from the probe and reference intensity.
         """ 
         
@@ -529,10 +549,6 @@ class MosquitoHelperMethods(DCC.dataclass):
                                 D[pi,:,0,:,:,:,:,:] *= self.b[pi,:,2*ds,:,:,:,:,:,:] / self.b[pi,:,2*ds+1,:,:,:,:,:,:]
 
 
-
-
-
-
     def calculate_phase(self, n_points = 5, w_range = [0,-1], flag_plot = False):
         """
         This methods does the FFT of the interferometer. It looks for the peak in the real part. It then uses n_points, centered around the peak, to calculate the phase.
@@ -569,7 +585,7 @@ class MosquitoHelperMethods(DCC.dataclass):
         
         r_intf = numpy.zeros(self.r_intf_n[0])
         for bi in range(self.r_intf_n[0]): 
-            r_intf[bi] = numpy.mean(self.r_intf[bi,:,:,:,:,:,:])
+            r_intf[bi] = numpy.nanmean(self.r_intf[bi,:,:,:,:,:,:])
         r_intf_roll = numpy.roll(r_intf, -self.t1_zero_index)
         r_intf_roll[0] /= 2
         f = numpy.fft.fft(r_intf_roll)
@@ -670,24 +686,30 @@ class MosquitoHelperMethods(DCC.dataclass):
         return angle
 
 
+    def make_fft(self, phase_cheat_deg = 0, zeropad_to = -1, zeropad_by = -1, window_function = False):
 
-
-    def make_fft(self, phase_cheat_deg = 0):
-
+        if zeropad_to > 0:
+            self.zeropad_to = zeropad_to
+        elif zeropad_by > 0:
+            self.zeropad_by = zeropad_by
+        else:
+            self.zeropad_to = self.f_n[1]
+        
+            
         phase_rad = self.phase_rad + phase_cheat_deg * numpy.pi / 180
 
         if phase_cheat_deg != 0:
             self.printWarning("Phase cheating with %.1f degrees. Used phase is %.1f" % (phase_cheat_deg, phase_rad * 180 / numpy.pi))
 
-        N_FFT_bins = self.r_n[1]
+        N_FFT_bins = self.zeropad_to #self.r_n[1]
         N_FFT_half = int(N_FFT_bins / 2)
         N_FFT_bins = 2 * N_FFT_half
+        self.zeropad_to = N_FFT_bins
 
+        
         w1_axis = MATH.make_ft_axis(N_FFT_bins, dt = self.r_axes[1][1] - self.r_axes[1][0], undersampling = 0, normalized_to_period = 0, zero_in_middle = False, flag_verbose = self.flag_verbose)
         self.f_axes[1] = w1_axis
-        
-        w1_axis = w1_axis[:N_FFT_half]
-        self.s_axes[1] = w1_axis
+        self.s_axes[1] = w1_axis[:N_FFT_half]
 
         self.f_n[1] = N_FFT_bins
         self.s_n[1] = N_FFT_half
@@ -703,14 +725,16 @@ class MosquitoHelperMethods(DCC.dataclass):
                         for du in range(self.r_n[6]):
                             for sc in range(self.r_n[7]):
                                 r = self.r[pi, :, ds, sp, sm, de, du, sc]
-                                f = numpy.fft.fft(r)                      
+                                # for zeropadding and windowfunctions, the response should be around zero, so subtract the mean. 
+                                r -= numpy.mean(r)
+                                if window_function:
+                                    r = MATH.window_functions(r, window_function, N_FFT_bins)
+                                
+                                f = numpy.fft.fft(r, n = self.zeropad_to)                      
                                 self.f[pi, :, ds, sp, sm, de, du, sc] = f
                                 s = numpy.real(numpy.exp(-1j * phase_rad) * f[:N_FFT_half])
                                 self.s[pi, :, ds, sp, sm, de, du, sc] = s
                      
-
-
-
 
     def check_axis(self, ax):
         
