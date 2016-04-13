@@ -2,6 +2,8 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+import imp
+
 import argparse
 import unittest
 
@@ -11,6 +13,8 @@ import matplotlib.pyplot as plt
 
 import Crocodile.Resources.Functions as FU
 import PythonTools.Debug as DEBUG
+
+imp.reload(FU)
 
 # init argument parser
 parser = argparse.ArgumentParser(description='Command line arguments')
@@ -85,11 +89,13 @@ class Test_find_subplots(unittest.TestCase):
 
     """
 
-    def test(self):
+    def setUp(self):
         self.flag_verbose = args.verbose
+    
+    def test(self):
 
         par = [
-            [0,1,1],
+            [0,0,0],
             [1,1,1],
             [2,2,1],
             [3,2,2],
@@ -114,10 +120,11 @@ class Test_find_subplots(unittest.TestCase):
             [22,5,5],
             [23,5,5],
             [24,5,5],
+            [25,5,5],
         ]
         
         for p in par:
-            x, y = FU.find_subplots(p[0])
+            x, y = FU.find_subplots(p[0], flag_verbose = self.flag_verbose)
             print(p[0], x, y)
             self.assertEqual(x, p[1])
             self.assertEqual(y, p[2])
