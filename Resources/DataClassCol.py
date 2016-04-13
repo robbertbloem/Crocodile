@@ -360,8 +360,8 @@ class dataclass(CT.ClassTools):
             return self._zeropad_to / numpy.shape(self.r[0])[0]
     @zeropad_by.setter
     def zeropad_by(self, zp_by):
-        if len(self.s) != 1:
-            self.printWarning("Zeropadding has changed after spectrum was calculated.", inspect.stack())
+#         if len(self.s) != 1:
+#             self.printWarning("Zeropadding has changed after spectrum was calculated.", inspect.stack())
         if numpy.isnan(zp_by):
             self.printError("zeropad_by can not be numpy.nan. It is not set.", inspect.stack())
         elif type(self.r[0]) == int:
