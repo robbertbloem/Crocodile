@@ -18,6 +18,7 @@ import imp
 
 imp.reload(MH)
 imp.reload(IOM)
+imp.reload(PL)
 
 class VCD(MH.MosquitoHelperMethods):
 
@@ -416,16 +417,11 @@ class FT2DIR(MH.MosquitoHelperMethods):
     def import_data(self, t1_offset = 0, import_temp_scans = False):
         self.import_data_2dir(import_temp_scans = import_temp_scans, t1_offset = t1_offset)
 
-    def make_plots(self, x_range = [0,0], y_range = [0,-1], invert_colors = False, flip_spectrum = False, contours = 12, aspect = "equal", single_plot = False):
- 
-        inv = 1
-        if invert_colors:
-            inv = -1
+    def make_plots(self, aspect = "equal", single_plot = False, **kwargs):
             
         if single_plot:
             pass
-
-
+            
         for sp in range(self.s_n[3]):
             for sm in range(self.s_n[4]):
                 for de in range(self.s_n[5]): 
@@ -439,10 +435,12 @@ class FT2DIR(MH.MosquitoHelperMethods):
                                 ax.set_aspect(aspect)
                         
                             title = "%s %s fs" % (self._basename, self.s_axes[5][de])
-                            if flip_spectrum:
-                                PL.contourplot(inv * self.s[:, :, 0, sp, sm, de, du, sc], self.s_axes[1], self.s_axes[0], x_range = x_range, y_range = y_range, y_label = "w3 (cm-1)", x_label = "w1 (cm-1)", title = title, ax = ax, contours = contours)                        
+                            if "flip_spectrum" in kwargs and kwargs["flip_spectrum"]:
+                                PL.contourplot(self.s[:, :, 0, sp, sm, de, du, sc], self.s_axes[1], self.s_axes[0], x_label = "w1 (cm-1)", y_label = "w3 (cm-1)", ax = ax, **kwargs)
+                     
                             else:
-                                PL.contourplot(inv * self.s[:, :, 0, sp, sm, de, du, sc].T, self.s_axes[0], self.s_axes[1], x_range = x_range, y_range = y_range, x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", title = title, ax = ax, contours = contours)
+                                PL.contourplot(self.s[:, :, 0, sp, sm, de, du, sc].T, self.s_axes[0], self.s_axes[1], x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", ax = ax, **kwargs)
+
 
         plt.show()
    
