@@ -491,10 +491,10 @@ def extract_slow_modulation(lines, fileformat, flag_verbose = 0):
         n = r.split(m[1])            
         sm_names[_l] = q.split(m[0])[0]    
         for _sm in range(n_sm):
-            if n[_sm] == "NaN":
+            if "NaN" in n[_sm]:
                 sm[_l,_sm] = numpy.nan
             else:
-                sm[_l,_sm] = int(n[_sm])  
+                sm[_l,_sm] = int(float(n[_sm]))
     
     sm_names = numpy.array(sm_names)
 
