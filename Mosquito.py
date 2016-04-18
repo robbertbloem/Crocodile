@@ -311,7 +311,7 @@ class FT2DIR(MH.MosquitoHelperMethods):
         self.verbose("New FT2DIR class", flag_verbose)
         DCC.dataclass.__init__(self, objectname = objectname, measurement_method = "FT_2DIR", flag_verbose = flag_verbose)
 
-    def import_data(self, t1_offset = 0, import_temp_scans = False):
+    def import_data(self, **kwargs): #t1_offset = 0, import_temp_scans = False):
         """
         2D-IR import data. Wrapper for the Mosuqito Helper import method. 
 
@@ -324,7 +324,7 @@ class FT2DIR(MH.MosquitoHelperMethods):
     
         """    
 
-        self.import_data_2dir(import_temp_scans = import_temp_scans, t1_offset = t1_offset)
+        self.import_data_2dir(**kwargs) #import_temp_scans = import_temp_scans, t1_offset = t1_offset)
 
     def make_plots(self, **kwargs):
         """

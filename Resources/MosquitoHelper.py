@@ -238,7 +238,8 @@ class MosquitoHelperMethods(DCC.dataclass):
                     pass
                 
 
-    def import_data_2dir(self, import_temp_scans = False, t1_offset = 0):
+    def import_data_2dir(self, **kwargs):
+#     import_temp_scans = False, t1_offset = 0):
         """
         Imports data from 2D-IR measurements. 
         
@@ -261,6 +262,18 @@ class MosquitoHelperMethods(DCC.dataclass):
         201604/RB: extracted the important parts from a universal function
         
         """
+        
+        if "import_temp_scans" in kwargs and kwargs["import_temp_scans"]:
+            import_temp_scans = True
+        else:
+            import_temp_scans = False
+        
+        if "t1_offset" in kwargs:
+            t1_offset = kwargs["t1_offset"]
+        else:
+            t1_offset = 0
+        
+#         import_temp_scans = False, t1_offset = 0
 
 
         if self.find_file_format() == False:
@@ -613,7 +626,7 @@ class MosquitoHelperMethods(DCC.dataclass):
             pass
 
 
-    def calculate_phase(self, n_points = 5, w_range = [0,-1], flag_plot = False):
+    def calculate_phase(self, **kwargs):
         """
         This methods does the FFT of the interferometer. It looks for the peak in the real part. It then uses n_points, centered around the peak, to calculate the phase.
         
@@ -630,6 +643,21 @@ class MosquitoHelperMethods(DCC.dataclass):
         n_points = 4: [2,5,4,3]
         
         """
+        if "n_points" in kwargs:
+            n_points = kwargs["n_points"]
+        else:
+            n_points = 5
+            
+        if "w_range" in kwargs:
+            w_range = kwargs["w_range"]
+        else:
+            w_range = [0,-1]
+            
+        if "flag_plot" in kwargs and kwargs["flag_plot"]:
+            flag_plot = True
+        else:
+            flag_plot = False
+            
 
         N_bins = self.r_intf_n[0] #r_n[1]
         N_bins_half = int(N_bins/2)
@@ -750,7 +778,7 @@ class MosquitoHelperMethods(DCC.dataclass):
         return angle
 
 
-    def make_fft(self, phase_cheat_deg = 0, zeropad_to = -1, zeropad_by = -1, window_function = False):
+    def make_fft(self, **kwargs): 
         """
     
     
@@ -772,6 +800,26 @@ class MosquitoHelperMethods(DCC.dataclass):
     
 
         """
+
+        if "phase_cheat_deg" in kwargs:
+            phase_cheat_deg = kwargs["phase_cheat_deg"]
+        else:
+            phase_cheat_deg = 0
+
+        if "zeropad_to" in kwargs:
+            zeropad_to = kwargs["zeropad_to"]
+        else:
+            zeropad_to = -1
+            
+        if "zeropad_by" in kwargs:
+            zeropad_by = kwargs["zeropad_by"]
+        else:
+            zeropad_by = -1
+            
+        if "window_function" in kwargs:
+            window_function = kwargs["window_function"]
+        else:
+            window_function = False
         
         # cheat the phase. 
         phase_rad = self.phase_rad + phase_cheat_deg * numpy.pi / 180
