@@ -21,6 +21,11 @@ imp.reload(IOM)
 imp.reload(PL)
 
 class VCD(MH.MosquitoHelperMethods):
+    """
+    Yet-to-be-implemented
+    
+    """
+    
 
     def __init__(self, objectname, flag_verbose = 0):
         self.verbose("New VCD class", flag_verbose)
@@ -30,48 +35,64 @@ class VCD(MH.MosquitoHelperMethods):
 
 class show_shots(MH.MosquitoHelperMethods):
     """
-    show_shots
+    Show shots
     
-    r: the individual shots, separated by their datastate
-    f: average shots for a datastate. I.e. in the VCD experiment, some datastates are measured twice and others only once. 
-    s: the signals. 
+    When data is saved in Show Shots, all shots for all pixels are saved. 
     
-    NORMAL CHOPPED MEASUREMENT  
-    100 shots
-    datastates = [0,1]
-    r: 4 datastates, 50 shots for each
-    f: as r
-    s: 50 signals
+    r: Although the data is written to different files (scans), they are imported as if it is one long scan. The shots dimension is thus (shots/scan) * (number of scans). The data is separated by datastates. Probe and reference are stored separately.  
     
-    VCD MEASUREMENT
-    120 shots
-    datastates = [0,1,0,2,3,2]
-    r: 4 datastates, 40 shots for each
-    f: 4 datastates with either 40 or 80 shots
-    s: 40 signals
+    f: I call this half-signal. The probe is divided by the reference. The length is n_signals: (total number of shots) / (number of shots per signal). (number of shots per signal) is usually the same as the number of datastates, but not for the VCD. In that case the shots with the same datastate are averaged. 
     
+    s: The signal. 
+    
+    r, f and s are saved as a numpy binary file. This saves time importing all the files all the time. When the binary file is used, it will be memory mapped -- this means it is not actually read until it is needed. This saves yet more time. 
     
     
     """
 
     def __init__(self, objectname, flag_verbose = 0):
+        """
+        Initialize show shots. 
+    
+        INPUT:
+        - objectname (str): a name
+        - flag_verbose (int, default 0): how verbose the program should be. The larger the value, the more verbose. 
+
+        CHANGELOG:
+        20160414-RB: started function
+    
+        """
         self.verbose("New show_shots class", flag_verbose)
         MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["show_shots"], flag_verbose = flag_verbose)
         
         self.ss_colors = ["k", "r", "green", "blue", "yellow", "orange", "gold", "purple", "brown", "pink", "darkgreen", "lightblue", "grey"]
 
     def import_data(self, reload_data = False):
+        """
+        Import the show shots data
+    
+        INPUT:
+        - reload_data (Bool, False): if False, try to import the numpy binary file first. If that is not present, or if True, it will import the original csv files. 
+    
+        CHANGELOG:
+        201604-RB: started function
+    
+        """
         self.import_data_show_shots(reload_data = reload_data)
 
 
     def plot_shots(self, ax = False, pixels = 15, shots = -1):  
         """
-        
+        Make a plot of the shots.
+
         INPUT:
-        ax (matplotlib axes object, default: False): If False, a new figure will be made.
-        pixels (int, list or ndarray, default: 15): the pixel or pixels you want to view.
-        shots (int, list or ndarray, default: -1): the range of shots to be plotted. If shots < 0, all will be plotted. If type(shots) = int, shots 0 to int are plotted. If shots is a list [a,b], shots a to b will be plotted. 
-        
+        - ax (matplotlib axes object, default: False): If False, a new figure will be made.
+        - pixels (int, list or ndarray, default: 15): the pixel or pixels you want to view.
+        - shots (int, list or ndarray, default: -1): the range of shots to be plotted. If shots < 0, all will be plotted. If type(shots) = int, shots 0 to int are plotted. If shots is a list [a,b], shots a to b will be plotted. 
+
+        CHANGELOG:
+        201604-RB: started function
+     
         """
 
         if type(shots) == int:
@@ -122,12 +143,16 @@ class show_shots(MH.MosquitoHelperMethods):
 
     def plot_signals(self, ax = False, pixels = 15, range = -1):  
         """
+        Plot the signals.
         
         INPUT:
         ax (matplotlib axes object, default: False): If False, a new figure will be made.
         pixels (int, list or ndarray, default: 15): the pixel or pixels you want to view.
         signals (int, list or ndarray, default: -1): the range of signals to be plotted. If signals < 0, all will be plotted. If type(signals) = int, signals 0 to int are plotted. If signals is a list [a,b], signals a to b will be plotted. 
-        
+
+        CHANGELOG:
+        201604-RB: started function
+   
         """
 
         if type(range) == int:
@@ -192,171 +217,12 @@ class pump_probe(MH.MosquitoHelperMethods):
         MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["pump_probe"], flag_verbose = flag_verbose)
 
 
-
-# class show_spectrum(MH.MosquitoHelperMethods):
-#     """
-#     show_spectrum
-#     """
-# 
-#     def __init__(self, objectname, flag_verbose = False):
-#         self.verbose("New show_spectrum class", flag_verbose)
-#         MH.MosquitoHelperMethods.__init__(self, objectname = objectname, flag_verbose = flag_verbose)
-# 
-# 
-# #     def import_data(self):
-# #         """
-# #         This method splits up file importing for supporting files and measurement files. It first finds the file format file. It will use this to test if file_dict is correct. 
-# #         """
-# #         # check if _file_dict is set
-# #         if self._file_dict["base_folder"] == "" or self._file_dict["base_filename"] == "":
-# #             self.printError("No file information set.", inspect.stack()) 
-# #             return False   
-# #         
-# #         # find LV_file_format, also a check if _file_dict is correct
-# #         try: 
-# #             self.file_format = IOM.find_LV_fileformat(
-# #                 base_folder = self._file_dict["base_folder"], 
-# #                 flag_verbose = self.flag_verbose
-# #             )   
-# #             if self.file_format == -1:  
-# #                 self.printError("File_format file found, but was not able to parse it.", inspect.stack()) 
-# #                 return False  
-# #         except FileNotFoundError:
-# #             self.printError("File_format file not found.", inspect.stack()) 
-# #             return False 
-# # 
-# #         w3_axis, n_w3 = IOM.import_wavenumbers(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-# # 
-# # #         n_sh = IOM.import_nshots(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-# # #         sh = numpy.arange(n_sh)
-# #         
-# #         n_sh = 1
-# #         sh = numpy.array([0])
-# #         
-# #         n_ds = IOM.find_number_of_datastates(self._file_dict["base_folder"], flag_verbose = self.flag_verbose)
-# #         n_ds = int(n_ds/2)
-# #         
-# #         n_sp = IOM.import_nspectra(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-# # 
-# #         spds, dump, dump = IOM.import_spectraAndDatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-# #         
-# #         self.sp = spds[:,0]
-# #         self.ds = spds[:,1]
-# #         for i in range(n_ds):
-# #             if self.ds[i] == "-1":
-# #                 self.ds[i] = 1
-# #             else:
-# #                 self.ds[i] = 0
-# #         self.ds = numpy.array(self.ds, dtype = "int")
-# # 
-# #         n_sc = IOM.find_number_of_scans(self._file_dict["base_folder"], self._file_dict["base_filename"], self._file_dict["extension"], flag_verbose = self.flag_verbose)
-# #         sc = numpy.arange(n_sc)
-# #         
-# #         self.b_n = [n_w3, n_sh, 2*n_ds, n_sp, n_sc]
-# #         self.b = numpy.empty(self.b_n)
-# #         self.b_noise = numpy.empty(self.b_n)
-# #         self.b_axes = [w3_axis, sh, self.ds, self.sp, sc]
-# #         self.b_units = ["w3 (cm-1)", "Shots", "Datastates", "Spectra", "Scans"]
-# #         
-# #         self.s_n = numpy.copy(self.b_n)
-# #         self.s_n[2] = 1
-# #         self.s = numpy.zeros(self.s_n)
-# #         self.s_noise = numpy.zeros(self.s_n)
-# # 
-# #         sh = 0        
-# #         for sp in range(self.b_n[3]): 
-# #             for sc in range(self.b_n[4]): 
-# #                 
-# #                 ds = 0
-# #                 suffix = "sp%i_ds%i_signal_%i" % (sp, ds, sc)
-# #                 self.s[:,sh,ds,sp,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose) 
-# #                 suffix = "sp%i_ds%i_signal_noise_%i" % (sp, ds, sc)
-# #                 self.s_noise[:,sh,ds,sp,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose)
-# #               
-# #                 for ds in range(self.b_n[2]): 
-# #                     suffix = "sp%i_ds%i_intensity_%i" % (sp, ds, sc)
-# #                     self.b[:,sh,ds,sp,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose) 
-# #                     suffix = "sp%i_ds%i_intensity_noise_%i" % (sp, ds, sc)
-# #                     self.b_noise[:,sh,ds,sp,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose)
-# 
-# 
-# 
-#     def make_plot(self):  
-# 
-#         axes = numpy.arange(self.b_n[1])
-#         
-#         fig = plt.figure()
-#         ax = fig.add_subplot(111)    
-#         
-#         for ds in range(self.b_n[2]):
-#             for sc in range(self.b_n[4]):
-#                 data = self.b[15,:,ds,0,sc]
-#                 mask = numpy.isfinite(data)            
-#                 ax.plot(axes[mask], data[mask], marker = ".", linestyle = "none")
-#             
-#         plt.show()
-# 
-# 
-# 
-# class find_t0_fast(MH.MosquitoHelperMethods):
-#     """
-#     find_t0_fast
-#     """
-# 
-#     def __init__(self, objectname, flag_verbose = False):
-#         self.verbose("New find_t0_fast class", flag_verbose)
-#         MH.MosquitoHelperMethods.__init__(self, objectname = objectname, flag_verbose = flag_verbose)
-# 
-# 
-# #     def import_data(self):
-# #         """
-# #         This method splits up file importing for supporting files and measurement files. It first finds the file format file. It will use this to test if file_dict is correct. 
-# #         """
-# #         # check if _file_dict is set
-# #         if self._file_dict["base_folder"] == "" or self._file_dict["base_filename"] == "":
-# #             self.printError("No file information set.", inspect.stack()) 
-# #             return False   
-# #         
-# #         # find LV_file_format, also a check if _file_dict is correct
-# #         try: 
-# #             self.file_format = IOM.find_LV_fileformat(
-# #                 base_folder = self._file_dict["base_folder"], 
-# #                 flag_verbose = self.flag_verbose
-# #             )   
-# #             if self.file_format == -1:  
-# #                 self.printError("File_format file found, but was not able to parse it.", inspect.stack()) 
-# #                 return False  
-# #         except FileNotFoundError:
-# #             self.printError("File_format file not found.", inspect.stack()) 
-# #             return False 
-# # 
-# #         t1_bins, t1_fs, bin_sign, n_t1_bins, n_t1_fs, t1_zero_index = IOM.import_bins(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-# #         
-# #         self.bin_sign = bin_sign
-# #         self.t1_zero_index = t1_zero_index
-# # 
-# #         n_ds = IOM.find_number_of_datastates(self._file_dict["base_folder"], flag_verbose = self.flag_verbose)
-# #         
-# #         n_sp = IOM.import_nspectra(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-# # 
-# #         self.ds = spds[:,1]
-# #         for i in range(n_ds):
-# #             if self.ds[i] == "-1":
-# #                 self.ds[i] = 1
-# #             else:
-# #                 self.ds[i] = 0
-# #         self.ds = numpy.array(self.ds, dtype = "int")
-# #         
-# #         self.b_intf_n = [n_t1_bins, n_ds, n_sp]
-# #         
-# #         self.b_intf = numpy.empty(self.b_intf_n)
-# #         self.b_intf_axes = [t1_bins, spds[:,1], self.ds]
-# #         self.b_intf_units = ["T1 (bins)", "Datastates", "Spectra"]
-# 
-
-
 class scan_spectrum(MH.MosquitoHelperMethods):
     """
+    Scan spectrum. 
+    
+    r: the pixel axis is now the for the wavelengths that have been scanned. Datastates is 2: probe and reference. 
+    
     
     """
     
@@ -365,10 +231,29 @@ class scan_spectrum(MH.MosquitoHelperMethods):
         DCC.dataclass.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["scan_spectrum"], flag_verbose = flag_verbose)
 
     def import_data(self):
+        """
+        Import Scan Spectrum data.
+
+        CHANGELOG:
+        201604-RB: started function
+    
+        """    
+
         self.import_data_scan_spectrum()
         
     def make_plot(self, ax = False, normalize = False, fit = False):
-        
+        """
+        Make a plot of scan spectrum data. 
+    
+        INPUT:
+        - ax (plt axis instance, or False): If False, a new figure and axis instance will be made. 
+        - normalize (bool, False): If True, the minimum is subtract from the data, then it is divided by the maximum. 
+        - fit (Bool, False): If True, a fit will be made and will also be plotted. The fitting parameters are written to the terminal. 
+    
+        CHANGELOG:
+        201604-RB: started function
+    
+        """
         if ax == False:
             fig = plt.figure()
             ax = fig.add_subplot(111)
@@ -397,7 +282,7 @@ class scan_spectrum(MH.MosquitoHelperMethods):
                 
                 print("{label:10} {mu:.5}   {sigma:.3}   {offset:.3}   {scale:.3}".format(label = labels[ds], mu = A_final[1], sigma = A_final[0], offset = A_final[2], scale = A_final[3]))
                 
-#                 print("mu: {mu}, sigma: {sigma}, offset: {os}, scale: {sc}".format())
+
 
         
 
@@ -407,6 +292,18 @@ class scan_spectrum(MH.MosquitoHelperMethods):
 
 class FT2DIR(MH.MosquitoHelperMethods):
     """
+    Process 2D-IR data. 
+    
+    b: only when data is saved as 'intensity'. The length is n_bins. Probe and reference are not yet divided. 
+    
+    r: Response. The length of 'bins' is the number of bins where t1 >= 0. 'r' is for response: delta absorption has already been calculated. 
+    
+    f: Fourier transformed data. The length of 'bins' depends on the amount of zeropadding. These are complex numbers. 
+    
+    s: Spectrum. 
+    
+    
+
 
     """
 
@@ -415,38 +312,162 @@ class FT2DIR(MH.MosquitoHelperMethods):
         DCC.dataclass.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["ft_2d_ir"], flag_verbose = flag_verbose)
 
     def import_data(self, t1_offset = 0, import_temp_scans = False):
+        """
+        2D-IR import data. Wrapper for the Mosuqito Helper import method. 
+
+        INPUT:
+        - t1_offset (int, 0): if t1=0 is not where it should be, adjust it. The value is in integer and is the number of bins.
+        - import_temp_scans (Bool, False): If True, import individual scans instead of the averaged one.
+
+        CHANGELOG:
+        201604-RB: started function
+    
+        """    
+
         self.import_data_2dir(import_temp_scans = import_temp_scans, t1_offset = t1_offset)
 
-    def make_plots(self, aspect = "equal", single_plot = False, **kwargs):
-            
-        if single_plot:
-            pass
-            
-        for sp in range(self.s_n[3]):
-            for sm in range(self.s_n[4]):
-                for de in range(self.s_n[5]): 
-                    for du in range(self.s_n[6]):
-                        for sc in range(self.s_n[7]):
-                            
-#                             if single_plot == False:
+    def make_plots(self, **kwargs):
+        """
+        Plot all 2D-IR spectra as separate plots. 
+    
+        INPUT:
+        - kwargs:
+            - sp, sm, de, du, sc (lists, ndarray): lists that limit the range of spectra to be plotted. By default all spectra will be plotted. 
+            - aspect (str, 'equal'): the aspect ratio of the axes. 
+            - flip_spectrum (bool, False): by default (False) the x axis is w_3. If True, it will be w_1. Make sure the axes ranges are changed as well. 
+    
+        DESCRIPTION:
+        - - 
+    
+        CHANGELOG:
+        201604-RB: started function
+    
+        """
+        
+        pi, bish, sp, ds, sm, de, du, sc = self.multiplot_ranges(**kwargs)
+        
+        for _sp in sp:
+            for _sm in sm:
+                for _de in de:
+                    for _du in du:
+                        for _sc in sc:
+
                             fig = plt.figure()
                             ax = fig.add_subplot(111)  
-                            if aspect:
-                                ax.set_aspect(aspect)
-                        
-                            title = "%s %s fs" % (self._basename, self.s_axes[5][de])
+                            if "aspect" in kwargs:
+                                ax.set_aspect(kwargs["aspect"])
+                            else:
+                                ax.set_aspect("equal")
+                            
+                            if "title" not in kwargs:
+                                kwargs["title"] = "%s %s fs" % (self._basename, self.s_axes[5][_de])
                             if "flip_spectrum" in kwargs and kwargs["flip_spectrum"]:
-                                PL.contourplot(self.s[:, :, 0, sp, sm, de, du, sc], self.s_axes[1], self.s_axes[0], x_label = "w1 (cm-1)", y_label = "w3 (cm-1)", ax = ax, **kwargs)
+                                PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc], self.s_axes[1], self.s_axes[0], x_label = "w1 (cm-1)", y_label = "w3 (cm-1)", ax = ax, **kwargs)
                      
                             else:
-                                PL.contourplot(self.s[:, :, 0, sp, sm, de, du, sc].T, self.s_axes[0], self.s_axes[1], x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", ax = ax, **kwargs)
+                                PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc].T, self.s_axes[0], self.s_axes[1], x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", ax = ax, **kwargs)
 
 
         plt.show()
    
 
+    def make_overview_plot(self, **kwargs):
+        """
+        Make a single figure with all plots. 
+        
+        INPUT:
+        - kwargs:
+            - sp, sm, de, du, sc (lists, ndarray): lists that limit the range of spectra to be plotted. By default all spectra will be plotted.
+            - aspect (str, 'equal'): the aspect ratio of the axes. 
+            - flip_spectrum (bool, False): by default (False) the x axis is w_3. If True, it will be w_1. Make sure the axes ranges are changed as well. 
+        
+        OUTPUT:
+        - -
+        
+        DESCRIPTION:
+        - - 
+        
+        CHANGELOG:
+        2016014/RB: started function
+        
+        """
+    
+        pi, bish, sp, ds, sm, de, du, sc = self.multiplot_ranges(**kwargs)
+    
+        n_plots = len(sp) * len(sm) * len(de) * len(du) * len(sc)
 
+        x, y = FU.find_subplots(n_plots, flag_verbose = self.flag_verbose)
+        print(x,y)
+        fig = plt.figure()
+        ax = [0] * n_plots
+        for ax_i in range(n_plots):
+            ax[ax_i] = fig.add_subplot(y, x, ax_i + 1)  
+            if "aspect" in kwargs:
+                ax[ax_i].set_aspect(kwargs["aspect"])
+            else:
+                ax[ax_i].set_aspect("equal")
 
+        ax_i = 0
+        for _sp in sp:
+            for _sm in sm:
+                for _de in de:
+                    for _du in du:
+                        for _sc in sc:
+
+                            title = "%s %s fs" % (self._basename, self.s_axes[5][_de])
+                            if "flip_spectrum" in kwargs and kwargs["flip_spectrum"]:
+                                PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc], self.s_axes[1], self.s_axes[0], x_label = "w1 (cm-1)", y_label = "w3 (cm-1)", ax = ax[ax_i], title = title, **kwargs)
+                     
+                            else:
+                                PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc].T, self.s_axes[0], self.s_axes[1], x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", ax = ax[ax_i], title = title, **kwargs)
+
+                            ax_i += 1
+                            
+
+    def make_Z_table(self, x_range = [0,0], y_range = [0,-1], **kwargs):
+        """
+        
+        INPUT:
+        - -
+        
+        OUTPUT:
+        - -
+        
+        DESCRIPTION:
+        - - 
+        
+        CHANGELOG:
+        2016014/RB: started function
+        
+        """
+        
+        print("sp sm de sc   min    max    delta")
+
+        # determine the range to be plotted
+        x_min, x_max, y_min, y_max = FU.find_axes(self.s_axes[0], self.s_axes[1], x_range = x_range, y_range = y_range, flag_verbose = self.flag_verbose)
+        
+#         print(x_min, x_max, y_min, y_max)
+    
+        # find the area to be plotted
+        x_min_i, x_max_i = FU.find_axes_indices(self.s_axes[0], x_min, x_max)
+        y_min_i, y_max_i = FU.find_axes_indices(self.s_axes[1], y_min, y_max)
+    
+#         print(x_min_i, x_max_i, y_min_i, y_max_i)
+        
+        for _sp in range(self.s_n[2]):
+            for _sm in range(self.s_n[4]):
+                for _de in range(self.s_n[5]):
+                    for _sc in range(self.s_n[7]):
+                        data, x_axis, y_axis = FU.truncate_data(self.s[:,:,_sp,0,_sm,_de,0,_sc].T, self.s_axes[0], self.s_axes[1], x_min_i, x_max_i, y_min_i, y_max_i)
+                        
+#                         print(data)
+                    
+                        a = numpy.amin(data)
+                        b = numpy.amax(data)
+                        print(" {sp}  {sm}  {de}  {sc}  {min:5.1f} {max:5.1f} {delta:5.1f}".format(sp = _sp, sm = _sm, de = _de, sc = _sc, min = a, max = b, delta = (b - a)))
+        
+        
+        
 
 
 if __name__ == "__main__": 

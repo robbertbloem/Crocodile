@@ -26,6 +26,11 @@ imp.reload(IOM)
     
 
 class MosquitoHelperMethods(DCC.dataclass):
+    """
+    Class with supporting functions for Mosquito. 
+    
+    """
+
     
     def __init__(self, objectname, measurement_method, flag_verbose = 0):
         self.verbose("New Mosquito class", flag_verbose)
@@ -34,7 +39,19 @@ class MosquitoHelperMethods(DCC.dataclass):
 
 
     def import_data_show_shots(self, reload_data = False):
-
+        """
+        Import data from show shots. 
+    
+        INPUT:
+        - reload_data (Bool, False): if False, try to import the numpy binary file first. If that is not present, or if True, it will import the original csv files. 
+    
+        DESCRIPTION:
+        - 
+    
+        CHANGELOG:
+        201604-RB: started function
+    
+        """
         if self.find_file_format() == False:
             return False
 
@@ -58,8 +75,6 @@ class MosquitoHelperMethods(DCC.dataclass):
             self.add_ds = False
         else:
             spds, n_sp_2, n_ds_2, self.n_sig, self.add_ds = IOM.import_spectraAndDatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-        
-#         n_sc = 3
         
         total_shots = n_sh * n_sc
         n_signals = int(n_sc * n_sh / self.n_sig)
@@ -228,17 +243,22 @@ class MosquitoHelperMethods(DCC.dataclass):
         Imports data from 2D-IR measurements. 
         
         INPUT:
-        import_temp_scans (Bool, False): If True, import individual scans instead of the averaged one. 
-        t1_offset (int, 0): if t0 is not where it should be, adjust it. The value is in integer and is the number of bins. 
-        
+        - import_temp_scans (Bool, False): If True, import individual scans instead of the averaged one. 
+        - t1_offset (int, 0): if t0 is not where it should be, adjust it. The value is in integer and is the number of bins. 
         
         OUTPUT:
         
         DESCRIPTION:
-        
+        1. The function will first import the metadata. 
+        2. The correct datastructures will be created. 
+        3. The data itself will be imported.
+        4. If needed the response will be calculated. 
+        The data can be saved/imported in two ways:
+        1. Save as signal or as intensity. This is determined by the user in LabVIEW. The value is n_datastates will determine this. 
+        2. Import final, averaged data; or individual scans. The latter is only possible when that is saved. 
         
         CHANGELOG:
-        20160404/RB: extracted the important parts from a universal function
+        201604/RB: extracted the important parts from a universal function
         
         """
 
@@ -258,16 +278,15 @@ class MosquitoHelperMethods(DCC.dataclass):
         # 3: spectra
         n_sp = IOM.import_nspectra(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
         
-
+        # spds is how the signal is/should be calculated
         spds, n_sp_2, n_ds_2, self.n_sig, self.add_ds = IOM.import_spectraAndDatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-            
+        
         if n_ds == 0:
             self.measurement_type = "signal"
             n_ds = n_ds_2
         else:
             self.measurement_type = "intensity"
-            
-
+        
         # 4: slow modulation
         sm, sm_names, n_sm = IOM.import_slow_modulation(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
 
@@ -285,6 +304,8 @@ class MosquitoHelperMethods(DCC.dataclass):
         else:
             n_sc = 1
             sc = numpy.arange(n_sc)
+
+        # DEFINE THE DATASTRUCTURES
 
         # probe and reference are saved separately
         if self.measurement_type == "intensity":
@@ -322,10 +343,7 @@ class MosquitoHelperMethods(DCC.dataclass):
         self.s_axes = [w3_axis, [0], [0], spds[:,0], sm, de, du, sc]
         self.s_units = ["w3 (cm-1)", "w1 (cm-1)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
         
-        
-#         self.import_measurement_data()
-
-#     def import_measurement_data(self):
+        # IMPORT THE DATA
         
         # signal, no temp scans
         if self.measurement_type == "signal" and self.r_n[7] == 1:  
@@ -366,6 +384,7 @@ class MosquitoHelperMethods(DCC.dataclass):
         elif self.measurement_type == "intensity" and self.b_n[7] == 1:
             self.verbose("Average scan, intensity", self.flag_verbose)
             
+            # probe and reference are two datastates but imported in one go
             n_ds = int(self.b_n[2]/2)
             
             for ds in range(n_ds):    
@@ -394,6 +413,7 @@ class MosquitoHelperMethods(DCC.dataclass):
         elif self.measurement_type == "intensity" and self.b_n[7] > 1:
             self.verbose("All scans, intensity", self.flag_verbose)
             
+            # probe and reference are two datastates but imported in one go
             n_ds = int(self.b_n[2]/2)
         
             for ds in range(n_ds):    
@@ -422,10 +442,11 @@ class MosquitoHelperMethods(DCC.dataclass):
         else:
             self.printError("Failed to import measurement files", inspect.stack())   
             
-
+        # calculate r
         if self.measurement_type == "intensity":
             self.b_to_r()
 
+        # if needed, reverse the bin axis
         if self.bin_sign and self.measurement_type == "intensity":
             self.b = self.b[:,::-1,:,:,:,:,:,:]
             self.b_intf = self.b_intf[::-1,:,:,:,:,:,:]
@@ -433,7 +454,23 @@ class MosquitoHelperMethods(DCC.dataclass):
 
 
     def import_data_scan_spectrum(self):
+        """
+        Import data from Scan Spectrum
     
+        INPUT:
+        - 
+    
+        OUTPUT:
+        - 
+    
+        DESCRIPTION:
+        The pixel axis is now the wavelengths scanned
+        
+    
+        CHANGELOG:
+        201604-RB: started function
+    
+        """
     
         wl, n_wl = IOM.import_wavelengths(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
         
@@ -443,17 +480,28 @@ class MosquitoHelperMethods(DCC.dataclass):
         self.r_n = [n_wl, 1, 2, 1, 1, 1, 1, 1]
         self.r = numpy.empty(self.r_n)
         self.r_axes = [wl, empty, numpy.arange(2), empty, empty, empty, empty, empty]
-        self.r_units = ["wl (cm-1)", "x", "Datastates", "x", "x", "x", "x", "x"] 
+        self.r_units = ["wavenumber (cm-1)", "x", "Datastates", "x", "x", "x", "x", "x"] 
         
         suffix = "data_0"
         self.r[:,0,:,0,0,0,0,0] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1).T
         
-
-    
-
+        
     def find_file_format(self, flag_verbose = False):
         """
-        flag_verbose is deprecated
+        Find file format.
+    
+        INPUT:
+        - flag_verbose: deprecated
+    
+        OUTPUT:
+        - True or False: If False, the file format file was not found.
+    
+        DESCRIPTION:
+        Changes to the file format affect the importing scripts. Using the file format the scripts can be made to work for both the current and older formats. 
+    
+        CHANGELOG:
+        201604-RB: started function
+    
         """
     
         if self.flag_verbose:
@@ -486,9 +534,21 @@ class MosquitoHelperMethods(DCC.dataclass):
 
     def b_to_r(self):
         """
-        2D-IR
-        Calculate the signal from the probe and reference intensity.
-        """ 
+        B to R. B is the raw data and is not yet divided by the count. 
+    
+        INPUT:
+        - if self.measurement_type == 'signal' 
+    
+        OUTPUT:
+        - 
+    
+        DESCRIPTION:
+    
+    
+        CHANGELOG:
+        201604-RB: started function
+    
+        """
         
         if self.measurement_type == "intensity":
             
@@ -547,6 +607,10 @@ class MosquitoHelperMethods(DCC.dataclass):
                                 N[pi,:,0,:,:,:,:,:] *= self.b[pi,:,2*ds,:,:,:,:,:,:] / self.b[pi,:,2*ds+1,:,:,:,:,:,:]
                             else:
                                 D[pi,:,0,:,:,:,:,:] *= self.b[pi,:,2*ds,:,:,:,:,:,:] / self.b[pi,:,2*ds+1,:,:,:,:,:,:]
+
+        else:
+#             DEBUG.
+            pass
 
 
     def calculate_phase(self, n_points = 5, w_range = [0,-1], flag_plot = False):
@@ -687,6 +751,33 @@ class MosquitoHelperMethods(DCC.dataclass):
 
 
     def make_fft(self, phase_cheat_deg = 0, zeropad_to = -1, zeropad_by = -1, window_function = False):
+        """
+    
+    
+        INPUT:
+        definition: n_bins_t1: the number of bins where t1>=0
+        - phase_cheat_deg (num, 0): correct problems with the phase. The phase will only be adjusted for this particular function call. 
+        - zeropad_to (int, -1): zeropad to a number of points. This can be shorter than n_bins_t1. If value is <0 (default), n_bins_t1 will be used 
+        - zeropad_by (num, -1): zeropad to a length zeropad_by * n_bins_t1. 1 would be n_bins_t1. If value is <0 (default), n_bins_t1 will be used. If zeropad_by is given, this argument will be ignored. 
+        - window_function (str, False): choose between none, ones, triangular, gaussian. 
+
+        OUTPUT:
+        - none
+    
+        DESCRIPTION:
+    
+    
+        CHANGELOG:
+        201604-RB: started function
+    
+
+        """
+        
+        # cheat the phase. 
+        phase_rad = self.phase_rad + phase_cheat_deg * numpy.pi / 180
+        if phase_cheat_deg != 0:
+            self.printWarning("Phase cheating with %.1f degrees. Used phase is %.1f" % (phase_cheat_deg, phase_rad * 180 / numpy.pi))
+
 
         if zeropad_to > 0:
             self.zeropad_to = zeropad_to
@@ -695,19 +786,13 @@ class MosquitoHelperMethods(DCC.dataclass):
         else:
             self.zeropad_to = self.f_n[1]
         
-            
-        phase_rad = self.phase_rad + phase_cheat_deg * numpy.pi / 180
-
-        if phase_cheat_deg != 0:
-            self.printWarning("Phase cheating with %.1f degrees. Used phase is %.1f" % (phase_cheat_deg, phase_rad * 180 / numpy.pi))
-
         N_FFT_bins = self.zeropad_to #self.r_n[1]
         N_FFT_half = int(N_FFT_bins / 2)
         N_FFT_bins = 2 * N_FFT_half
         self.zeropad_to = N_FFT_bins
 
-        
         w1_axis = MATH.make_ft_axis(N_FFT_bins, dt = self.r_axes[1][1] - self.r_axes[1][0], undersampling = 0, normalized_to_period = 0, zero_in_middle = False, flag_verbose = self.flag_verbose)
+        
         self.f_axes[1] = w1_axis
         self.s_axes[1] = w1_axis[:N_FFT_half]
 
@@ -737,7 +822,22 @@ class MosquitoHelperMethods(DCC.dataclass):
                      
 
     def check_axis(self, ax):
-        
+        """
+    
+    
+        INPUT:
+        - 
+    
+        OUTPUT:
+        - 
+    
+        DESCRIPTION:
+    
+    
+        CHANGELOG:
+        201604-RB: started function
+    
+        """       
         new_axis = False
         if ax == False:
             fig = plt.figure()
@@ -745,6 +845,86 @@ class MosquitoHelperMethods(DCC.dataclass):
             new_axis = True
             
         return ax, new_axis
+
+
+    def multiplot_ranges(self, **kwargs):
+        """
+
+    
+        INPUT:
+        - 
+    
+        OUTPUT:
+        - 
+    
+        DESCRIPTION:
+    
+    
+        CHANGELOG:
+        201604-RB: started function
+    
+        """
+        if "pi" in kwargs:
+            pi = kwargs["pi"]
+            if len(pi) >= self.s_n[0]:  
+                self.printWarning("Index 0 (pixels) is out of bounds with size {a} (max is {b})".format(a = len(pi), b = self.s_n[0]))
+                pi = pi[:self.s_n[0]]
+                
+        else:
+            pi = numpy.arange(self.s_n[0])
+            
+        if "bish" in kwargs:
+            bish = kwargs["bish"]
+            if len(bish) >= self.s_n[1]:  
+                self.printWarning("Index 1 (bins/shots) is out of bounds with size {a} (max is {b})".format(a = len(bish), b = self.s_n[1]))
+                bish = bish[:self.s_n[1]]
+        else:
+            bish = numpy.arange(self.s_n[1])
+
+        if "sp" in kwargs:
+            sp = kwargs["sp"]
+            if len(sp) >= self.s_n[2]:  
+                self.printWarning("Index 2 (spectra) is out of bounds with size {a} (max is {b})".format(a = len(sp), b = self.s_n[2]))
+                sp = sp[:self.s_n[2]]
+        else:
+            sp = numpy.arange(self.s_n[2])
+
+        if "ds" in kwargs:
+            ds = kwargs["ds"]
+            if len(ds) >= self.s_n[3]: 
+                self.printWarning("Index 3 (datastates) is out of bounds with size {a} (max is {b})".format(a = len(ds), b = self.s_n[3]))
+                ds = ds[:self.s_n[3]]
+        else:
+            ds = numpy.arange(self.s_n[3])
+
+        if "sm" in kwargs:
+            sm = kwargs["sm"]
+            if len(sm) >= self.s_n[4]: 
+                self.printWarning("Index 4 (slow modulation) is out of bounds with size {a} (max is {b})".format(a = len(sm), b = self.s_n[4]))
+                ds = ds[:self.s_n[3]]
+        else:
+            sm = numpy.arange(self.s_n[4])
+            
+        if "de" in kwargs:
+            de = kwargs["de"]
+            if len(de) >= self.s_n[5]: 
+                self.printWarning("Index 5 (delays) is out of bounds with size {a} (max is {b})".format(a = len(de), b = self.s_n[5]))
+                de = de[:self.s_n[5]]
+        else:
+            de = numpy.arange(self.s_n[5])
+           
+        if "du" in kwargs:
+            du = kwargs["du"]
+        else:
+            du = numpy.arange(self.s_n[6])  
+
+        if "sc" in kwargs:
+            sc = kwargs["sc"]
+        else:
+            sc = numpy.arange(self.s_n[7])
+
+        return pi, bish, sp, ds, sm, de, du, sc
+
 
 
 if __name__ == "__main__": 
