@@ -30,7 +30,8 @@ def contourplot(data, x_axis, y_axis,
     diagonal_line = True, 
     invert_colors = False, 
     linewidth = 1,
-    flag_verbose = False):
+    flag_verbose = False,
+    **kwargs):
     
     """
     - data, x_axis, y_axis: data and axes

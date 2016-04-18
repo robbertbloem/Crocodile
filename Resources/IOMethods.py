@@ -111,7 +111,7 @@ def check_and_make_list(var, flag_verbose = False):
     """
 
     if flag_verbose:
-        print("pe_col.check_and_make_list:")
+        print("IOMethods.check_and_make_list:")
         print(var)
 
     if type(var) == "list":
@@ -160,7 +160,7 @@ def find_LV_fileformat(base_folder, flag_verbose = False, test_input = False):
             fileformat_version = int(m.group()[14:])
 
     if flag_verbose:
-        print("pe_col.find_LV_fileformat: %i" % fileformat_version)     
+        print("IOMethods.find_LV_fileformat: %i" % fileformat_version)     
 
     return fileformat_version
 
@@ -259,21 +259,24 @@ def import_file(file_dict, suffix, flag_verbose = False):
 
     filename = file_dict["base_filename"] + "_" + suffix +  file_dict["extension"]
     
-    if flag_verbose:
+    if flag_verbose == True or flag_verbose > 0:
         print("IOMethods.import_file: %s" % filename)
     
     data = numpy.loadtxt(filename, delimiter = ",", ndmin = 1)
 
-    if flag_verbose:
-        print("pe_col.import_file: done")
+    if flag_verbose == True or flag_verbose > 0:
+        print("IOMethods.import_file: done")
 
     return data  
 
-def import_bins(file_dict, fileformat, flag_verbose = False):
+def import_bins(file_dict, fileformat, t1_offset = 0, flag_verbose = 0):
     """
     Import the bins. Column 0 are the bins, column 1 are the associated times. 
     
     The bins are actually boring: they start at 0 and continue to bin N-1. 
+    
+    INPUT:
+    t1_offset (int, 0): if t0 is not where it should be, adjust it. The value is in integer and is the number of bins. 
     
     OUTPUT:
     t1_bins (1D ndarray): list with bins
@@ -284,6 +287,8 @@ def import_bins(file_dict, fileformat, flag_verbose = False):
     t1_zero_index: index of the bin where t1 = 0
     
     """
+    if flag_verbose:
+        print("IOMethods.import_bins")
 
     suffix = "bins"  
     data = import_file(file_dict, suffix, flag_verbose)
@@ -291,7 +296,7 @@ def import_bins(file_dict, fileformat, flag_verbose = False):
 
     # extract the bins and the times
     t1_bins = data[:,0]
-    t1_fs = data[:,1]
+    t1_fs = data[:,1] + t1_offset * CONST.hene_fringe_fs
     
     # if the bins and times are opposite, reverse the time axis. 
     # set bin_sign to True, reverse other time axes as well.
@@ -307,83 +312,152 @@ def import_bins(file_dict, fileformat, flag_verbose = False):
     # length of bins and length 
     n_t1_bins = len(t1_bins)
     n_t1_fs = n_t1_bins - t1_zero_index
+    
+    temp = int(n_t1_fs / 2)
+    n_t1_fs = 2 * temp
 
+    if flag_verbose:
+        print("t1_bins: {a}, {b}, ..., {c}".format(a=t1_bins[0], b=t1_bins[1], c=t1_bins[-1]))
+        print("t1_fs: {a}, {b}, ..., {c}".format(a=t1_fs[0], b=t1_fs[1], c=t1_fs[-1]))
+        print("bin_sign: {bin_sign}".format(bin_sign = bin_sign))
+        print("n_t1_bins: {n_t1_bins}".format(n_t1_bins = n_t1_bins))
+        print("n_t1_fs: {n_t1_fs}".format(n_t1_fs = n_t1_fs))
+        print("t1_zero_index: {t1_zero_index}".format(t1_zero_index = t1_zero_index))
+        print("DONE: IOMethods.import_bins\n")
+    
     return t1_bins, t1_fs, bin_sign, n_t1_bins, n_t1_fs, t1_zero_index
 
-def import_nspectra(file_dict, fileformat, flag_verbose = False):
+def import_nspectra(file_dict, fileformat, flag_verbose = 0):
     """
     Import the number of spectra
     """
+    if flag_verbose:
+        print("IOMethods.import_nspectra")
     suffix = "Nspectra"
     data = import_file(file_dict, suffix, flag_verbose)
-    n_spectra, shape = check_and_make_list(data, flag_verbose)    
+    n_spectra, shape = check_and_make_list(data, flag_verbose)  
+    if flag_verbose:
+        print("n_sp: {n_sp}".format(n_sp = int(n_spectra)))
+        print("DONE: IOMethods.import_nspectra\n")
     return int(n_spectra)
 
 
-def import_ndatastates(file_dict, fileformat, flag_verbose = False):
+def import_ndatastates(file_dict, fileformat, flag_verbose = 0):
     """
     Import the number of datastates
     """
+    if flag_verbose:
+        print("IOMethods.import_ndatastates")
     suffix = "Ndatastates"
     data = import_file(file_dict, suffix, flag_verbose)
-    n_ds, shape = check_and_make_list(data, flag_verbose)      
+    n_ds, shape = check_and_make_list(data, flag_verbose)   
+    if flag_verbose:
+        print("n_ds: {a}".format(a = int(n_ds)))
+        print("DONE: IOMethods.import_ndatastates\n")
     return int(n_ds)
 
 
-def import_wavenumbers(file_dict, fileformat, flag_verbose = False):
+def import_wavenumbers(file_dict, fileformat, flag_verbose = 0):
     """
     Import the spectrometer axis
     """
+    if flag_verbose:
+        print("IOMethods.import_wavenumbers")
     suffix = "wavenumbers"
     data = import_file(file_dict, suffix, flag_verbose)
-    w3_axis_wn, n_w3 = check_and_make_list(data, flag_verbose)     
+    w3_axis_wn, n_w3 = check_and_make_list(data, flag_verbose)  
+    if flag_verbose:
+        print("n_w3: {a}".format(a = n_w3))
+        print("w3: {a}".format(a = w3_axis_wn))
+        print("DONE: IOMethods.import_wavenumbers\n")
     return w3_axis_wn, n_w3
 
-def import_delays(file_dict, fileformat, flag_verbose = False):
+def import_delays(file_dict, fileformat, flag_verbose = 0):
     """
     Import the delays of the IR delay. 
     """
+    if flag_verbose:
+        print("IOMethods.import_delays")
     suffix = "delays"
     data = import_file(file_dict, suffix, flag_verbose)
-    delays, n_delays = check_and_make_list(data, flag_verbose)     
+    delays, n_delays = check_and_make_list(data, flag_verbose) 
+    if flag_verbose:
+        print("n_de: {a}".format(a = n_delays))
+        print("de: {a}".format(a = delays))
+        print("DONE: IOMethods.import_delays\n")
     return delays, n_delays
 
-def import_nshots(file_dict, fileformat, flag_verbose = False):
+def import_nshots(file_dict, fileformat, flag_verbose = 0):
     """
     Import the number of shots
     """
+    if flag_verbose:
+        print("IOMethods.import_nshots")
     suffix = "Nshots"
     data = import_file(file_dict, suffix, flag_verbose)
     n_shots, temp = check_and_make_list(data, flag_verbose)     
+    if flag_verbose:
+        print("    n_sh: {a}".format(a = int(n_shots)))
+        print("DONE: IOMethods.import_nshots\n")
     return int(n_shots)
 
-def import_wavelengths(file_dict, fileformat, flag_verbose = False):
+def import_wavelengths(file_dict, fileformat, flag_verbose = 0):
     """
     The center wavelengths used in Scan Spectrum.
     """
+    if flag_verbose:
+        print("IOMethods.import_wavelengths (for Scan Spectrum)")
     suffix = "wavelengths"
     data = import_file(file_dict, suffix, flag_verbose)
     wl, n_wl = check_and_make_list(data, flag_verbose)     
+    if flag_verbose:
+        print("n_wl: {a}".format(a = n_wl))
+        print("wl: {a}".format(a = wl))
+        print("DONE: IOMethods.import_wavelengths (for Scan Spectrum)\n")
     return wl, n_wl
 
-def import_spectraAndDatastates(file_dict, fileformat, flag_verbose = False):
-    
+def import_spectraAndDatastates(file_dict, fileformat, flag_verbose = 0):
+
+    if flag_verbose:
+        print("IOMethods.import_spectraAndDatastates")
+
     suffix = "spectraAndDatastates"
     spds = import_file(file_dict, suffix, flag_verbose)
-#     self.spds = self.import_file(suffix = "_spectraAndDatastates")   
+
+    if fileformat < 4:
     
-    # we want it to be a 2D array
-    temp = numpy.shape(spds)
-    if len(temp) == 1:
-        spds = numpy.array([spds])
+        # we want it to be a 2D array
+        temp = numpy.shape(spds)
+        if len(temp) == 1:
+            spds = numpy.array([spds])
+            
+        n_sig = len(numpy.unique(spds[:,1]))
+        add_ds = True
+
+    else:
+        n_sig = int(spds[-1,1])
+        if spds[-1,0]:
+            add_ds = True
+        else:
+            add_ds = False
+        spds = spds[:-1,:]
+        
 
     n_sp = len(numpy.unique(spds[:,0]))
     n_ds = len(numpy.unique(spds[:,1]))
 
-    return spds, n_sp, n_ds
+    if flag_verbose:
+        print("spds: {a}".format(a = spds))
+        print("n_sp: {a}".format(a = n_sp))
+        print("n_ds: {a}".format(a = n_ds))
+        print("n_sig: {a}".format(a = n_sig))
+        print("add_ds: {a}".format(a = add_ds))
+        print("DONE: IOMethods.import_spectraAndDatastates\n")
+
+    return spds, n_sp, n_ds, n_sig, add_ds
 
 
-def import_slow_modulation(file_dict, fileformat, flag_verbose = False):
+def import_slow_modulation(file_dict, fileformat, flag_verbose = 0):
     """
     Import the slow modulation file.
     
@@ -392,15 +466,17 @@ def import_slow_modulation(file_dict, fileformat, flag_verbose = False):
     sm_names (list): the names
     n_sm (int): number of slow modulation states
     """
+    if flag_verbose:
+        print("IOMethods.import_slow_modulation")
     filename = file_dict["base_filename"] + "_slowModulation" +  file_dict["extension"]
     # read all lines and strip the newline character         
     lines = [line.rstrip('\n') for line in open(filename)]
-    sm, sm_names, n_sm = extract_slow_modulation(lines)
+    sm, sm_names, n_sm = extract_slow_modulation(lines, fileformat, flag_verbose = flag_verbose)
     return sm, sm_names, n_sm
 
 
 
-def extract_slow_modulation(lines, flag_verbose = False):     
+def extract_slow_modulation(lines, fileformat, flag_verbose = 0):     
 
     n_sm = int(lines[0])
     n_lines = len(lines)-1
@@ -415,10 +491,10 @@ def extract_slow_modulation(lines, flag_verbose = False):
         n = r.split(m[1])            
         sm_names[_l] = q.split(m[0])[0]    
         for _sm in range(n_sm):
-            if n[_sm] == "NaN":
+            if "NaN" in n[_sm]:
                 sm[_l,_sm] = numpy.nan
             else:
-                sm[_l,_sm] = int(n[_sm])  
+                sm[_l,_sm] = int(float(n[_sm]))
     
     sm_names = numpy.array(sm_names)
 

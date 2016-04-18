@@ -213,3 +213,63 @@ def truncate_data(data, x_axis, y_axis, x_min_i, x_max_i, y_min_i, y_max_i, flag
         
     return data, x_axis, y_axis
 
+
+
+def find_subplots(n_plots, flag_verbose = 0):
+    """
+    Crocodile.Resources.Functions.find_subplots()
+    
+    Take the required number of subplots and find how many plots there should be horizontally and vertically. It is either NxN plots, or (N+1)xN plots. 
+
+    INPUT:
+    - n_plots (int, >0): the number of plots
+
+    OUTPUT:
+    - x, y (int): the number of plots horizontally and vertically
+
+    CHANGELOG
+    - 20160413-RB: started function
+
+    
+
+    """
+    DEBUG.verbose("find_subplots({n_plots})".format( n_plots = n_plots), flag_verbose)
+    
+    if n_plots < 1:
+        return 0, 0
+    
+    t = numpy.sqrt(n_plots)
+    
+    x = numpy.floor(t)
+    y = numpy.floor(t)
+
+    if x * y < n_plots:
+        x += 1
+        
+    if x * y < n_plots:
+        y += 1
+        
+    DEBUG.verbose("n_plots: {n_plots}, x: {x}, y: {y}".format( n_plots = n_plots, x = x, y = y), flag_verbose)
+
+    return int(x), int(y)
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

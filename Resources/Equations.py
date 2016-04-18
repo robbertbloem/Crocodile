@@ -11,7 +11,8 @@ from __future__ import division
 from __future__ import absolute_import
 
 import numpy
-
+import math
+import scipy.special as SS
 
 
 # SIMPLE EQUATIONS
@@ -75,6 +76,18 @@ def rb_gaussian(A, t, ignore = -1):
 def rb_two_gaussians(A, t, ignore = -1):
 
     return rb_gaussian(A[:4], t, ignore = ignore) + rb_gaussian(A[4:], t, ignore = ignore)
+
+
+def cum_gaussian(A, t):
+    """
+    A[0]: sigma (sigma^2 = variance)
+    A[1]: mu (mean)
+    A[2]: offset 
+    A[3]: scale, before offset
+    """
+
+    temp = (t - A[1]) / (numpy.sqrt(2) * A[0])
+    return A[3] * (1 + SS.erf(temp)) / 2 + A[2]
 
 
 def rb_lorentzian(A, t, ignore = -1):

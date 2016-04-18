@@ -2,6 +2,9 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+# import imp
+import enum
+
 import inspect
 import time
 import os
@@ -11,6 +14,24 @@ import numpy
 import Crocodile
 import PythonTools.ClassTools as CT
 
+# imp.reload(CT)
+
+class MeasurementMethod(enum.Enum):
+    show_shots = 0
+    show_spectrum = 1
+    scan_spectrum = 2
+    find_t0_interference_intensity = 3
+    find_t0_interference = 4
+    find_t0_crystal = 5
+    find_t0_find_phase = 6
+    find_t0_interferogram = 7
+    find_t0_fast = 8
+#     scan_spectrum = 9
+    point_cloud = 10
+    ft_2d_ir = 11
+    pump_probe = 12
+    vcd = 13
+
 
 class dataclass(CT.ClassTools):
     """
@@ -18,7 +39,7 @@ class dataclass(CT.ClassTools):
     Most of the variables are lists which point to ndarrays with the real data.
     """
 
-    def __init__(self, objectname, flag_verbose = False):
+    def __init__(self, objectname, measurement_method, flag_verbose = 0):
         """
         croc.DataClasses.messdata
 
@@ -87,50 +108,59 @@ class dataclass(CT.ClassTools):
         self._extension = ""
         
         self.file_format = -1
+        self.measurement_method = measurement_method
         self.measurement_type = ""
 
         # organizational stuff
-        dimensions = 7
+        dimensions = 8
         measurements = 1
         
         self.dimensions = dimensions
         self.measurements = measurements    
+        self.add_datastates = True
+        self.n_sig = 0 # shots to calculate signal
 
-        self.b = False
-        self.b_axes = False
-        self.b_count = False
-        self.b_units = False
-        self.b_n = False
-          
-        self.r = False
-        self.r_axes = False  
-        self.r_units = False
-        self.r_n = False
-        
-        self.f = False
-        self.f_axes = False
-        self.f_units = False
-        self.f_n = False
-        
-        self.s = False
-        self.s_axes = False
-        self.s_units = False
-        self.s_n = False
-
-        self.b_intf = False
-        self.b_intf_axes = False
-        self.b_intf_n = False
-        self.b_intf_units = False
-        
-        self.r_intf = False
-        self.r_intf_axes = False
-        self.r_intf_n = False
-        self.r_intf_units = False
-        
-        self.f_intf = False
-        self.f_intf_axes = False
-        self.f_intf_n = False
-        self.f_intf_units = False
+# 
+#         self.b = [0] * 8
+#         self.b_noise = [0] * 8
+#         self.b_axes = [0] * 8
+#         self.b_count = [0] * 8
+#         self.b_units = [""] * 8
+#         self.b_n = [0] * 8
+#           
+#         self.r = [0] * 8
+#         self.r_noise = [0] * 8
+#         self.r_axes = [0] * 8  
+#         self.r_units = [""] * 8
+#         self.f_n = [0] * 8
+#         
+#         self.f = [0] * 8
+#         self.f_noise = [0] * 8
+#         self.f_axes = [0] * 8
+#         self.f_units = [""] * 8
+#         self.f_n = [0] * 8
+#         
+#         self.s = [0] * 8
+#         self.s_noise = [0] * 8
+#         self.s_axes = [0] * 8
+#         self.s_units = [""] * 8
+#         self.s_n = [0] * 8
+#         
+# 
+#         self.b_intf = [0] * 8
+#         self.b_intf_axes = [0] * 8
+#         self.b_intf_n = [0] * 8
+#         self.b_intf_units = [0] * 8
+#         
+#         self.r_intf = [0] * 8
+#         self.r_intf_axes = [0] * 8
+#         self.r_intf_n = [0] * 8
+#         self.r_intf_units = [0] * 8
+#         
+#         self.f_intf = [0] * 8
+#         self.f_intf_axes = [0] * 8
+#         self.f_intf_n = [0] * 8
+#         self.f_intf_units = [0] * 8
 
         self.n_scans = 0
 
@@ -330,8 +360,8 @@ class dataclass(CT.ClassTools):
             return self._zeropad_to / numpy.shape(self.r[0])[0]
     @zeropad_by.setter
     def zeropad_by(self, zp_by):
-        if len(self.s) != 1:
-            self.printWarning("Zeropadding has changed after spectrum was calculated.", inspect.stack())
+#         if len(self.s) != 1:
+#             self.printWarning("Zeropadding has changed after spectrum was calculated.", inspect.stack())
         if numpy.isnan(zp_by):
             self.printError("zeropad_by can not be numpy.nan. It is not set.", inspect.stack())
         elif type(self.r[0]) == int:
