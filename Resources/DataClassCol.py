@@ -16,21 +16,21 @@ import PythonTools.ClassTools as CT
 
 # imp.reload(CT)
 
-class MeasurementMethod(enum.Enum):
-    show_shots = 0
-    show_spectrum = 1
-    scan_spectrum = 2
-    find_t0_interference_intensity = 3
-    find_t0_interference = 4
-    find_t0_crystal = 5
-    find_t0_find_phase = 6
-    find_t0_interferogram = 7
-    find_t0_fast = 8
-#     scan_spectrum = 9
-    point_cloud = 10
-    ft_2d_ir = 11
-    pump_probe = 12
-    vcd = 13
+# class MeasurementMethod(enum.Enum):
+#     show_shots = 0
+#     show_spectrum = 1
+#     scan_spectrum = 2
+#     find_t0_interference_intensity = 3
+#     find_t0_interference = 4
+#     find_t0_crystal = 5
+#     find_t0_find_phase = 6
+#     find_t0_interferogram = 7
+#     find_t0_fast = 8
+# #     scan_spectrum = 9
+#     point_cloud = 10
+#     ft_2d_ir = 11
+#     pump_probe = 12
+#     vcd = 13
 
 
 class dataclass(CT.ClassTools):

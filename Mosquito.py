@@ -29,7 +29,7 @@ class VCD(MH.MosquitoHelperMethods):
 
     def __init__(self, objectname, flag_verbose = 0):
         self.verbose("New VCD class", flag_verbose)
-        MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["vcd"], flag_verbose = flag_verbose)
+        MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = "VCD", flag_verbose = flag_verbose)
         
 
 
@@ -63,7 +63,7 @@ class show_shots(MH.MosquitoHelperMethods):
     
         """
         self.verbose("New show_shots class", flag_verbose)
-        MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["show_shots"], flag_verbose = flag_verbose)
+        MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = "Show Shots", flag_verbose = flag_verbose)
         
         self.ss_colors = ["k", "r", "green", "blue", "yellow", "orange", "gold", "purple", "brown", "pink", "darkgreen", "lightblue", "grey"]
 
@@ -214,7 +214,7 @@ class pump_probe(MH.MosquitoHelperMethods):
 
     def __init__(self, objectname, flag_verbose = 0):
         self.verbose("New pump_probe class", flag_verbose)
-        MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["pump_probe"], flag_verbose = flag_verbose)
+        MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = "Pump Probe", flag_verbose = flag_verbose)
 
 
 class scan_spectrum(MH.MosquitoHelperMethods):
@@ -228,7 +228,7 @@ class scan_spectrum(MH.MosquitoHelperMethods):
     
     def __init__(self, objectname, flag_verbose = 0):
         self.verbose("New scan_spectrum class", flag_verbose)
-        DCC.dataclass.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["scan_spectrum"], flag_verbose = flag_verbose)
+        DCC.dataclass.__init__(self, objectname = objectname, measurement_method = "Scan Spectrum", flag_verbose = flag_verbose)
 
     def import_data(self):
         """
@@ -309,7 +309,7 @@ class FT2DIR(MH.MosquitoHelperMethods):
 
     def __init__(self, objectname, flag_verbose = 0):
         self.verbose("New FT2DIR class", flag_verbose)
-        DCC.dataclass.__init__(self, objectname = objectname, measurement_method = DCC.MeasurementMethod["ft_2d_ir"], flag_verbose = flag_verbose)
+        DCC.dataclass.__init__(self, objectname = objectname, measurement_method = "FT_2DIR", flag_verbose = flag_verbose)
 
     def import_data(self, t1_offset = 0, import_temp_scans = False):
         """
