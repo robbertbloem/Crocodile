@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import absolute_import
 
 # import imp
-import enum
+# import enum # not supported in Python 2.x
 
 import inspect
 import time

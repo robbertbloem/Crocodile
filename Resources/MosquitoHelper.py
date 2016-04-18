@@ -6,7 +6,7 @@ import inspect
 import os
 import imp
 
-import enum
+# import enum
 
 import numpy
 import matplotlib 
