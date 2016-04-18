@@ -17,20 +17,20 @@ import PythonTools.Debug as DEBUG
 
 
 def contourplot(data, x_axis, y_axis,
-    ax = False,
-    x_range = [0,0],
-    y_range = [0,-1],
-    zlimit = -1,
-    contours = 12,
-    filled = True,
-    black_contour = True, 
-    x_label = "", 
-    y_label = "", 
-    title = "", 
-    diagonal_line = True, 
-    invert_colors = False, 
-    linewidth = 1,
-    flag_verbose = False,
+#     ax = False,
+#     x_range = [0,0],
+#     y_range = [0,-1],
+#     zlimit = -1,
+#     contours = 12,
+#     filled = True,
+#     black_contour = True, 
+#     x_label = "", 
+#     y_label = "", 
+#     title = "", 
+#     diagonal_line = True, 
+#     invert_colors = False, 
+#     linewidth = 1,
+#     flag_verbose = False,
     **kwargs):
     
     """
@@ -47,15 +47,20 @@ def contourplot(data, x_axis, y_axis,
         zlimit = -1, show all, centered around zero
         zlimit = all else, use that, centered around zero
         zlimit = [a,b], plot from a to b
-    - contours (number): number of contours to be used
+    - contours (int, 16): number of contours to be used
     - invert_colors (BOOL, False): data = -data   
     
     CHANGELOG:
     201108xx/RB: started function
     20130213/RB: moved some things out as separate functions
+    20160418/RB: replaced arguments with kwargs
     
     """
-    
+    if "flag_verbose" in kwargs:
+        flag_verbose = kwargs["flag_verbose"]
+    else:
+        flag_verbose = False
+        
     DEBUG.verbose("contour plot", flag_verbose)
 
     y, x = numpy.shape(data)
@@ -69,8 +74,18 @@ def contourplot(data, x_axis, y_axis,
         DEBUG.printError("The data should have the same shape as the axes, wrong for the y-axis", inspect.stack())  
         return False          
 
-    if invert_colors:
+    if "invert_colors" in kwargs and kwargs["invert_colors"]:
         data = -data
+    
+    if "x_range" in kwargs:
+        x_range = kwargs["x_range"]
+    else:
+        x_range = [0,0]
+
+    if "y_range" in kwargs:
+        y_range = kwargs["y_range"]
+    else:
+        y_range = [0,-1]
 
     # determine the range to be plotted
     x_min, x_max, y_min, y_max = FU.find_axes(x_axis, y_axis, x_range, y_range, flag_verbose)
@@ -82,28 +97,53 @@ def contourplot(data, x_axis, y_axis,
     # truncate the data, this speeds up the plotting
     data, x_axis, y_axis = FU.truncate_data(data, x_axis, y_axis, x_min_i, x_max_i, y_min_i, y_max_i)
 
+    if "zlimit" in kwargs:
+        zlimit = kwargs["zlimit"]
+    else:
+        zlimit = -1
+        
+    if "contours" in kwargs:
+        contours = kwargs["contours"]
+    else:
+        contours = 16
+
     # now make the actual contours   
     V = FU.make_contours_2d(data, zlimit, contours, flag_verbose)        
 
     # make sure there is an axis-object
-    if ax == False:
+    if "ax" in kwargs:
+        ax = kwargs["ax"]
+        flag_show = False
+    else:
         fig = plt.figure()
         ax = fig.add_subplot(111)
         flag_show = True
+#     else:
+#         flag_show = False
+
+    if "linewidth" in kwargs:
+        linewidth = kwargs["linewidth"]
     else:
-        flag_show = False
+        linewidth = 1
 
     # actually plot the thing
-    if filled:
+    if "filled" in kwargs and kwargs["filled"] == False:
+        pass
+    else:
         ax.contourf(x_axis, y_axis, data, V, cmap = FU.rwb_cmap)
-    if black_contour:
-        if filled:
-            ax.contour(x_axis, y_axis, data, V, linewidths = linewidth, linestyles = "solid", colors = "k")
-        else:
+        
+    if "black_contour" in kwargs and kwargs["black_contour"] == False:
+        pass
+    else:
+        if "filled" in kwargs and kwargs["filled"] == False:
             ax.contour(x_axis, y_axis, data, V, linewidths = linewidth, colors = "k")
+        else:
+            ax.contour(x_axis, y_axis, data, V, linewidths = linewidth, linestyles = "solid", colors = "k")
+#         else:
+            
     
     # the diagonal line
-    if diagonal_line:
+    if "diagonal_line" in kwargs and kwargs["diagonal_line"]:
         ax.plot([x_axis[0]-100,x_axis[-1]+100], [x_axis[0]-100,x_axis[-1]+100], "k", linewidth = linewidth)
 
     # we only want to see a certain part of the spectrum   
@@ -111,14 +151,14 @@ def contourplot(data, x_axis, y_axis,
     ax.set_ylim(y_min, y_max)
     
     # add some text
-    if x_label != "" and x_label != "no_label":
-        ax.set_xlabel(x_label)
+    if "x_label" in kwargs and kwargs["x_label"] != "" and kwargs["x_label"]  != "no_label":
+        ax.set_xlabel(kwargs["x_label"] )
     
-    if y_label != "" and y_label != "no_label":
-        ax.set_ylabel(y_label)
+    if "y_label" in kwargs and kwargs["y_label"] != "" and kwargs["y_label"] != "no_label":
+        ax.set_ylabel(kwargs["y_label"])
     
-    if title != "":
-        ax.set_title(title)    
+    if "title" in kwargs and kwargs["title"] != "":
+        ax.set_title(kwargs["title"])    
 
     if flag_show:
         plt.show()

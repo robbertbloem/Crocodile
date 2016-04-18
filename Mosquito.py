@@ -273,8 +273,7 @@ class scan_spectrum(MH.MosquitoHelperMethods):
             labels = ["probe", "reference"]
             sigma = (self.r_axes[0][0] - self.r_axes[0][-1]) / 4
             A = [sigma,numpy.mean(self.r_axes[0]), 0, 1] # initial guess
-            
-            
+                      
             print("           mu       sigma   offset    scale")
             for ds in range(self.r_n[2]):
                 A_final = M.fit(self.r_axes[0], self.r[:,0,ds,0,0,0,0,0], EQ.rb_gaussian, A)
