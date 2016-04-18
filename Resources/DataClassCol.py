@@ -342,8 +342,8 @@ class dataclass(CT.ClassTools):
     
     @zeropad_to.setter
     def zeropad_to(self, zpt):
-        if len(self.s) != 1:
-            self.printWarning("Zeropadding has changed after spectrum was calculated.", inspect.stack())        
+#         if len(self.s) != 1:
+#             self.printWarning("Zeropadding has changed after spectrum was calculated.", inspect.stack())        
         if numpy.isnan(zpt):
             self.printError("zeropad_to can not be numpy.nan. It is not set.", inspect.stack())
         elif type(self.r[0]) == int:
