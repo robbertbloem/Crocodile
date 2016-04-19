@@ -34,6 +34,10 @@ def contourplot(data, x_axis, y_axis,
     **kwargs):
     
     """
+    Make a contourplot.
+    
+    The defaults are for a plot with w3 as the x-axis. 
+    
     - data, x_axis, y_axis: data and axes
     - ax (bool (False) or matplotlib axes instance): if False, it will make a new figure, otherwise it will use the axes instance, allowing subplots etc.
     - x_label, y_label, title (string, default=''): the labels for the axes. If no label is set, it will use the default. Use 'no_label' or 'no_title' to show no label.
@@ -138,9 +142,7 @@ def contourplot(data, x_axis, y_axis,
         if "filled" in kwargs and kwargs["filled"] == False:
             ax.contour(x_axis, y_axis, data, V, linewidths = linewidth, colors = "k")
         else:
-            ax.contour(x_axis, y_axis, data, V, linewidths = linewidth, linestyles = "solid", colors = "k")
-#         else:
-            
+            ax.contour(x_axis, y_axis, data, V, linewidths = linewidth, linestyles = "solid", colors = "k")      
     
     # the diagonal line
     if "diagonal_line" in kwargs and kwargs["diagonal_line"]:
