@@ -895,9 +895,10 @@ class MosquitoHelperMethods(DCC.dataclass):
         return ax, new_axis
 
 
-    def multiplot_ranges(self, **kwargs):
-        """
 
+    def multiplot_ranges_helper(self, key, index, name, **kwargs):
+        """
+        Checks if KEY is in KWARGS. 
     
         INPUT:
         - 
@@ -906,70 +907,60 @@ class MosquitoHelperMethods(DCC.dataclass):
         - 
     
         DESCRIPTION:
+        - should be improved with checks.
     
+        CHANGELOG:
+        20160422-RB: started function        
+        
+        """
+        if key in kwargs:
+            if type(kwargs[key]) == int:
+                res = numpy.arange(kwargs[key])
+            else:
+                res = kwargs[key]
+            
+            if len(res) >= self.s_n[index]:  
+                self.printWarning("Index {index} ({name}) is out of bounds with size {a} (max is {b})".format(index = index, name = name, a = len(res), b = self.s_n[index]))
+                res = res[:self.s_n[index]]
+                
+        else:
+            res = numpy.arange(self.s_n[index])       
+            
+        return res
+
+
+
+    def multiplot_ranges(self, **kwargs):
+        """
+        Checks for keywords pi (pixels), bish (bins/shots), sp (spectra), ds (datastates), sm (slow modulation), de (delays), du (dummies), sc (scans). The value can be a list or an integer with indices. If the indices are out of range, they will be ignored. 
+    
+        INPUT:
+        - kwargs. 
+    
+        OUTPUT:
+        - ranges. 
     
         CHANGELOG:
         201604-RB: started function
+        20160422-RB: wrote helper function
     
         """
-        if "pi" in kwargs:
-            pi = kwargs["pi"]
-            if len(pi) >= self.s_n[0]:  
-                self.printWarning("Index 0 (pixels) is out of bounds with size {a} (max is {b})".format(a = len(pi), b = self.s_n[0]))
-                pi = pi[:self.s_n[0]]
-                
-        else:
-            pi = numpy.arange(self.s_n[0])
-            
-        if "bish" in kwargs:
-            bish = kwargs["bish"]
-            if len(bish) >= self.s_n[1]:  
-                self.printWarning("Index 1 (bins/shots) is out of bounds with size {a} (max is {b})".format(a = len(bish), b = self.s_n[1]))
-                bish = bish[:self.s_n[1]]
-        else:
-            bish = numpy.arange(self.s_n[1])
 
-        if "sp" in kwargs:
-            sp = kwargs["sp"]
-            if len(sp) >= self.s_n[2]:  
-                self.printWarning("Index 2 (spectra) is out of bounds with size {a} (max is {b})".format(a = len(sp), b = self.s_n[2]))
-                sp = sp[:self.s_n[2]]
-        else:
-            sp = numpy.arange(self.s_n[2])
-
-        if "ds" in kwargs:
-            ds = kwargs["ds"]
-            if len(ds) >= self.s_n[3]: 
-                self.printWarning("Index 3 (datastates) is out of bounds with size {a} (max is {b})".format(a = len(ds), b = self.s_n[3]))
-                ds = ds[:self.s_n[3]]
-        else:
-            ds = numpy.arange(self.s_n[3])
-
-        if "sm" in kwargs:
-            sm = kwargs["sm"]
-            if len(sm) >= self.s_n[4]: 
-                self.printWarning("Index 4 (slow modulation) is out of bounds with size {a} (max is {b})".format(a = len(sm), b = self.s_n[4]))
-                ds = ds[:self.s_n[3]]
-        else:
-            sm = numpy.arange(self.s_n[4])
-            
-        if "de" in kwargs:
-            de = kwargs["de"]
-            if len(de) >= self.s_n[5]: 
-                self.printWarning("Index 5 (delays) is out of bounds with size {a} (max is {b})".format(a = len(de), b = self.s_n[5]))
-                de = de[:self.s_n[5]]
-        else:
-            de = numpy.arange(self.s_n[5])
-           
-        if "du" in kwargs:
-            du = kwargs["du"]
-        else:
-            du = numpy.arange(self.s_n[6])  
-
-        if "sc" in kwargs:
-            sc = kwargs["sc"]
-        else:
-            sc = numpy.arange(self.s_n[7])
+        pi = self.multiplot_ranges_helper("pi", 0, "pixels", **kwargs)
+        
+        bish = self.multiplot_ranges_helper("bish", 1, "bins/shots", **kwargs)
+        
+        sp = self.multiplot_ranges_helper("sp", 2, "spectra", **kwargs)
+        
+        ds = self.multiplot_ranges_helper("ds", 3, "datastates", **kwargs)
+        
+        sm = self.multiplot_ranges_helper("sm", 4, "slow modulation", **kwargs)
+        
+        de = self.multiplot_ranges_helper("de", 5, "delays", **kwargs)
+        
+        du = self.multiplot_ranges_helper("du", 6, "dummies", **kwargs)
+        
+        sc = self.multiplot_ranges_helper("sc", 7, "scans", **kwargs)
 
         return pi, bish, sp, ds, sm, de, du, sc
 
