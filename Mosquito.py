@@ -347,6 +347,10 @@ class FT2DIR(MH.MosquitoHelperMethods):
         
         pi, bish, sp, ds, sm, de, du, sc = self.multiplot_ranges(**kwargs)
         
+        flag_make_title = False
+        if "title" not in kwargs:
+            flag_make_title = True
+        
         for _sp in sp:
             for _sm in sm:
                 for _de in de:
@@ -360,14 +364,14 @@ class FT2DIR(MH.MosquitoHelperMethods):
                             else:
                                 ax.set_aspect("equal")
                             
-#                             if "title" not in kwargs:
-#                                 kwargs["title"] = "%s %s fs" % (self._basename, self.s_axes[5][_de])
-                            title = "%s %s fs" % (self._basename, self.s_axes[5][_de])
+                            if flag_make_title:
+                                kwargs["title"] = "%s %s fs" % (self._basename, self.s_axes[5][_de])
+
                             if "flip_spectrum" in kwargs and kwargs["flip_spectrum"]:
                                 PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc], self.s_axes[1], self.s_axes[0], x_label = "w1 (cm-1)", y_label = "w3 (cm-1)", ax = ax, **kwargs)
                      
                             else:
-                                PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc].T, self.s_axes[0], self.s_axes[1], x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", ax = ax, title = title, **kwargs)
+                                PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc].T, self.s_axes[0], self.s_axes[1], x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", ax = ax, **kwargs)
 
 
         plt.show()
