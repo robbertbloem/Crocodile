@@ -678,8 +678,10 @@ class MosquitoHelperMethods(DCC.dataclass):
         r_intf = numpy.zeros(self.r_intf_n[0])
         for bi in range(self.r_intf_n[0]): 
             r_intf[bi] = numpy.nanmean(self.r_intf[bi,:,:,:,:,:,:])
+        r_intf -= numpy.mean(r_intf)
         r_intf_roll = numpy.roll(r_intf, -self.t1_zero_index)
-        r_intf_roll[0] /= 2
+#         plt.plot(r_intf_roll)
+#         r_intf_roll[0] /= 2
         f = numpy.fft.fft(r_intf_roll)
         f = f[:N_bins_half] 
 
@@ -747,7 +749,7 @@ class MosquitoHelperMethods(DCC.dataclass):
         
         """
         
-        y = numpy.real(f)
+        y = numpy.abs(f)
         i_max = numpy.argmax(y[i_range[0]:i_range[1]])
         idx = numpy.arange(i_max, i_max + n_points)
         
@@ -762,6 +764,8 @@ class MosquitoHelperMethods(DCC.dataclass):
             idx -= int(n_points/2)
         
         idx += i_range[0]
+        
+        print(idx)
 
         angle = numpy.angle(f)
         check_angle = numpy.angle(f * numpy.exp(1j*numpy.pi/2))
