@@ -360,7 +360,8 @@ class FT2DIR(MH.MosquitoHelperMethods):
                             fig = plt.figure()
                             ax = fig.add_subplot(111)  
                             if "aspect" in kwargs:
-                                ax.set_aspect(kwargs["aspect"])
+                                if kwargs["aspect"] != False:
+                                    ax.set_aspect(kwargs["aspect"])
                             else:
                                 ax.set_aspect("equal")
                             
@@ -409,7 +410,8 @@ class FT2DIR(MH.MosquitoHelperMethods):
         for ax_i in range(n_plots):
             ax[ax_i] = fig.add_subplot(y, x, ax_i + 1)  
             if "aspect" in kwargs:
-                ax[ax_i].set_aspect(kwargs["aspect"])
+                if kwargs["aspect"] != False:
+                    ax[ax_i].set_aspect(kwargs["aspect"])
             else:
                 ax[ax_i].set_aspect("equal")
 
