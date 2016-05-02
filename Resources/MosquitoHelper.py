@@ -17,6 +17,7 @@ import Crocodile.Resources.IOMethods as IOM
 import Crocodile.Resources.Constants as CONST
 import Crocodile.Resources.Mathematics as MATH
 import Crocodile.Resources.Plotting as PL
+import Crocodile.Resources.Functions as FU
 
 imp.reload(DCC)
 imp.reload(IOM)
@@ -969,6 +970,69 @@ class MosquitoHelperMethods(DCC.dataclass):
         return pi, bish, sp, ds, sm, de, du, sc
 
 
+
+                                
+
+    def export_2d_data_for_gnuplot_helper(self, x_axis, y_axis, data, path_and_filename, **kwargs):
+        """
+        
+    
+        INPUT:
+        - data:
+        - x_range, y_range (optional)
+    
+        OUTPUT:
+
+    
+        CHANGELOG:
+        20160502-RB: started function
+
+        """
+        
+        if "x_range" in kwargs:
+            x_range = kwargs["x_range"]
+        else:
+            x_range = [0,0]
+
+        if "y_range" in kwargs:
+            y_range = kwargs["y_range"]
+        else:
+            y_range = [0,-1]
+
+        # determine the range to be plotted
+        x_min, x_max, y_min, y_max = FU.find_axes(x_axis, y_axis, x_range, y_range, self.flag_verbose)
+    
+        # find the area to be plotted
+        x_min_i, x_max_i = FU.find_axes_indices(x_axis, x_min, x_max)
+        y_min_i, y_max_i = FU.find_axes_indices(y_axis, y_min, y_max)
+          
+        # truncate the data
+        data, x_axis, y_axis = FU.truncate_data(data, y_axis, x_axis, y_min_i, y_max_i, x_min_i, x_max_i) 
+        
+        n_x = len(x_axis)
+        n_y = len(y_axis)
+            
+        with open(path_and_filename, 'w') as f:
+        
+            for x_i in range(n_x):
+                for y_i in range(n_y):
+                    f.write("{y}, {x}, {z}\n".format(y = y_axis[y_i], x = x_axis[x_i], z = data[y_i, x_i]))
+            
+                f.write("\n")
+            
+        f.close()
+        
+        
+    def check_results_folder(self):
+        """
+        Check if the results folder exists, if not, make it. 
+        """
+        
+        try:
+            os.stat(self._file_dict["result_folder"])
+        except:
+            os.mkdir(self._file_dict["result_folder"])  
+        
 
 if __name__ == "__main__": 
     pass
