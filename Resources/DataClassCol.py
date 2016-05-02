@@ -261,7 +261,8 @@ class dataclass(CT.ClassTools):
         self._file_dict["base_folder"] = self._file_dict["data_folder"] + self._file_dict["date"] + sep + self._file_dict["basename"] + "_" + self._file_dict["timestamp"] + sep
         
         self._file_dict["base_filename"] = self._file_dict["base_folder"] + self._file_dict["basename"] + "_" + self._file_dict["timestamp"]
-      
+
+        self._file_dict["result_folder"] = self._file_dict["base_folder"] + "results" + sep  
 
 
     # comments
