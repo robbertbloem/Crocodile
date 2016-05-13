@@ -12,6 +12,8 @@ import numpy
 import matplotlib 
 import matplotlib.pyplot as plt
 
+import PythonTools.Debug as DEBUG
+
 import Crocodile.Resources.DataClassCol as DCC
 import Crocodile.Resources.IOMethods as IOM
 import Crocodile.Resources.Constants as CONST
@@ -336,13 +338,16 @@ class MosquitoHelperMethods(DCC.dataclass):
             self.b_intf = numpy.zeros(self.b_intf_n)
             self.b_intf_axes = [t1_bins, spds[:,1], spds[:,0], sm, de, du, sc]
             self.b_intf_units = ["T1 (bins)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
+        
+        else:
+            n_ds = 1
 
-        self.r_n = [n_w3, n_t1_fs, 1, n_sp, n_sm, n_de, n_du, n_sc]
+        self.r_n = [n_w3, n_t1_fs, n_ds, n_sp, n_sm, n_de, n_du, n_sc]
         self.r = numpy.zeros(self.r_n)
         self.r_axes = [w3_axis, t1_fs, [0], spds[:,0], sm, de, du, sc]
         self.r_units = ["w3 (cm-1)", "T1 (bins)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
         
-        self.r_intf_n = [n_t1_bins, 1, n_sp, n_sm, n_de, n_du, n_sc]
+        self.r_intf_n = [n_t1_bins, n_ds, n_sp, n_sm, n_de, n_du, n_sc]
         self.r_intf = numpy.zeros(self.r_intf_n)
         self.r_intf_axes = [t1_bins, spds[:,1], spds[:,0], sm, de, du, sc]
         self.r_intf_units = ["T1 (bins)", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
@@ -546,6 +551,16 @@ class MosquitoHelperMethods(DCC.dataclass):
         return True
 
 
+    def no_count_cheat(self):
+        
+        ix = numpy.where(self.b_count == 0)[0]
+        self.b_count[ix] = 1
+        self.b_to_r()
+        
+        DEBUG.printWarning("NO COUNT CHEAT: count 0 set to 1. USE FOR DEBUGGING ONLY!", inspect.stack())
+        
+    
+
     def b_to_r(self):
         """
         B to R. B is the raw data and is not yet divided by the count. 
@@ -627,6 +642,25 @@ class MosquitoHelperMethods(DCC.dataclass):
             pass
 
 
+        nan_warning = 0
+        for bi in range(self.b_count_n[0]):
+            
+            if numpy.all(self.b_count[bi,:,:, :,:,:,:] > 0):
+                self.r_intf[bi,:,:, :,:,:,:] = self.b_intf[bi,:,:, :,:,:,:] / self.b_count[bi,:,:, :,:,:,:]
+            else:
+                self.r_intf[bi,:,:, :,:,:,:] = numpy.nan
+                nan_warning += 1
+                
+        if nan_warning:
+            mean = numpy.nanmean(self.r_intf)
+            ix = numpy.where(numpy.isnan(self.r_intf[:,0,0, 0,0,0,0]))[0]
+            self.r_intf[ix] = mean
+                
+        print("nan warning:", nan_warning)
+        
+
+
+
     def calculate_phase(self, **kwargs):
         """
         This methods does the FFT of the interferometer. It looks for the peak in the real part. It then uses n_points, centered around the peak, to calculate the phase.
@@ -679,7 +713,9 @@ class MosquitoHelperMethods(DCC.dataclass):
         r_intf = numpy.zeros(self.r_intf_n[0])
         for bi in range(self.r_intf_n[0]): 
             r_intf[bi] = numpy.nanmean(self.r_intf[bi,:,:,:,:,:,:])
-        r_intf -= numpy.mean(r_intf)
+        r_intf -= numpy.nanmean(r_intf)
+        # replace NaN by zero
+        r_intf = numpy.nan_to_num(r_intf)
         r_intf_roll = numpy.roll(r_intf, -self.t1_zero_index)
 #         plt.plot(r_intf_roll)
 #         r_intf_roll[0] /= 2
