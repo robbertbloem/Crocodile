@@ -199,11 +199,6 @@ class show_shots(MH.MosquitoHelperMethods):
         plt.show()
 
 
-#     def print_stats(self):
-#         mean_s = numpy.mean(self.s)
-#         std_s = numpy.std(self.s)
-#         
-#         print(mean_s, std_s)
 
             
 
@@ -215,6 +210,14 @@ class pump_probe(MH.MosquitoHelperMethods):
     def __init__(self, objectname, flag_verbose = 0):
         self.verbose("New pump_probe class", flag_verbose)
         MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = "Pump Probe", flag_verbose = flag_verbose)
+
+
+
+
+
+
+
+
 
 
 class scan_spectrum(MH.MosquitoHelperMethods):

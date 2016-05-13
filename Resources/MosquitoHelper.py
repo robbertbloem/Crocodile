@@ -560,7 +560,6 @@ class MosquitoHelperMethods(DCC.dataclass):
         DEBUG.printWarning("NO COUNT CHEAT: count 0 set to 1. USE FOR DEBUGGING ONLY!", inspect.stack())
         
     
-
     def b_to_r(self):
         """
         B to R. B is the raw data and is not yet divided by the count. 
@@ -658,8 +657,6 @@ class MosquitoHelperMethods(DCC.dataclass):
                 
         print("nan warning:", nan_warning)
         
-
-
 
     def calculate_phase(self, **kwargs):
         """
@@ -936,7 +933,6 @@ class MosquitoHelperMethods(DCC.dataclass):
         return ax, new_axis
 
 
-
     def multiplot_ranges_helper(self, key, index, name, **kwargs):
         """
         Checks if KEY is in KWARGS. 
@@ -968,7 +964,6 @@ class MosquitoHelperMethods(DCC.dataclass):
             res = numpy.arange(self.s_n[index])       
             
         return res
-
 
 
     def multiplot_ranges(self, **kwargs):
@@ -1006,8 +1001,32 @@ class MosquitoHelperMethods(DCC.dataclass):
         return pi, bish, sp, ds, sm, de, du, sc
 
 
+    def sum_t1(self, x_axis, y_axis, data, **kwargs):
 
-                                
+        if "x_range" in kwargs:
+            x_range = kwargs["x_range"]
+        else:
+            x_range = [0,0]
+
+        if "y_range" in kwargs:
+            y_range = kwargs["y_range"]
+        else:
+            y_range = [0,-1]
+
+        # determine the range to be plotted
+        x_min, x_max, y_min, y_max = FU.find_axes(x_axis, y_axis, x_range, y_range, self.flag_verbose)
+    
+        # find the area to be plotted
+        x_min_i, x_max_i = FU.find_axes_indices(x_axis, x_min, x_max)
+        y_min_i, y_max_i = FU.find_axes_indices(y_axis, y_min, y_max)
+          
+        # truncate the data
+        data, x_axis, y_axis = FU.truncate_data(data, y_axis, x_axis, y_min_i, y_max_i, x_min_i, x_max_i) 
+        
+        data = numpy.mean(data, axis = 1)
+        
+        return data
+              
 
     def export_2d_data_for_gnuplot_helper(self, x_axis, y_axis, data, path_and_filename, **kwargs):
         """
