@@ -504,6 +504,143 @@ class MosquitoHelperMethods(DCC.dataclass):
         suffix = "data_0"
         self.r[:,0,:,0,0,0,0,0] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1).T
         
+
+    def import_data_pump_probe(self, **kwargs):
+        
+        if "import_temp_scans" in kwargs and kwargs["import_temp_scans"]:
+            import_temp_scans = True
+        else:
+            import_temp_scans = False
+        
+        if "t1_offset" in kwargs:
+            t1_offset = kwargs["t1_offset"]
+        else:
+            t1_offset = 0
+
+        if self.find_file_format() == False:
+            return False
+
+        # 0: pixels
+        w3_axis, n_w3 = IOM.import_wavenumbers(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        
+        # 1: number of bins
+#         t1_bins, t1_fs, self.bin_sign, n_t1_bins, n_t1_fs, self.t1_zero_index = IOM.import_bins(self._file_dict, self.file_format, t1_offset = t1_offset, flag_verbose = self.flag_verbose)
+        
+        # 2: datastates
+        n_ds = IOM.import_ndatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+    
+        # 3: spectra
+        n_sp = IOM.import_nspectra(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        
+        # spds is how the signal is/should be calculated
+        spds, n_sp_2, n_ds_2, self.n_sig, self.add_ds = IOM.import_spectraAndDatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        
+        if n_ds == 0:
+            self.measurement_type = "signal"
+            n_ds = n_ds_2
+        else:
+            self.measurement_type = "intensity"
+        
+        # 4: slow modulation
+        sm, sm_names, n_sm = IOM.import_slow_modulation(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+
+        print(sm_names)
+
+        # 5: delays
+        de, n_de = IOM.import_delays(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+
+        # 6: dummy dimension
+        n_du = 1
+        du = numpy.arange(n_du)
+
+        # 7: number of scans
+        if import_temp_scans:
+            n_sc = IOM.find_number_of_scans(self._file_dict["base_folder"], self._file_dict["base_filename"], self._file_dict["extension"], flag_verbose = self.flag_verbose)
+            sc = numpy.arange(n_sc)
+        else:
+            n_sc = 1
+            sc = numpy.arange(n_sc)
+
+
+        # DEFINE THE DATASTRUCTURES
+
+        # probe and reference are saved separately
+        if self.measurement_type == "intensity":
+
+            self.r_n = [n_w3, 1, n_ds, n_sp, n_sm, n_de, n_du, n_sc]
+            self.r = numpy.zeros(self.r_n)
+            self.r_noise = numpy.zeros(self.r_n)
+            self.r_axes = [w3_axis, [0], [0], spds[:,0], sm, de, du, sc]
+            self.r_units = ["w_probe (cm-1)", "x", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
+
+        else:
+            n_ds = 1
+
+        self.s_n = [n_w3, 1, 1, n_sp, n_sm, n_de, n_du, n_sc]
+        self.s = numpy.zeros(self.s_n)
+        self.s_noise = numpy.zeros(self.s_n)
+        self.s_axes = [w3_axis, [0], [0], spds[:,0], sm, de, du, sc]
+        self.s_units = ["w_probe (cm-1)", "x", "Datastates", "Spectra", "Slow modulation", "Delays (fs)", "Dummies", "Scans"]
+
+
+
+        # IMPORT THE DATA
+        
+        # signal, no temp scans
+        if self.measurement_type == "signal" and self.s_n[7] == 1:  
+            self.verbose("Average scan, signal", self.flag_verbose)
+                
+            for sp in range(self.s_n[3]):
+                for sm in range(self.s_n[4]):
+                    for du in range(self.s_n[6]):
+                
+                        # import files
+                        suffix = "signal_sp" + str(sp) + "_sm" + str(sm) + "_du" + str(du)
+                        if self.s_n[5] == 1:
+                            self.s[:,0,0,sp,sm,0,du,0] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1)
+
+                        else:
+                            self.s[:,0,0,sp,sm,:,du,0] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1).T
+
+                        # import noise
+                        suffix = "signal_noise_sp" + str(sp) + "_sm" + str(sm) + "_du" + str(du)
+                        if self.s_n[5] == 1:
+                            self.s_noise[:,0,0,sp,sm,0,du,0] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1)
+
+                        else:
+                            self.s_noise[:,0,0,sp,sm,:,du,0] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1).T
+
+
+        # signal, temp scans
+        if self.measurement_type == "signal" and self.s_n[7] == 1:  
+            self.verbose("Average scan, signal", self.flag_verbose)
+                
+            for sp in range(self.s_n[3]):
+                for sm in range(self.s_n[4]):
+                    for du in range(self.s_n[6]):
+                        for sc in range(self.s_n[7]):
+                
+                            # import files
+                            suffix = "signal_sp" + str(sp) + "_sm" + str(sm) + "_du" + str(du) + "_" + str(sc)
+                            if self.s_n[5] == 1:
+                                self.s[:,0,0,sp,sm,0,du,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1)
+
+                            else:
+                                self.s[:,0,0,sp,sm,:,du,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1).T
+
+                            # import noise
+                            suffix = "signal_noise_sp" + str(sp) + "_sm" + str(sm) + "_du" + str(du)
+                            if self.s_n[5] == 1:
+                                self.s_noise[:,0,0,sp,sm,0,du,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1)
+
+                            else:
+                                self.s_noise[:,0,0,sp,sm,:,du,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1).T
+
+
+
+
+
+
         
     def find_file_format(self, flag_verbose = False):
         """

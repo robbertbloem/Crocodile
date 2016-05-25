@@ -212,7 +212,55 @@ class pump_probe(MH.MosquitoHelperMethods):
         MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = "Pump Probe", flag_verbose = flag_verbose)
 
 
+    def import_data(self, **kwargs):
+        """
+        Import pump probe data.
 
+        CHANGELOG:
+        201605-RB: started function
+    
+        """    
+
+        self.import_data_pump_probe(**kwargs)
+        
+    
+    def make_contour_plot(self, **kwargs):
+    
+        pi, bish, sp, ds, sm, de, du, sc = self.multiplot_ranges(**kwargs)
+        
+        flag_make_title = False
+        if "title" not in kwargs:
+            flag_make_title = True
+            
+        if "y_range" not in kwargs:
+            temp = numpy.where(self.s_axes[5] > 0)[0]
+            print(temp)
+            kwargs["y_range"] = [self.s_axes[5][temp[0]], self.s_axes[5][temp[-1]]]
+            print(kwargs["y_range"])
+        
+        for _sp in sp:
+            for _sm in sm:
+                for _du in du:
+                    for _sc in sc:
+
+                        fig = plt.figure()
+                        ax = fig.add_subplot(111)  
+                        
+                        if flag_make_title:
+                            kwargs["title"] = "{name}\nsp {spx}, sm {smx}".format(name = self._basename, spx = self.s_axes[3][_sp], smx = self.s_axes[4][:,_sm])
+
+                        PL.contourplot(self.s[:, 0, 0, _sp, _sm, :, _du, _sc].T, self.s_axes[0], self.s_axes[5], x_label = "w3 (cm-1)", y_label = self.s_units[5], ax = ax, **kwargs)
+                        
+                        if "ylog" in kwargs and kwargs["ylog"]:                    
+                            ax.set_yscale('log')
+
+
+        plt.show()
+
+        
+    def make_linear_plot(self, **kwargs):
+        
+        pass
 
 
 
@@ -369,7 +417,8 @@ class FT2DIR(MH.MosquitoHelperMethods):
                                 ax.set_aspect("equal")
                             
                             if flag_make_title:
-                                kwargs["title"] = "%s %s fs" % (self._basename, self.s_axes[5][_de])
+#                                 kwargs["title"] = "%s %s fs" % (self._basename, self.s_axes[5][_de])
+                                kwargs["title"] = "{name}\nsp {spx}, sm {smx}, de {dex}".format(name = self._basename, spx = self.s_axes[3][_sp], smx = self.s_axes[4][:,_sm], dex = self.s_axes[5][_de])
 
                             if "flip_spectrum" in kwargs and kwargs["flip_spectrum"]:
                                 PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc], self.s_axes[1], self.s_axes[0], x_label = "w1 (cm-1)", y_label = "w3 (cm-1)", ax = ax, **kwargs)
@@ -425,7 +474,11 @@ class FT2DIR(MH.MosquitoHelperMethods):
                     for _du in du:
                         for _sc in sc:
 
-                            title = "%s %s fs" % (self._basename, self.s_axes[5][_de])
+#                             title = "%s %s fs" % (self._basename, self.s_axes[5][_de])
+                            
+                            title = "{name}\nsp {spx}, sm {smx}, de {dex}".format(name = self._basename, spx = self.s_axes[3][_sp], smx = self.s_axes[4][:,_sm], dex = self.s_axes[5][_de])
+                            
+                            
                             if "flip_spectrum" in kwargs and kwargs["flip_spectrum"]:
                                 PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc], self.s_axes[1], self.s_axes[0], x_label = "w1 (cm-1)", y_label = "w3 (cm-1)", ax = ax[ax_i], title = title, **kwargs)
                      
