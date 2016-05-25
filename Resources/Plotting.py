@@ -145,7 +145,9 @@ def contourplot(data, x_axis, y_axis,
             ax.contour(x_axis, y_axis, data, V, linewidths = linewidth, linestyles = "solid", colors = "k")      
     
     # the diagonal line
-    if "diagonal_line" in kwargs and kwargs["diagonal_line"]:
+    if "diagonal_line" in kwargs and kwargs["diagonal_line"] == False:
+        pass
+    else:
         ax.plot([x_axis[0]-100,x_axis[-1]+100], [x_axis[0]-100,x_axis[-1]+100], "k", linewidth = linewidth)
 
     # we only want to see a certain part of the spectrum   
