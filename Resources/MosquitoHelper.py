@@ -20,6 +20,7 @@ import Crocodile.Resources.Constants as CONST
 import Crocodile.Resources.Mathematics as MATH
 import Crocodile.Resources.Plotting as PL
 import Crocodile.Resources.Functions as FU
+import Crocodile.Resources.Equations as EQ
 
 imp.reload(DCC)
 imp.reload(IOM)
@@ -851,11 +852,9 @@ class MosquitoHelperMethods(DCC.dataclass):
         # replace NaN by zero
         r_intf = numpy.nan_to_num(r_intf)
         r_intf_roll = numpy.roll(r_intf, -self.t1_zero_index)
-#         plt.plot(r_intf_roll)
-#         r_intf_roll[0] /= 2
+
         f = numpy.fft.fft(r_intf_roll)
         f = f[:N_bins_half] 
-
         
         angle = self.find_phase(f, w_axis, n_points, i_range)   
 
@@ -870,7 +869,6 @@ class MosquitoHelperMethods(DCC.dataclass):
 
             ax_i = 0
             ax[ax_i].plot(r_intf)        
-#             ax[ax_i].plot(r_intf_roll)        
 
             for sp in range(self.s_n[3]):
                 for sm in range(self.s_n[4]):
@@ -936,8 +934,6 @@ class MosquitoHelperMethods(DCC.dataclass):
         
         idx += i_range[0]
         
-        print(idx)
-
         angle = numpy.angle(f)
         check_angle = numpy.angle(f * numpy.exp(1j*numpy.pi/2))
 
@@ -947,6 +943,18 @@ class MosquitoHelperMethods(DCC.dataclass):
             self.phase_rad = numpy.mean(check_angle[idx]) - numpy.pi/2
             
         self.f_intf_angle = angle
+
+        A_start = [numpy.mean(angle[idx]), 1]
+        A_out = MATH.fit(w_axis[idx], angle[idx], EQ.linear, A_start)
+
+        shift = A_out[1] / (2 * numpy.pi * 1e-15 * CONST.c_cms * CONST.hene_fringe_fs)
+        
+        if shift > 1 or shift < -1:
+            self.printWarning("=== CHANGE ZERO BIN!!! ===")
+            print("Current zero bin: {bin}".format(bin =  self.t1_zero_index))
+            print("Recommanded zero bin: {bin:4.1f}".format(bin =  self.t1_zero_index - shift))
+            print("Shift is: {bin:4.1f} bins".format(bin = shift))
+            print("Phase below is for the current zero bin.")
 
         print("Phase in degrees: %.1f" % (self.phase_rad * 180 / numpy.pi))
         
@@ -1226,7 +1234,6 @@ class MosquitoHelperMethods(DCC.dataclass):
             os.mkdir(self._file_dict["result_folder"])  
         
 
-
     def remove_pixel(self, remove_idx):
         """
          
@@ -1255,8 +1262,6 @@ class MosquitoHelperMethods(DCC.dataclass):
         self.s_axes[0] = numpy.delete(self.s_axes[0], remove_idx, 0)
         # the axis is shorter
         self.s_n[0] -= len(remove_idx)
-
-
 
 
     def average_pixels(self, average_idx):
@@ -1339,10 +1344,6 @@ class MosquitoHelperMethods(DCC.dataclass):
         self.s = s
         self.s_n = s_n
         self.s_axes = s_axes       
-
-
-
-
 
 
     def merge_spx_axes(self, axis_1, axis_2):
