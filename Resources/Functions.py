@@ -253,7 +253,82 @@ def find_subplots(n_plots, flag_verbose = 0):
 
     return int(x), int(y)
     
+
+### SPECTROMETER FUNCTIONS ### 
+
+
+
+def spectrometer_axis(**kwargs):
+    """
+
+
+
+    """
     
+    settings = {
+        "grating_blaze_l_mm": 150,
+        "center_wl_nm": 1e7/1603,
+        "f_mm": 257,
+        "spacing_mm": 0.525, 
+        "n_pixels": 32,
+        "center_pixel": 16,
+        "gamma_deg": 15,
+        "half_angle_deg": 11.83,
+        "order": 1
+    }
+    
+    if "center_wl_nm" in kwargs:
+        settings["center_wl_nm"] = kwargs["center_wl_nm"]
+    elif "center_wl_cm" in kwargs:
+        settings["center_wl_nm"] = 1e7 / kwargs["center_wl_cm"]
+    
+    if "grating_blaze_l_mm" in kwargs:
+        settings["grating_blaze_l_mm"] = kwargs["grating_blaze_l_mm"]
+
+    if "f_mm" in kwargs:
+        settings["f_mm"] = kwargs["f_mm"]
+        
+    if "spacing_mm" in kwargs:
+        settings["spacing_mm"] = kwargs["spacing_mm"]
+        
+    if "n_pixels" in kwargs:
+        settings["n_pixels"] = kwargs["n_pixels"]
+        
+    if "gamma_deg" in kwargs:
+        settings["gamma_deg"] = kwargs["gamma_deg"]
+
+    if "half_angle_deg" in kwargs:
+        settings["half_angle_deg"] = kwargs["half_angle_deg"]
+        
+    if "order" in kwargs:
+        settings["order"] = kwargs["order"]
+    
+    a, alpha, beta, theta, phi = calculate_angels(settings)
+
+    array = numpy.zeros(settings["n_pixels"])
+    
+    for pixel in range(settings["n_pixels"]):
+        
+        angle = -numpy.arctan( (pixel - settings["center_pixel"]) * settings["spacing_mm"] / settings["f_mm"])
+        array[pixel] = a * (numpy.sin(alpha) + numpy.sin(beta + angle)) / settings["order"]
+        
+    return array, 1e7 / array
+
+
+def calculate_angels(settings):
+    
+    a = 1e6 / settings["grating_blaze_l_mm"] # nm per line
+    phi = settings["half_angle_deg"] * numpy.pi / 180
+
+    theta = numpy.arcsin(
+        settings["center_wl_nm"] * settings["order"] / (2 * a * numpy.cos(phi))
+    )
+    
+    alpha = theta + phi
+    beta = theta - phi
+    
+    return a, alpha, beta, theta, phi
+
 
 
 
