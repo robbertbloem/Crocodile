@@ -1226,5 +1226,133 @@ class MosquitoHelperMethods(DCC.dataclass):
             os.mkdir(self._file_dict["result_folder"])  
         
 
+
+    def remove_pixel(self, remove_idx):
+        """
+         
+        INPUT:
+        - remove_idx (list with int): indices of the pixels that have to be removed. Go from low to high index.
+    
+        OUTPUT:
+
+    
+        CHANGELOG:
+        20160525-RB: started function
+
+        """   
+        # when we delete pixels, the indices change. Start at the highest index.
+        remove_idx = remove_idx[::-1]
+    
+        for i in remove_idx:
+            print("Removing pixel {index} ({wn:4.2f} cm-1)".format(index = i, wn = self.s_axes[0][i]))
+
+        # make numpy array    
+        if type(remove_idx) == list:
+            remove_idx = numpy.array(remove_idx)
+        
+        # delete the pixels 
+        self.s = numpy.delete(self.s, remove_idx, 0)
+        self.s_axes[0] = numpy.delete(self.s_axes[0], remove_idx, 0)
+        # the axis is shorter
+        self.s_n[0] -= len(remove_idx)
+
+
+
+
+    def average_pixels(self, average_idx):
+        """
+           
+        INPUT:
+        - average_idx (list with list with 2 ints): list with lists of the 2 pixels that have to be averaged. Go from low to high index.
+    
+        OUTPUT:
+
+    
+        CHANGELOG:
+        20160525-RB: started function
+
+        """    
+        # when we delete pixels, the indices change. Start at the highest index.
+        average_idx = average_idx[::-1]
+    
+        for combi in average_idx:
+            print("Averaging pixels {index1} ({wn1:4.2f} cm-1) and {index2} ({wn2:4.2f} cm-1)".format(index1 = combi[0], wn1 = self.s_axes[0][combi[0]], index2 = combi[1], wn2 = self.s_axes[0][combi[1]]))
+            # average the pixels and delete one of them
+            self.s[combi[0]] = (self.s[combi[0]] + self.s[combi[1]]) / 2
+            self.s = numpy.delete(self.s, combi[1], 0)
+            # the same but for the axes
+            self.s_axes[0][combi[0]] = (self.s_axes[0][combi[0]] + self.s_axes[0][combi[1]]) / 2
+            self.s_axes[0] = numpy.delete(self.s_axes[0], combi[1], 0)
+            # the pixel axis is shorter
+            self.s_n[0] -= len(average_idx)
+
+
+    def merge_spx_modulation(self, axes, sm_spx, idx_for_scaling = False):
+        """
+           
+        INPUT:
+        - axes (list with ndarray): list with the axes to combine
+        - sm_spx (list): where the slow modulation states go. 
+        idx_for_scaling (list): indices for the scaling. NOT IMPLEMENTED YET.
+    
+        OUTPUT:
+
+    
+        CHANGELOG:
+        20160525-RB: started function
+
+        """           
+        # make the new spectrometer axis
+        axis_new, axis_sort_idx = self.merge_spx_axes(axes[0], axes[1])
+        
+        # make new data structures
+        s_n = self.s_n[:] 
+        s_n[0] *= 2
+        s_n[4] = int(s_n[4]/2)
+        s = numpy.zeros(s_n)        
+        
+        for de in range(self.s_n[5]):  
+            for sm in range(self.s_n[4]):
+#                 if idx_for_scaling:
+#                     r = numpy.mean(self.s[idx_for_scaling[sm][0], idx_for_scaling[sm][2], 0,0, 2,de,0,0]) / numpy.mean(m.s[idx_for_scaling[sm][1], idx_for_scaling[sm][2], 0,0, 0,de,0,0])
+#                 else:
+#                     r = 1
+
+                r = 1
+                
+                if sm < 2:
+                    s[:self.s_n[0],:,:,:, sm_spx[sm],de,:,:] = r * self.s[:,:,:,:, sm,de,:,:]
+                else:
+                    s[self.s_n[0]:,:,:,:, sm_spx[sm],de,:,:] = r * self.s[:,:,:,:, sm,de,:,:]
+      
+
+        # update the new axes
+        s_axes = self.s_axes[:] 
+        s_axes[0] = axis_new
+        s_axes[4] = numpy.array([[0,1]])
+
+        # reorder the pixels
+        s[:,:,:,:, :,:,:,:] = s[axis_sort_idx,:,:,:, :,:,:,:]
+        s_axes[0][:] = s_axes[0][axis_sort_idx]
+    
+        # write the new data to the python object
+        self.s = s
+        self.s_n = s_n
+        self.s_axes = s_axes       
+
+
+
+
+
+
+    def merge_spx_axes(self, axis_1, axis_2):
+    
+        axis_new = numpy.concatenate((axis_1, axis_2))
+
+        axis_sort_idx = numpy.argsort(axis_new)
+    
+        return axis_new, axis_sort_idx        
+
+
 if __name__ == "__main__": 
     pass
