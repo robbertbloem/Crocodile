@@ -952,8 +952,8 @@ class MosquitoHelperMethods(DCC.dataclass):
         if shift > 1 or shift < -1:
             self.printWarning("=== CHANGE ZERO BIN!!! ===")
             print("Current zero bin: {bin}".format(bin =  self.t1_zero_index))
-            print("Recommanded zero bin: {bin:4.1f}".format(bin =  self.t1_zero_index - shift))
-            print("Shift is: {bin:4.1f} bins".format(bin = shift))
+            print("Best zero bin: {bin:4.1f}".format(bin =  self.t1_zero_index - shift))
+            print("Recommended shift is: {bin:4.0f} bins".format(bin = shift))
             print("Phase below is for the current zero bin.")
 
         print("Phase in degrees: %.1f" % (self.phase_rad * 180 / numpy.pi))
