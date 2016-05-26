@@ -473,7 +473,10 @@ class FT2DIR(MH.MosquitoHelperMethods):
                 for _de in de:
                     for _du in du:
                         for _sc in sc:
-
+                        
+#                             print(self.s_axes[3][_sp])
+#                             print(self.s_axes[4][:,_sm])
+#                             print(self.s_axes[5][_de])
 #                             title = "%s %s fs" % (self._basename, self.s_axes[5][_de])
                             
                             title = "{name}\nsp {spx}, sm {smx}, de {dex} fs".format(name = self._basename, spx = self.s_axes[3][_sp], smx = self.s_axes[4][:,_sm], dex = self.s_axes[5][_de])
