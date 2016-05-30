@@ -417,8 +417,8 @@ class FT2DIR(MH.MosquitoHelperMethods):
                                 ax.set_aspect("equal")
                             
                             if flag_make_title:
-#                                 kwargs["title"] = "%s %s fs" % (self._basename, self.s_axes[5][_de])
-                                kwargs["title"] = "{name}\nsp {spx}, sm {smx}, de {dex} fs".format(name = self._basename, spx = self.s_axes[3][_sp], smx = self.s_axes[4][:,_sm], dex = self.s_axes[5][_de])
+                                kwargs["title"] = "%s %s fs" % (self._basename, self.s_axes[5][_de])
+#                                 kwargs["title"] = "{name}\nsp {spx}, sm {smx}, de {dex} fs".format(name = self._basename, spx = self.s_axes[3][_sp], smx = self.s_axes[4][:,_sm], dex = self.s_axes[5][_de])
 
                             if "flip_spectrum" in kwargs and kwargs["flip_spectrum"]:
                                 PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc], self.s_axes[1], self.s_axes[0], x_label = "w1 (cm-1)", y_label = "w3 (cm-1)", ax = ax, **kwargs)
@@ -456,8 +456,8 @@ class FT2DIR(MH.MosquitoHelperMethods):
         n_plots = len(sp) * len(sm) * len(de) * len(du) * len(sc)
 
         x, y = FU.find_subplots(n_plots, flag_verbose = self.flag_verbose)
-        print(x,y)
-        fig = plt.figure()
+
+        fig = plt.figure(figsize = (30,20), dpi = 300)
         ax = [0] * n_plots
         for ax_i in range(n_plots):
             ax[ax_i] = fig.add_subplot(y, x, ax_i + 1)  
@@ -479,7 +479,13 @@ class FT2DIR(MH.MosquitoHelperMethods):
 #                             print(self.s_axes[5][_de])
 #                             title = "%s %s fs" % (self._basename, self.s_axes[5][_de])
                             
-                            title = "{name}\nsp {spx}, sm {smx}, de {dex} fs".format(name = self._basename, spx = self.s_axes[3][_sp], smx = self.s_axes[4][:,_sm], dex = self.s_axes[5][_de])
+                            if self.s_axes[4][:,_sm] == [1]:
+                            
+                                title = "{name}\nparallel, {dex} fs".format(name = self._basename, spx = self.s_axes[3][_sp], smx = self.s_axes[4][:,_sm], dex = self.s_axes[5][_de])
+                            else:
+                                title = "{name}\nperpendicular, {dex} fs".format(name = self._basename, spx = self.s_axes[3][_sp], smx = self.s_axes[4][:,_sm], dex = self.s_axes[5][_de])
+                            
+#                             title = "{name}\nsp {spx}, sm {smx}, de {dex} fs".format(name = self._basename, spx = self.s_axes[3][_sp], smx = self.s_axes[4][:,_sm], dex = self.s_axes[5][_de])
                             
                             if "flip_spectrum" in kwargs and kwargs["flip_spectrum"]:
                                 PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc], self.s_axes[1], self.s_axes[0], x_label = "w1 (cm-1)", y_label = "w3 (cm-1)", ax = ax[ax_i], title = title, **kwargs)
@@ -488,6 +494,8 @@ class FT2DIR(MH.MosquitoHelperMethods):
                                 PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc].T, self.s_axes[0], self.s_axes[1], x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", ax = ax[ax_i], title = title, **kwargs)
 
                             ax_i += 1
+                            
+        return fig
                             
 
     def make_Z_table(self, x_range = [0,0], y_range = [0,-1], **kwargs):
