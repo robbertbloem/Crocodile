@@ -1242,7 +1242,9 @@ class MosquitoHelperMethods(DCC.dataclass):
     
         OUTPUT:
 
-    
+        COMMENTS:
+
+        
         CHANGELOG:
         20160525-RB: started function
 
@@ -1250,8 +1252,15 @@ class MosquitoHelperMethods(DCC.dataclass):
         # when we delete pixels, the indices change. Start at the highest index.
         remove_idx = remove_idx[::-1]
     
-        for i in remove_idx:
-            print("Removing pixel {index} ({wn:4.2f} cm-1)".format(index = i, wn = self.s_axes[0][i]))
+        self.printWarning("=== REMOVING PIXELS ===")
+        if self.flag_verbose:
+            for i in remove_idx:
+                print("Removing pixel {index} ({wn:4.2f} cm-1)".format(index = i, wn = self.s_axes[0][i]))
+        else:   
+            s = "Removing pixels:"
+            for i in remove_idx:
+                s = ("{string} {index},".format(string = s, index = i))
+            print(s)
 
         # make numpy array    
         if type(remove_idx) == list:
@@ -1279,9 +1288,20 @@ class MosquitoHelperMethods(DCC.dataclass):
         """    
         # when we delete pixels, the indices change. Start at the highest index.
         average_idx = average_idx[::-1]
-    
+
+        self.printWarning("=== AVERAGING PIXELS ===")
+        if self.flag_verbose:
+            for combi in average_idx:
+                print("Averaging pixels {index1} ({wn1:4.2f} cm-1) and {index2} ({wn2:4.2f} cm-1)".format(index1 = combi[0], wn1 = self.s_axes[0][combi[0]], index2 = combi[1], wn2 = self.s_axes[0][combi[1]]))
+        else:   
+            s = "Averaging pixels:"
+            for combi in average_idx:
+                s = ("{string} {index1} and {index2};".format(string = s, index1 = combi[0], index2 = combi[1]))
+            print(s)
+
+ 
         for combi in average_idx:
-            print("Averaging pixels {index1} ({wn1:4.2f} cm-1) and {index2} ({wn2:4.2f} cm-1)".format(index1 = combi[0], wn1 = self.s_axes[0][combi[0]], index2 = combi[1], wn2 = self.s_axes[0][combi[1]]))
+#             print("Averaging pixels {index1} ({wn1:4.2f} cm-1) and {index2} ({wn2:4.2f} cm-1)".format(index1 = combi[0], wn1 = self.s_axes[0][combi[0]], index2 = combi[1], wn2 = self.s_axes[0][combi[1]]))
             # average the pixels and delete one of them
             self.s[combi[0]] = (self.s[combi[0]] + self.s[combi[1]]) / 2
             self.s = numpy.delete(self.s, combi[1], 0)
