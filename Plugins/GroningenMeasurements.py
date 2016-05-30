@@ -84,5 +84,87 @@ class FT2DIR(M.FT2DIR):
         return fig
 
 
+        
+    def export_2d_data_for_Maxim(self, paf, s = True, **kwargs):
+        
+        pi, bish, sp, ds, sm, de, du, sc = self.multiplot_ranges(**kwargs)
+    
+#         self.check_results_folder()
+    
+#         paf = self.file_dict["result_folder"] + self._file_dict["basename"] + "_" + self._file_dict["timestamp"]
+    
+        ax_i = 0
+        for _sp in sp:
+            for _sm in sm:
+                for _de in de:
+                    for _du in du:
+                        for _sc in sc:
+                            
+                            if s: 
+                                
+                                x_axis = self.s_axes[0]
+                                y_axis = self.s_axes[1]
+                                data = self.s[:,:, 0, _sp, _sm, _de, _du, _sc]
+                                
+                                if _sm == 0:
+                                    sm_name = "perp"
+                                else:
+                                    sm_name = "para"
+                                
+                                path_and_filename =  "{paf}_s_{sm_name}_{de}fs{ext}".format(paf = paf , sm_name = sm_name, de = int(self.s_axes[5][_de]), ext = self.file_dict["extension"])  
+                            
+                                self.export_2d_data_for_Maxim_helper(x_axis, y_axis, data, path_and_filename, **kwargs)     
+
+
+    def export_2d_data_for_Maxim_helper(self, x_axis, y_axis, data, path_and_filename, **kwargs):
+        """
+        
+    
+        INPUT:
+        - data:
+        - x_range, y_range (optional)
+    
+        OUTPUT:
+
+    
+        CHANGELOG:
+        20160502-RB: started function
+
+        """
+        
+        if "x_range" in kwargs:
+            x_range = kwargs["x_range"]
+        else:
+            x_range = [0,0]
+
+        if "y_range" in kwargs:
+            y_range = kwargs["y_range"]
+        else:
+            y_range = [0,-1]
+
+        # determine the range to be plotted
+        x_min, x_max, y_min, y_max = FU.find_axes(x_axis, y_axis, x_range, y_range, self.flag_verbose)
+    
+        # find the area to be plotted
+        x_min_i, x_max_i = FU.find_axes_indices(x_axis, x_min, x_max)
+        y_min_i, y_max_i = FU.find_axes_indices(y_axis, y_min, y_max)
+          
+        # truncate the data
+        data, x_axis, y_axis = FU.truncate_data(data, y_axis, x_axis, y_min_i, y_max_i, x_min_i, x_max_i) 
+        
+        n_x = len(x_axis)
+        n_y = len(y_axis)
+            
+        with open(path_and_filename, 'w') as f:
+        
+            for x_i in range(n_x):
+                for y_i in range(n_y):
+                    f.write("{y}, {x}, {z}\n".format(y = y_axis[y_i], x = x_axis[x_i], z = data[y_i, x_i]))
+            
+#                 f.write("\n")
+            
+        f.close()
+
+
 if __name__ == "__main__": 
     pass
