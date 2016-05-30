@@ -1355,5 +1355,23 @@ class MosquitoHelperMethods(DCC.dataclass):
         return axis_new, axis_sort_idx        
 
 
+    def combine_scans(self, scans):
+        
+        self.s_n[7] = 1
+        s = numpy.zeros(self.s_n)
+    
+        for sc in scans:
+            
+            s[:,:,:,:, :,:,:,0] += self.s[:,:,:,:, :,:,:,sc]
+            
+        s /= len(scans)
+        
+        self.s = s
+            
+            
+    
+    
+    
+
 if __name__ == "__main__": 
     pass
