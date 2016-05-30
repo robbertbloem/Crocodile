@@ -828,34 +828,39 @@ class MosquitoHelperMethods(DCC.dataclass):
         else:
             flag_plot = False
             
-
-        N_bins = self.r_intf_n[0] #r_n[1]
+        # an even number of points
+        N_bins = self.r_intf_n[0] 
         N_bins_half = int(N_bins/2)
         N_bins = 2 * N_bins_half
-        dt = self.r_axes[1][1] - self.r_axes[1][0]
-
+        
         # not the same as w1 axis, that one is truncated to exclude t1 < 0
+        dt = self.r_axes[1][1] - self.r_axes[1][0]
         w_axis = MATH.make_ft_axis(N_bins, dt = dt, undersampling = 0, normalized_to_period = 0, zero_in_middle = False, flag_verbose = False)
         w_axis = w_axis[:N_bins_half]
         
+        # if w_range is given, find the range of interest
+        # needed when there are overtones
         i_range = [0,-1]
         if w_range != [0,-1]:
             i_range[0] = numpy.where(w_axis > w_range[0])[0][0]
             i_range[1] = numpy.where(w_axis > w_range[1])[0][0]      
             self.verbose("calculate_phase: peak searching between indices %i and %i (%.1f and %.1f cm-1)" % (i_range[0], i_range[1], w_axis[i_range[0]], w_axis[i_range[1]]), self.flag_verbose)
         
-        
+        # average the interferograms for all the measurements
+        # it shouldn't change from delay to delay
         r_intf = numpy.zeros(self.r_intf_n[0])
         for bi in range(self.r_intf_n[0]): 
             r_intf[bi] = numpy.nanmean(self.r_intf[bi,:,:,:,:,:,:])
         r_intf -= numpy.nanmean(r_intf)
         # replace NaN by zero
         r_intf = numpy.nan_to_num(r_intf)
+        
+        # do the FFT
         r_intf_roll = numpy.roll(r_intf, -self.t1_zero_index)
-
         f = numpy.fft.fft(r_intf_roll)
         f = f[:N_bins_half] 
         
+        # do the actual phase calculation
         angle = self.find_phase(f, w_axis, n_points, i_range)   
 
         if flag_plot:
@@ -918,12 +923,13 @@ class MosquitoHelperMethods(DCC.dataclass):
         
         """
         
+        # find the maximum value
         y = numpy.abs(f)
         i_max = numpy.argmax(y[i_range[0]:i_range[1]])
         idx = numpy.arange(i_max, i_max + n_points)
-        
         i_max += i_range[0]
         
+        # take some points on both sides of the maximum
         if n_points % 2 == 0:        
             if y[i_max-1] > y[i_max+1]:
                 idx -= (n_points/2)
@@ -931,7 +937,6 @@ class MosquitoHelperMethods(DCC.dataclass):
                 idx -= (n_points/2 - 1)           
         else:
             idx -= int(n_points/2)
-        
         idx += i_range[0]
         
         angle = numpy.angle(f)
@@ -944,6 +949,8 @@ class MosquitoHelperMethods(DCC.dataclass):
             
         self.f_intf_angle = angle
 
+        # make a linear fit of the angle
+        # the slope gives the bin-offset
         A_start = [numpy.mean(angle[idx]), 1]
         A_out = MATH.fit(w_axis[idx], angle[idx], EQ.linear, A_start)
 
