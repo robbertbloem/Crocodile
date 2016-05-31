@@ -117,7 +117,7 @@ def find_axes_indices(axis, val_min, val_max, flag_verbose = False):
     
     """
     if val_min > val_max:
-        DEBUG.printWarning("val_min > val_max, will give strange result.", inspect.stack())
+        DEBUG.printWarning("val_min > val_max ({v1} and {v2}), will give strange result.".format(v1 = val_min, v2 = val_max), inspect.stack())
     
     temp = numpy.where(axis < val_min)
     if len(temp[0]) == 0:
