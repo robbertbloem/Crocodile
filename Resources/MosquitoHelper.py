@@ -240,6 +240,85 @@ class MosquitoHelperMethods(DCC.dataclass):
                     self.s = (N / N_count)
                 else:
                     pass
+
+
+    def import_data_show_spectrum(self, **kwargs):
+        """
+        Import data from show spectrum. 
+    
+        INPUT:
+        - reload_data (Bool, False): if False, try to import the numpy binary file first. If that is not present, or if True, it will import the original csv files. 
+    
+        DESCRIPTION:
+        - 
+    
+        CHANGELOG:
+        201604-RB: started function
+    
+        """
+        if self.find_file_format() == False:
+            return False
+
+        # 0: pixels
+        w3_axis, n_w3 = IOM.import_wavenumbers(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        
+        # 1: number of shots
+        n_sh = IOM.import_nshots(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        
+        # 1: number of scans
+        n_sc = IOM.find_number_of_scans(self._file_dict["base_folder"], self._file_dict["base_filename"], self._file_dict["extension"], flag_verbose = self.flag_verbose)
+
+        # 2: datastates
+        n_ds = IOM.import_ndatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        #### FIX ####
+        n_ds = 1
+    
+        # 3: spectra
+        n_sp = IOM.import_nspectra(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        
+        if self.file_format < 4:
+            self.n_sig = 6
+            self.add_ds = False
+        else:
+            spds, n_sp_2, n_ds_2, self.n_sig, self.add_ds = IOM.import_spectraAndDatastates(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
+        
+        empty_list = numpy.array([0])
+        
+        self.r_n = [n_w3, 1, 2*n_ds, n_sp, 1, 1, 1, n_sc]
+        self.r = numpy.empty(self.r_n)
+        self.r_noise = numpy.empty(self.r_n)
+        self.r_axes = [w3_axis, empty_list, spds[:,1], numpy.arange(n_sp), empty_list, empty_list, empty_list, numpy.arange(n_sc)]
+        self.r_units = ["w3 (cm-1)", "Shots", "Datastates", "Spectra", "x", "x", "x", "Scans"]
+        
+        self.s_n = [n_w3, 1, 1, n_sp, 1, 1, 1, n_sc]
+        self.s = numpy.empty(self.s_n)
+        self.s_noise = numpy.empty(self.s_n)
+        self.s_axes = [w3_axis, empty_list, empty_list, numpy.arange(n_sp), empty_list, empty_list, empty_list, numpy.arange(n_sc)]
+        self.s_units = ["w3 (cm-1)", "Signals", "x", "Spectra", "x", "x", "x", "Scans"]
+        
+
+
+        for _sc in range(n_sc):               
+           
+            for _sp in range(self.r_n[3]): 
+
+                # import signal
+                suffix = "sp" + str(_sp) + "_ds0_signal_" + str(_sc)
+                self.s[:,0,0,_sp, 0,0,0,_sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose)  
+
+                # import signal noise
+                suffix = "sp" + str(_sp) + "_ds0_signal_" + str(_sc)
+                self.s_noise[:,0,0,_sp, 0,0,0,_sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose) 
+
+                for _ds in range(self.r_n[2]): 
+                
+                    # import probe and reference
+                    suffix = "sp" + str(_sp) + "_ds" + str(_ds) + "_intensity_" + str(_sc)
+                    self.r[:,0,_ds,_sp, 0,0,0,_sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose)  
+
+                    # import probe and reference noise
+                    suffix = "sp" + str(_sp) + "_ds" + str(_ds) + "_intensity_" + str(_sc)
+                    self.r_noise[:,0,_ds,_sp, 0,0,0,_sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose)  
                 
 
     def import_data_2dir(self, **kwargs):
@@ -1274,10 +1353,38 @@ class MosquitoHelperMethods(DCC.dataclass):
             remove_idx = numpy.array(remove_idx)
         
         # delete the pixels 
-        self.s = numpy.delete(self.s, remove_idx, 0)
-        self.s_axes[0] = numpy.delete(self.s_axes[0], remove_idx, 0)
+        if hasattr(self, 's'):
+            if hasattr(self, 's_noise'):
+                self.s, self.s_axes[0], self.s_n[0], self.s_noise = self.remove_pixel_helper(data = self.s, axis = self.s_axes[0], n = self.s_n[0], remove_idx = remove_idx, noise = self.s_noise)
+            else:
+                self.s, self.s_axes[0], self.s_n[0], dump = self.remove_pixel_helper(data = self.s, axis = self.s_axes[0], n = self.s_n[0], remove_idx = remove_idx, noise = -1)
+
+        if hasattr(self, 'r'):
+            if hasattr(self, 'r_noise'):
+                self.r, self.r_axes[0], self.r_n[0], self.r_noise = self.remove_pixel_helper(data = self.r, axis = self.r_axes[0], n = self.r_n[0], remove_idx = remove_idx, noise = self.r_noise)
+            else:
+                self.r, self.r_axes[0], self.r_n[0], dump = self.remove_pixel_helper(data = self.r, axis = self.r_axes[0], n = self.r_n[0], remove_idx = remove_idx, noise = -1)
+
+        if hasattr(self, 'f'):
+            if hasattr(self, 'f_noise'):
+                self.f, self.f_axes[0], self.f_n[0], self.f_noise = self.remove_pixel_helper(data = self.f, axis = self.f_axes[0], n = self.f_n[0], remove_idx = remove_idx, noise = self.f_noise)
+            else:
+                self.f, self.f_axes[0], self.f_n[0], dump = self.remove_pixel_helper(data = self.f, axis = self.f_axes[0], n = self.f_n[0], remove_idx = remove_idx, noise = -1)
+
+            
+    def remove_pixel_helper(self, data, axis, n, remove_idx, noise = -1):
+    
+        data = numpy.delete(data, remove_idx, 0)
+        if noise != -1:
+            noise = numpy.delete(noise, remove_idx, 0) 
+        axis = numpy.delete(axis, remove_idx, 0)
         # the axis is shorter
-        self.s_n[0] -= len(remove_idx)
+        n -= len(remove_idx)  
+        
+        return data, axis, n, noise
+            
+            
+        
 
 
     def average_pixels(self, average_idx):
@@ -1306,17 +1413,48 @@ class MosquitoHelperMethods(DCC.dataclass):
                 s = ("{string} {index1} and {index2};".format(string = s, index1 = combi[0], index2 = combi[1]))
             print(s)
 
- 
+
+        if hasattr(self, 's'):
+            if hasattr(self, 's_noise'):
+                self.s, self.s_axes[0], self.s_n[0], self.s_noise = self.average_pixels_helper(data = self.s, axis = self.s_axes[0], n = self.s_n[0], average_idx = average_idx, noise = self.s_noise)
+            else:
+                self.s, self.s_axes[0], self.s_n[0], dump = self.average_pixels_helper(data = self.s, axis = self.s_axes[0], n = self.s_n[0], average_idx = average_idx, noise = -1)       
+
+        if hasattr(self, 'r'):
+            if hasattr(self, 'r_noise'):
+                self.r, self.r_axes[0], self.r_n[0], self.r_noise = self.average_pixels_helper(data = self.r, axis = self.r_axes[0], n = self.r_n[0], average_idx = average_idx, noise = self.r_noise)
+            else:
+                self.r, self.r_axes[0], self.r_n[0], dump = self.average_pixels_helper(data = self.r, axis = self.r_axes[0], n = self.r_n[0], average_idx = average_idx, noise = -1)
+
+        if hasattr(self, 'f'):
+            if hasattr(self, 'f_noise'):
+                self.f, self.f_axes[0], self.f_n[0], self.f_noise = self.average_pixels_helper(data = self.f, axis = self.f_axes[0], n = self.f_n[0], remove_idx = remove_idx, noise = self.f_noise)
+            else:
+                self.f, self.f_axes[0], self.f_n[0], dump = self.average_pixels_helper(data = self.f, axis = self.f_axes[0], n = self.f_n[0], average_idx = average_idx, noise = -1)
+
+        if hasattr(self, 'b'):
+            if hasattr(self, 'b_noise'):
+                self.b, self.b_axes[0], self.b_n[0], self.b_noise = self.average_pixels_helper(data = self.b, axis = self.b_axes[0], n = self.b_n[0], remove_idx = remove_idx, noise = self.b_noise)
+            else:
+                self.b, self.b_axes[0], self.b_n[0], dump = self.average_pixels_helper(data = self.b, axis = self.b_axes[0], n = self.b_n[0], average_idx = average_idx, noise = -1)
+
+
+    def average_pixels_helper(self, data, axis, n, average_idx, noise = -1):
+
         for combi in average_idx:
-#             print("Averaging pixels {index1} ({wn1:4.2f} cm-1) and {index2} ({wn2:4.2f} cm-1)".format(index1 = combi[0], wn1 = self.s_axes[0][combi[0]], index2 = combi[1], wn2 = self.s_axes[0][combi[1]]))
             # average the pixels and delete one of them
-            self.s[combi[0]] = (self.s[combi[0]] + self.s[combi[1]]) / 2
-            self.s = numpy.delete(self.s, combi[1], 0)
+            data[combi[0]] = (data[combi[0]] + data[combi[1]]) / 2
+            data = numpy.delete(data, combi[1], 0)
             # the same but for the axes
-            self.s_axes[0][combi[0]] = (self.s_axes[0][combi[0]] + self.s_axes[0][combi[1]]) / 2
-            self.s_axes[0] = numpy.delete(self.s_axes[0], combi[1], 0)
+            axis[combi[0]] = (axis[combi[0]] + axis[combi[1]]) / 2
+            axis = numpy.delete(axis, combi[1], 0)
             # the pixel axis is shorter
-            self.s_n[0] -= len(average_idx)
+            n -= len(average_idx)
+            
+            if noise != -1:
+                noise[combi[0]] = (noise[combi[0]] + noise[combi[1]]) / 2
+                noise = numpy.delete(noise, combi[1], 0)   
+        return data, axis, n, noise
 
 
     def merge_spx_modulation(self, axes, sm_spx, idx_for_scaling = False):
@@ -1334,44 +1472,73 @@ class MosquitoHelperMethods(DCC.dataclass):
         20160525-RB: started function
 
         """           
+
+        if hasattr(self, 's'):
+            if hasattr(self, 's_noise'):
+                self.s, self.s_axes, self.s_n, self.s_noise = self.merge_spx_modulation_helper(data = self.s, axis = self.s_axes, n = self.s_n, axes = axes, sm_spx = sm_spx, noise = self.s_noise)
+            else:
+                self.s, self.s_axes, self.s_n, dump = self.merge_spx_modulation_helper(data = self.s, axis = self.s_axes, n = self.s_n, axes = axes, sm_spx = sm_spx, noise = -1)
+                
+        if hasattr(self, 'r'):
+            if hasattr(self, 'r_noise'):
+                self.r, self.r_axes, self.r_n, self.r_noise = self.merge_spx_modulation_helper(data = self.r, axis = self.r_axes, n = self.r_n, axes = axes, sm_spx = sm_spx, noise = self.r_noise)
+            else:
+                self.r, self.r_axes, self.r_n, dump = self.merge_spx_modulation_helper(data = self.r, axis = self.r_axes, n = self.r_n, axes = axes, sm_spx = sm_spx, noise = -1)
+
+        if hasattr(self, 'f'):
+            if hasattr(self, 'f_noise'):
+                self.f, self.f_axes, self.f_n, self.f_noise = self.merge_spx_modulation_helper(data = self.f, axis = self.f_axes, n = self.f_n, axes = axes, sm_spx = sm_spx, noise = self.f_noise)
+            else:
+                self.f, self.f_axes, self.f_n, dump = self.merge_spx_modulation_helper(data = self.f, axis = self.f_axes, n = self.f_n, axes = axes, sm_spx = sm_spx, noise = -1)
+                
+        if hasattr(self, 'b'):
+            if hasattr(self, 'b_noise'):
+                self.b, self.b_axes, self.b_n, self.b_noise = self.merge_spx_modulation_helper(data = self.b, axis = self.b_axes, n = self.b_n, axes = axes, sm_spx = sm_spx, noise = self.b_noise)
+            else:
+                self.b, self.b_axes, self.b_n, dump = self.merge_spx_modulation_helper(data = self.b, axis = self.b_axes, n = self.b_n, axes = axes, sm_spx = sm_spx, noise = -1)
+
+
+    def merge_spx_modulation_helper(self, data, axis, n, axes, sm_spx, noise = -1):
+
         # make the new spectrometer axis
         axis_new, axis_sort_idx = self.merge_spx_axes(axes[0], axes[1])
-        
+
         # make new data structures
-        s_n = self.s_n[:] 
-        s_n[0] *= 2
-        s_n[4] = int(s_n[4]/2)
-        s = numpy.zeros(s_n)        
-        
-        for de in range(self.s_n[5]):  
-            for sm in range(self.s_n[4]):
-#                 if idx_for_scaling:
-#                     r = numpy.mean(self.s[idx_for_scaling[sm][0], idx_for_scaling[sm][2], 0,0, 2,de,0,0]) / numpy.mean(m.s[idx_for_scaling[sm][1], idx_for_scaling[sm][2], 0,0, 0,de,0,0])
-#                 else:
-#                     r = 1
-
-                r = 1
-                
-                if sm < 2:
-                    s[:self.s_n[0],:,:,:, sm_spx[sm],de,:,:] = r * self.s[:,:,:,:, sm,de,:,:]
-                else:
-                    s[self.s_n[0]:,:,:,:, sm_spx[sm],de,:,:] = r * self.s[:,:,:,:, sm,de,:,:]
-      
-
-        # update the new axes
-        s_axes = self.s_axes[:] 
-        s_axes[0] = axis_new
-        s_axes[4] = numpy.array([[0,1]])
-
-        # reorder the pixels
-        s[:,:,:,:, :,:,:,:] = s[axis_sort_idx,:,:,:, :,:,:,:]
-        s_axes[0][:] = s_axes[0][axis_sort_idx]
+        _n = n[:]
+        _n[0] *= 2
+        _n[4] = int(_n[4]/2)
+        t = numpy.result_type(data)
+        _data = numpy.zeros(_n, dtype = t)             
     
-        # write the new data to the python object
-        self.s = s
-        self.s_n = s_n
-        self.s_axes = s_axes       
+        for de in range(n[5]):  
+            for sm in range(n[4]):
+                if sm < int(len(sm_spx)/2):
+                    _data[:n[0],:,:,:, sm_spx[sm],de,:,:] = data[:,:,:,:, sm,de,:,:]
+                else:
+                    _data[n[0]:,:,:,:, sm_spx[sm],de,:,:] = data[:,:,:,:, sm,de,:,:]
+        # reorder the pixels
+        _data[:,:,:,:, :,:,:,:] = _data[axis_sort_idx,:,:,:, :,:,:,:]
 
+        if noise != -1:
+            _noise = numpy.zeros(_n, dtype = t)
+            for de in range(n[5]):  
+                for sm in range(n[4]):
+                    if sm < int(len(sm_spx)/2):
+                        _noise[:n[0],:,:,:, sm_spx[sm],de,:,:] = noise[:,:,:,:, sm,de,:,:]
+                    else:
+                        _noise[n[0]:,:,:,:, sm_spx[sm],de,:,:] = noise[:,:,:,:, sm,de,:,:]
+            _noise[:,:,:,:, :,:,:,:] = _noise[axis_sort_idx,:,:,:, :,:,:,:]
+        else:
+            _noise = -1
+  
+        # update the new axes
+        _axis = axis[:]
+        _axis[0] = axis_new[axis_sort_idx]
+        _axis[4] = numpy.array([[0,1]])
+
+        return _data, _axis, _n, _noise 
+
+        
 
     def merge_spx_axes(self, axis_1, axis_2):
     
@@ -1382,23 +1549,76 @@ class MosquitoHelperMethods(DCC.dataclass):
         return axis_new, axis_sort_idx        
 
 
-    def combine_scans(self, scans):
+    def average_scans(self, scans):
         
-        self.s_n[7] = 1
-        s = numpy.zeros(self.s_n)
-    
-        for sc in scans:
+        if len(scans) > 1 and self.s_n[7] > 1:
+            self.s_n[7] = 1
+            self.r_n[7] = 1
             
-            s[:,:,:,:, :,:,:,0] += self.s[:,:,:,:, :,:,:,sc]
+            self.s_axes[7] = numpy.arange(1)
+            self.r_axes[7] = numpy.arange(1)
             
-        s /= len(scans)
+            s = numpy.zeros(self.s_n)
+            r = numpy.zeros(self.r_n)
+            
+            for sc in scans:        
+                s[:,:,:,:, :,:,:,0] += self.s[:,:,:,:, :,:,:,sc]
+                r[:,:,:,:, :,:,:,0] += self.r[:,:,:,:, :,:,:,sc]
+
+            s /= len(scans)
+            r /= len(scans)
+
+            self.s = s
+            self.r = r
+
+            if self.measurement_method in ["Show Spectrum"]:
+                s_noise = numpy.zeros(self.s_n)
+                r_noise = numpy.zeros(self.r_n)
+
+                for sc in scans:        
+                    s_noise[:,:,:,:, :,:,:,0] += self.s_noise[:,:,:,:, :,:,:,sc]
+                    r_noise[:,:,:,:, :,:,:,0] += self.r_noise[:,:,:,:, :,:,:,sc]
+
+                s_noise /= len(scans)
+                r_noise /= len(scans)
+                
+                self.s_noise = s_noise
+                self.r_noise = r_noise
+
+
+        elif len(scans) > 1:
+            self.printWarning("No scans to average.")
+            
+            
+    def find_indices(self, wn): 
         
-        self.s = s
-            
-            
-    
-    
-    
+        w3_i = self.find_indices_helper(self.s_axes[0], wn)
+        w1_i = self.find_indices_helper(self.s_axes[1], wn)
+        
+        return w3_i, w1_i         
+        
+        
+    def find_indices_helper(self, list, value):
+        
+        if value < list[0]:
+            if (list[1] - list[0]) > (list[0] - value):
+                i = 0
+            else:
+                i = -1            
+
+        elif value > list[-1]:  
+            if (list[-1] - list[-2]) > (value - list[-1]):
+                i = len(list) - 1
+            else:
+                i = -1
+        
+        else:
+            i = numpy.where(list > value)[0][0]
+
+            if (list[i] - value) > (value - list[i-1]):
+                i -= 1
+                
+        return i
 
 if __name__ == "__main__": 
     pass
