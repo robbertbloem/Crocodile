@@ -199,7 +199,43 @@ class show_shots(MH.MosquitoHelperMethods):
         plt.show()
 
 
+class show_spectrum(MH.MosquitoHelperMethods):
+    """
+    Show spectrum
+    
+    
+    
+    """
 
+    def __init__(self, objectname, flag_verbose = 0):
+        """
+        Initialize show spectrum. 
+    
+        INPUT:
+        - objectname (str): a name
+        - flag_verbose (int, default 0): how verbose the program should be. The larger the value, the more verbose. 
+
+        CHANGELOG:
+        20160414-RB: started function
+    
+        """
+        self.verbose("New show_spectrum class", flag_verbose)
+        MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = "Show Spectrum", flag_verbose = flag_verbose)
+        
+        self.ss_colors = ["k", "r", "green", "blue", "yellow", "orange", "gold", "purple", "brown", "pink", "darkgreen", "lightblue", "grey"]
+
+    def import_data(self, **kwargs):
+        """
+        Import the show spectrum data
+    
+        INPUT:
+        - reload_data (Bool, False): if False, try to import the numpy binary file first. If that is not present, or if True, it will import the original csv files. 
+    
+        CHANGELOG:
+        201604-RB: started function
+    
+        """
+        self.import_data_show_spectrum(**kwargs)
             
 
 class pump_probe(MH.MosquitoHelperMethods):
@@ -242,9 +278,15 @@ class pump_probe(MH.MosquitoHelperMethods):
             for _sm in sm:
                 for _du in du:
                     for _sc in sc:
-
-                        fig = plt.figure()
-                        ax = fig.add_subplot(111)  
+                        
+                        if "ax" not in kwargs:
+                            fig = plt.figure()
+                            ax = fig.add_subplot(111)  
+                        else:
+                            ax = kwargs["ax"]
+                            del(kwargs["ax"])
+                            
+                        kwargs["aspect"] = False
                         
                         if flag_make_title:
                             kwargs["title"] = "{name}\nsp {spx}, sm {smx}".format(name = self._basename, spx = self.s_axes[3][_sp], smx = self.s_axes[4][:,_sm])
@@ -256,6 +298,7 @@ class pump_probe(MH.MosquitoHelperMethods):
 
 
         plt.show()
+
 
         
     def make_linear_plot(self, **kwargs):
