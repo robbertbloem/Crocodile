@@ -1448,12 +1448,14 @@ class MosquitoHelperMethods(DCC.dataclass):
             # the same but for the axes
             axis[combi[0]] = (axis[combi[0]] + axis[combi[1]]) / 2
             axis = numpy.delete(axis, combi[1], 0)
-            # the pixel axis is shorter
-            n -= len(average_idx)
             
             if noise != -1:
                 noise[combi[0]] = (noise[combi[0]] + noise[combi[1]]) / 2
                 noise = numpy.delete(noise, combi[1], 0)   
+        
+        # the pixel axis is shorter
+        n -= len(average_idx)
+        
         return data, axis, n, noise
 
 
