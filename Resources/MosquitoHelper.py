@@ -1375,7 +1375,7 @@ class MosquitoHelperMethods(DCC.dataclass):
     def remove_pixel_helper(self, data, axis, n, remove_idx, noise = -1):
     
         data = numpy.delete(data, remove_idx, 0)
-        if noise != -1:
+        if type(noise) == numpy.ndarray:
             noise = numpy.delete(noise, remove_idx, 0) 
         axis = numpy.delete(axis, remove_idx, 0)
         # the axis is shorter
@@ -1449,7 +1449,7 @@ class MosquitoHelperMethods(DCC.dataclass):
             axis[combi[0]] = (axis[combi[0]] + axis[combi[1]]) / 2
             axis = numpy.delete(axis, combi[1], 0)
             
-            if noise != -1:
+            if type(noise) == numpy.ndarray:
                 noise[combi[0]] = (noise[combi[0]] + noise[combi[1]]) / 2
                 noise = numpy.delete(noise, combi[1], 0)   
         
@@ -1521,7 +1521,7 @@ class MosquitoHelperMethods(DCC.dataclass):
         # reorder the pixels
         _data[:,:,:,:, :,:,:,:] = _data[axis_sort_idx,:,:,:, :,:,:,:]
 
-        if noise != -1:
+        if type(noise) == numpy.ndarray:
             _noise = numpy.zeros(_n, dtype = t)
             for de in range(n[5]):  
                 for sm in range(n[4]):
