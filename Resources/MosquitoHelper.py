@@ -808,7 +808,7 @@ class MosquitoHelperMethods(DCC.dataclass):
             if numpy.all(self.b_count > 0):
 
                 for ds in range(n_ds):
-                    self.r_intf[:,0,:,:, :,:,:,:] += self.b_intf[:,ds,:,:, :,:,:,:] / self.b_count[:,ds,:,:, :,:,:,:]
+                    self.r_intf[:,0,:, :,:,:,:] += self.b_intf[:,ds,:, :,:,:,:] / self.b_count[:,ds,:, :,:,:,:]
                     
                 self.r_intf /= n_ds
             
