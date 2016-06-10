@@ -247,10 +247,13 @@ class MosquitoHelperMethods(DCC.dataclass):
         Import data from show spectrum. 
     
         INPUT:
-        - reload_data (Bool, False): if False, try to import the numpy binary file first. If that is not present, or if True, it will import the original csv files. 
+        - -
     
         DESCRIPTION:
-        - 
+        Show spectrum has r (intensity) and s (signal). The individual scans are imported. The shots are averaged for every scan. There is no slow modulation or delays. 
+        There are at least 2 datastates: probe and reference. Datastates are only saved when the checkbox "separate datastates" is checked in Messquito. 
+        WORKAROUND NEEDED
+        Contrary to most other methods the user can change settings during the measurement. This will lead to problems when importing the data. 
     
         CHANGELOG:
         201604-RB: started function
@@ -296,10 +299,7 @@ class MosquitoHelperMethods(DCC.dataclass):
         self.s_axes = [w3_axis, empty_list, empty_list, numpy.arange(n_sp), empty_list, empty_list, empty_list, numpy.arange(n_sc)]
         self.s_units = ["w3 (cm-1)", "Signals", "x", "Spectra", "x", "x", "x", "Scans"]
         
-
-
-        for _sc in range(n_sc):               
-           
+        for _sc in range(n_sc):                  
             for _sp in range(self.r_n[3]): 
 
                 # import signal
@@ -356,9 +356,6 @@ class MosquitoHelperMethods(DCC.dataclass):
         else:
             t1_offset = 0
         
-#         import_temp_scans = False, t1_offset = 0
-
-
         if self.find_file_format() == False:
             return False
 
@@ -811,7 +808,7 @@ class MosquitoHelperMethods(DCC.dataclass):
             if numpy.all(self.b_count > 0):
 
                 for ds in range(n_ds):
-                    self.r_intf[:,0,:,:,:,:,:] += self.b_intf[:,ds,:,:,:,:,:] / self.b_count[:,ds,:,:,:,:,:]
+                    self.r_intf[:,0,:,:, :,:,:,:] += self.b_intf[:,ds,:,:, :,:,:,:] / self.b_count[:,ds,:,:, :,:,:,:]
                     
                 self.r_intf /= n_ds
             
@@ -825,10 +822,10 @@ class MosquitoHelperMethods(DCC.dataclass):
                         D_count = 0
                         for ds in range(self.r_n[2]):
                             if self.b_axes[2][ds] == 1:
-                                N[pi,:,0,:,:,:,:,:] += self.b[pi,s:e,2*ds,:,:,:,:,:] / self.b[pi,s:e,2*ds+1,:,:,:,:,:]
+                                N[pi,:,0,:,:,:,:,:] += self.b[pi,s:e,2*ds,:,:,:,:,:] / self.b[pi,s:e,2*ds+1,:, :,:,:,:]
                                 N_count += 1
                             else:
-                                D[pi,:,0,:,:,:,:,:] += self.b[pi,s:e,2*ds,:,:,:,:,:] / self.b[pi,s:e,2*ds+1,:,:,:,:,:]
+                                D[pi,:,0,:,:,:,:,:] += self.b[pi,s:e,2*ds,:,:,:,:,:] / self.b[pi,s:e,2*ds+1,:, :,:,:,:]
                                 D_count += 1
                         
                     if N_count > 0 and D_count > 0:
@@ -849,9 +846,9 @@ class MosquitoHelperMethods(DCC.dataclass):
                     for pi in range(self.b_n[0]): 
                         for ds in range(self.b_n[2]):
                             if self.b_axes[2] == 1:
-                                N[pi,:,0,:,:,:,:,:] *= self.b[pi,:,2*ds,:,:,:,:,:,:] / self.b[pi,:,2*ds+1,:,:,:,:,:,:]
+                                N[pi,:,0,:,:,:,:,:] *= self.b[pi,:,2*ds,:,:,:,:,:,:] / self.b[pi,:,2*ds+1,:, :,:,:,:,:]
                             else:
-                                D[pi,:,0,:,:,:,:,:] *= self.b[pi,:,2*ds,:,:,:,:,:,:] / self.b[pi,:,2*ds+1,:,:,:,:,:,:]
+                                D[pi,:,0,:,:,:,:,:] *= self.b[pi,:,2*ds,:,:,:,:,:,:] / self.b[pi,:,2*ds+1,:, :,:,:,:,:]
 
         else:
 #             DEBUG.
@@ -1049,7 +1046,6 @@ class MosquitoHelperMethods(DCC.dataclass):
 
     def make_fft(self, **kwargs): 
         """
-    
     
         INPUT:
         definition: n_bins_t1: the number of bins where t1>=0

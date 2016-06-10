@@ -319,7 +319,7 @@ class dataclass(CT.ClassTools):
         if self._phase_degrees == None:
             return None
         else:
-            return self.phase_degrees * numpy.pi / 180
+            return self._phase_degrees * numpy.pi / 180
     
     @phase_rad.setter
     def phase_rad(self, phase):

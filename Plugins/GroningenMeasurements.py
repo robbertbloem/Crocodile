@@ -105,7 +105,7 @@ class FT2DIR(M.FT2DIR):
                                 x_axis = self.s_axes[0]
                                 y_axis = self.s_axes[1]
                                 data = self.s[:,:, 0, _sp, _sm, _de, _du, _sc]
-                                
+
                                 if _sm == 0:
                                     sm_name = "perp"
                                 else:

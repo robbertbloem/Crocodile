@@ -16,6 +16,7 @@ import Crocodile.Resources.Mathematics as M
 
 import imp
 
+imp.reload(DCC)
 imp.reload(MH)
 imp.reload(IOM)
 imp.reload(PL)
@@ -31,7 +32,6 @@ class VCD(MH.MosquitoHelperMethods):
         self.verbose("New VCD class", flag_verbose)
         MH.MosquitoHelperMethods.__init__(self, objectname = objectname, measurement_method = "VCD", flag_verbose = flag_verbose)
         
-
 
 class show_shots(MH.MosquitoHelperMethods):
     """
@@ -203,7 +203,7 @@ class show_spectrum(MH.MosquitoHelperMethods):
     """
     Show spectrum
     
-    
+    Show spectrum has both r (intensity) and s (signal). The individual scans are saved and have to be averaged by the user. 
     
     """
 
@@ -229,7 +229,7 @@ class show_spectrum(MH.MosquitoHelperMethods):
         Import the show spectrum data
     
         INPUT:
-        - reload_data (Bool, False): if False, try to import the numpy binary file first. If that is not present, or if True, it will import the original csv files. 
+        
     
         CHANGELOG:
         201604-RB: started function
@@ -445,20 +445,29 @@ class FT2DIR(MH.MosquitoHelperMethods):
         if "title" not in kwargs:
             flag_make_title = True
         
+        if "ax" not in kwargs:
+            flag_create_fig = True
+        else: 
+            flag_create_fig = False
+            ax = kwargs["ax"]
+            del(kwargs["ax"])
+        
         for _sp in sp:
             for _sm in sm:
                 for _de in de:
                     for _du in du:
                         for _sc in sc:
 
-                            fig = plt.figure()
-                            ax = fig.add_subplot(111)  
-                            if "aspect" in kwargs:
-                                if kwargs["aspect"] != False:
-                                    ax.set_aspect(kwargs["aspect"])
-                            else:
-                                ax.set_aspect("equal")
-                            
+#                             if "ax" not in kwargs:
+                            if flag_create_fig:
+                                fig = plt.figure()
+                                ax = fig.add_subplot(111)  
+                                if "aspect" in kwargs:
+                                    if kwargs["aspect"] != False:
+                                        ax.set_aspect(kwargs["aspect"])
+                                else:
+                                    ax.set_aspect("equal")
+
                             if flag_make_title:
                                 kwargs["title"] = "%s %s fs" % (self._basename, self.s_axes[5][_de])
 #                                 kwargs["title"] = "{name}\nsp {spx}, sm {smx}, de {dex} fs".format(name = self._basename, spx = self.s_axes[3][_sp], smx = self.s_axes[4][:,_sm], dex = self.s_axes[5][_de])
