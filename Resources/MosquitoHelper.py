@@ -840,15 +840,15 @@ class MosquitoHelperMethods(DCC.dataclass):
 
                 else:
             
-                    N = numpy.ones(self.r_n)
-                    D = numpy.ones(self.r_n)
+                    N = numpy.ones(self.b_n)
+                    D = numpy.ones(self.b_n)
 
                     for pi in range(self.b_n[0]): 
                         for ds in range(self.b_n[2]):
                             if self.b_axes[2] == 1:
-                                N[pi,:,0,:, :,:,:,:] *= self.b[pi,:,2*ds,:, :,:,:,:] / self.b[pi,:,2*ds+1,:, :,:,:,:]
+                                N[pi,:,0,:, :,:,:,:] *= self.b[pi,s:e,2*ds,:, :,:,:,:] / self.b[pi,s:e,2*ds+1,:, :,:,:,:]
                             else:
-                                D[pi,:,0,:, :,:,:,:] *= self.b[pi,:,2*ds,:, :,:,:,:] / self.b[pi,:,2*ds+1,:, :,:,:,:]
+                                D[pi,:,0,:, :,:,:,:] *= self.b[pi,s:e,2*ds,:, :,:,:,:] / self.b[pi,s:e,2*ds+1,:, :,:,:,:]
 
         else:
 #             DEBUG.
