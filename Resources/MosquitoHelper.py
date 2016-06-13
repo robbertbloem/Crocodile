@@ -817,7 +817,7 @@ class MosquitoHelperMethods(DCC.dataclass):
                     N = numpy.zeros(self.r_n)
                     D = numpy.zeros(self.r_n)
 
-                    for pi in range(self.b_n[0]): 
+                    for pi in range(self.r_n[0]): 
                         N_count = 0
                         D_count = 0
                         for ds in range(self.r_n[2]):
@@ -840,15 +840,19 @@ class MosquitoHelperMethods(DCC.dataclass):
 
                 else:
             
-                    N = numpy.ones(self.b_n)
-                    D = numpy.ones(self.b_n)
+                    N = numpy.ones(self.r_n)
+                    D = numpy.ones(self.r_n)
+                    
+                    print(self.r_n, numpy.shape(self.b))
 
-                    for pi in range(self.b_n[0]): 
-                        for ds in range(self.b_n[2]):
-                            if self.b_axes[2] == 1:
+                    for pi in range(self.r_n[0]): 
+                        for ds in range(self.r_n[2]):
+                            if self.b_axes[2][ds] == 1:
                                 N[pi,:,0,:, :,:,:,:] *= self.b[pi,s:e,2*ds,:, :,:,:,:] / self.b[pi,s:e,2*ds+1,:, :,:,:,:]
                             else:
                                 D[pi,:,0,:, :,:,:,:] *= self.b[pi,s:e,2*ds,:, :,:,:,:] / self.b[pi,s:e,2*ds+1,:, :,:,:,:]
+
+                    self.r = N / D
 
         else:
 #             DEBUG.
@@ -1303,7 +1307,59 @@ class MosquitoHelperMethods(DCC.dataclass):
                 f.write("\n")
             
         f.close()
+ 
+    def export_2d_data_sensibly_helper(self, x_axis, y_axis, data, path_and_filename, **kwargs):
+        """
         
+    
+        INPUT:
+        - data:
+        - x_range, y_range (optional)
+    
+        OUTPUT:
+
+    
+        CHANGELOG:
+        20160502-RB: started function
+
+        """
+        
+        if "x_range" in kwargs:
+            x_range = kwargs["x_range"]
+        else:
+            x_range = [0,0]
+
+        if "y_range" in kwargs:
+            y_range = kwargs["y_range"]
+        else:
+            y_range = [0,-1]
+
+        # determine the range to be plotted
+        x_min, x_max, y_min, y_max = FU.find_axes(x_axis, y_axis, x_range, y_range, self.flag_verbose)
+    
+        # find the area to be plotted
+        x_min_i, x_max_i = FU.find_axes_indices(x_axis, x_min, x_max)
+        y_min_i, y_max_i = FU.find_axes_indices(y_axis, y_min, y_max)
+          
+        # truncate the data
+        data, x_axis, y_axis = FU.truncate_data(data, y_axis, x_axis, y_min_i, y_max_i, x_min_i, x_max_i) 
+        
+        n_x = len(x_axis)
+        n_y = len(y_axis)
+        
+        paf = path_and_filename + ".csv"
+        numpy.savetxt(paf, data, delimiter = ",")
+
+
+        paf = path_and_filename + "_w1.csv"
+        numpy.savetxt(paf, y_axis, delimiter = ",")
+        
+        paf = path_and_filename + "_w3.csv"
+        numpy.savetxt(paf, x_axis, delimiter = ",")
+        
+        
+
+         
         
     def check_results_folder(self):
         """
