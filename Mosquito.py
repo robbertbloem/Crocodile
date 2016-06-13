@@ -479,7 +479,7 @@ class FT2DIR(MH.MosquitoHelperMethods):
                                 PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc].T, self.s_axes[0], self.s_axes[1], x_label = "w3 (cm-1)", y_label = "w1 (cm-1)", ax = ax, **kwargs)
 
 
-        plt.show()
+#         plt.show()
    
 
     def make_overview_plot(self, **kwargs):
