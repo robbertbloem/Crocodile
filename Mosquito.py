@@ -607,6 +607,31 @@ class FT2DIR(MH.MosquitoHelperMethods):
                                 self.export_2d_data_for_gnuplot_helper(x_axis, y_axis, data, path_and_filename)        
 
 
+    def export_2d_data_sensibly(self, s = True, **kwargs):
+        
+        pi, bish, sp, ds, sm, de, du, sc = self.multiplot_ranges(**kwargs)
+    
+        self.check_results_folder()
+    
+        paf = self.file_dict["result_folder"] + self._file_dict["basename"] + "_" + self._file_dict["timestamp"]
+    
+        ax_i = 0
+        for _sp in sp:
+            for _sm in sm:
+                for _de in de:
+                    for _du in du:
+                        for _sc in sc:
+                            
+                            if s: 
+                                
+                                x_axis = self.s_axes[0]
+                                y_axis = self.s_axes[1]
+                                data = self.s[:,:, 0, _sp, _sm, _de, _du, _sc]
+                                path_and_filename =  "{paf}_s_sp{sp}_sm{sm}_de{de}_du{du}_sc{sc}".format(paf = paf , sp = _sp, sm = _sm, de = _de, du = _du, sc = _sc) #, ext = self.file_dict["extension"])  
+                            
+                                self.export_2d_data_sensibly_helper(x_axis, y_axis, data, path_and_filename)    
+
+
 if __name__ == "__main__": 
 
 
