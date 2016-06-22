@@ -472,6 +472,14 @@ def import_slow_modulation(file_dict, fileformat, flag_verbose = 0):
     # read all lines and strip the newline character         
     lines = [line.rstrip('\n') for line in open(filename)]
     sm, sm_names, n_sm = extract_slow_modulation(lines, fileformat, flag_verbose = flag_verbose)
+    
+    if flag_verbose:
+        print("n_sm: {a}".format(a = n_sm))
+        print("SM name: states")
+        for _sm in range(len(sm_names)):
+            print("{a}: {b}".format(a = sm_names[_sm], b = sm[_sm]))
+        print("DONE: IOMethods.import_slow_modulation\n")    
+
     return sm, sm_names, n_sm
 
 
