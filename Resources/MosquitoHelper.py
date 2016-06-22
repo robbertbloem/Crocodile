@@ -56,6 +56,9 @@ class MosquitoHelperMethods(DCC.dataclass):
         201604-RB: started function
     
         """
+        
+        self.verbose("MosquitoHelper.import_data_show_shots()", self.flag_verbose)
+        
         if self.find_file_format() == False:
             return False
 
@@ -259,6 +262,9 @@ class MosquitoHelperMethods(DCC.dataclass):
         201604-RB: started function
     
         """
+        
+        self.verbose("MosquitoHelper.import_data_show_spectrum()", self.flag_verbose)
+        
         if self.find_file_format() == False:
             return False
 
@@ -346,8 +352,10 @@ class MosquitoHelperMethods(DCC.dataclass):
         
         """
         
+        self.verbose("MosquitoHelper.import_data_2dir()", self.flag_verbose)
+        
         if "import_temp_scans" in kwargs and kwargs["import_temp_scans"]:
-            import_temp_scans = True
+            import_temp_scans = kwargs["import_temp_scans"]
         else:
             import_temp_scans = False
         
@@ -394,10 +402,24 @@ class MosquitoHelperMethods(DCC.dataclass):
         if import_temp_scans:
             n_sc = IOM.find_number_of_scans(self._file_dict["base_folder"], self._file_dict["base_filename"], self._file_dict["extension"], flag_verbose = self.flag_verbose)
             sc = numpy.arange(n_sc)
+            
+            if type(import_temp_scans) in [list, numpy.ndarray]:
+                print("bla")
+                new_sc = []
+                for its in import_temp_scans:
+                    if its in sc:
+                        new_sc = new_sc + [its]
+                sc = numpy.array(new_sc)
+                n_sc = len(sc) 
         else:
             n_sc = 1
             sc = numpy.arange(n_sc)
-
+            
+#         n_sc = 3
+#         sc = numpy.arange(n_sc)
+        
+        scan_list = sc
+        
         # DEFINE THE DATASTRUCTURES
 
         # probe and reference are saved separately
@@ -518,21 +540,23 @@ class MosquitoHelperMethods(DCC.dataclass):
                         for de in range(self.b_n[5]): 
                             for du in range(self.b_n[6]):
                                 for sc in range(self.b_n[7]):
-                    
+                                    
+                                    scan_suffix = str(scan_list[sc])
+                                    
                                     # import probe
-                                    suffix = "probe_ds" + str(ds) + "_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du)
+                                    suffix = "probe_ds" + str(ds) + "_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du) + "_" + scan_suffix
                                     self.b[:,:,2*ds,sp,sm,de,du,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1).T
 
                                     # import reference
-                                    suffix = "reference_ds" + str(ds) + "_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du)
+                                    suffix = "reference_ds" + str(ds) + "_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du) + "_" + scan_suffix
                                     self.b[:,:,2*ds+1,sp,sm,de,du,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1).T
 
                                     # import count
-                                    suffix = "count_ds" + str(ds) + "_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du)
+                                    suffix = "count_ds" + str(ds) + "_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du) + "_" + scan_suffix
                                     self.b_count[:,ds,sp,sm,de,du,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1).T
 
                                     # import interferogram
-                                    suffix = "interferogram_ds" + str(ds) + "_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du)
+                                    suffix = "interferogram_ds" + str(ds) + "_sp" + str(sp) + "_sm" + str(sm) + "_de" + str(de) + "_du" + str(du) + "_" + scan_suffix
                                     self.b_intf[:,ds,sp,sm,de,du,sc] = IOM.import_file(self._file_dict, suffix, self.flag_verbose - 1).T
 
         else:
@@ -567,6 +591,8 @@ class MosquitoHelperMethods(DCC.dataclass):
         201604-RB: started function
     
         """
+        
+        self.verbose("MosquitoHelper.import_data_scan_spectrum()", self.flag_verbose)
     
         wl, n_wl = IOM.import_wavelengths(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
         
@@ -620,8 +646,6 @@ class MosquitoHelperMethods(DCC.dataclass):
         
         # 4: slow modulation
         sm, sm_names, n_sm = IOM.import_slow_modulation(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
-
-        print(sm_names)
 
         # 5: delays
         de, n_de = IOM.import_delays(self._file_dict, self.file_format, flag_verbose = self.flag_verbose)
@@ -737,8 +761,8 @@ class MosquitoHelperMethods(DCC.dataclass):
     
         """
     
-        if self.flag_verbose:
-            print("MosquitoHelper.find_file_format")
+        self.verbose("MosquitoHelper.find_file_format()", self.flag_verbose)
+    
     
         # check if _file_dict is set
         if self._file_dict["base_folder"] == "" or self._file_dict["base_filename"] == "":
@@ -792,6 +816,8 @@ class MosquitoHelperMethods(DCC.dataclass):
     
         """
         
+        self.verbose("MosquitoHelper.b_to_r()", self.flag_verbose)
+        
         if self.measurement_type == "intensity":
             
             b_size = numpy.array(numpy.shape(self.b))
@@ -805,29 +831,35 @@ class MosquitoHelperMethods(DCC.dataclass):
             s = self.t1_zero_index
             e = self.t1_zero_index + self.r_n[1]
 
+            
+            # easy case, non-zero count for all bins
             if numpy.all(self.b_count > 0):
-
+            
+                if numpy.any(self.b == 0):
+                    print("boo!")
+            
+                # interferogram
                 for ds in range(n_ds):
                     self.r_intf[:,0,:, :,:,:,:] += self.b_intf[:,ds,:, :,:,:,:] / self.b_count[:,ds,:, :,:,:,:]
-                    
                 self.r_intf /= n_ds
-            
+                
+                # data, add datastates
                 if self.add_ds:
             
                     N = numpy.zeros(self.r_n)
                     D = numpy.zeros(self.r_n)
 
-                    for pi in range(self.r_n[0]): 
-                        N_count = 0
-                        D_count = 0
-                        for ds in range(self.r_n[2]):
-                            if self.b_axes[2][ds] == 1:
-                                N[pi,:,0,:,:,:,:,:] += self.b[pi,s:e,2*ds,:,:,:,:,:] / self.b[pi,s:e,2*ds+1,:, :,:,:,:]
-                                N_count += 1
-                            else:
-                                D[pi,:,0,:,:,:,:,:] += self.b[pi,s:e,2*ds,:,:,:,:,:] / self.b[pi,s:e,2*ds+1,:, :,:,:,:]
-                                D_count += 1
-                        
+                    N_count = 0
+                    D_count = 0
+                    
+                    for ds in range(self.r_n[2]):
+                        if self.b_axes[2][ds] == 1:
+                            N[:,:,0,:,:,:,:,:] += self.b[:,s:e,2*ds,:,:,:,:,:] / self.b[:,s:e,2*ds+1,:, :,:,:,:]
+                            N_count += 1
+                        else:
+                            D[:,:,0,:,:,:,:,:] += self.b[:,s:e,2*ds,:,:,:,:,:] / self.b[:,s:e,2*ds+1,:, :,:,:,:]
+                            D_count += 1                
+
                     if N_count > 0 and D_count > 0:
                         self.r = (N / N_count) / (D / D_count)
                     elif N_count == 0 and D_count > 0:
@@ -835,45 +867,151 @@ class MosquitoHelperMethods(DCC.dataclass):
                     elif N_count > 0 and D_count == 0:
                         self.r = (N / N_count)
                     else:
-                        pass
-                        
-
+                        pass                
+                
                 else:
-            
+
                     N = numpy.ones(self.r_n)
                     D = numpy.ones(self.r_n)
-                    
-                    print(self.r_n, numpy.shape(self.b))
 
-                    for pi in range(self.r_n[0]): 
-                        for ds in range(self.r_n[2]):
-                            if self.b_axes[2][ds] == 1:
-                                N[pi,:,0,:, :,:,:,:] *= self.b[pi,s:e,2*ds,:, :,:,:,:] / self.b[pi,s:e,2*ds+1,:, :,:,:,:]
-                            else:
-                                D[pi,:,0,:, :,:,:,:] *= self.b[pi,s:e,2*ds,:, :,:,:,:] / self.b[pi,s:e,2*ds+1,:, :,:,:,:]
+
+                    for ds in range(self.r_n[2]):
+                        if self.b_axes[2][ds] == 1:
+                            N[:,:,0,:, :,:,:,:] *= self.b[:,s:e,2*ds,:, :,:,:,:] / self.b[:,s:e,2*ds+1,:, :,:,:,:]
+                        else:
+                            D[:,:,0,:, :,:,:,:] *= self.b[:,s:e,2*ds,:, :,:,:,:] / self.b[:,s:e,2*ds+1,:, :,:,:,:]
 
                     self.r = N / D
 
-        else:
-#             DEBUG.
-            pass
 
-
-        nan_warning = 0
-        for bi in range(self.b_count_n[0]):
-            
-            if numpy.all(self.b_count[bi,:,:, :,:,:,:] > 0):
-                self.r_intf[bi,:,:, :,:,:,:] = self.b_intf[bi,:,:, :,:,:,:] / self.b_count[bi,:,:, :,:,:,:]
+            # shitty case, we need to check for zero bins
             else:
-                self.r_intf[bi,:,:, :,:,:,:] = numpy.nan
-                nan_warning += 1
-                
-        if nan_warning:
-            mean = numpy.nanmean(self.r_intf)
-            ix = numpy.where(numpy.isnan(self.r_intf[:,0,0, 0,0,0,0]))[0]
-            self.r_intf[ix] = mean
-                
-        print("nan warning:", nan_warning)
+            
+                # interferogram
+                for bi in range(self.b_n[1]): # all bins             
+                    for sp in range(self.b_n[3]):
+                        for sm in range(self.b_n[4]):
+                            for de in range(self.b_n[5]):
+                                for du in range(self.b_n[6]):
+                                    for sc in range(self.b_n[7]):
+                                        for ds in range(n_ds):
+                        
+                                            if self.b_count[bi,ds,sp, sm,de,du,sc] > 0:
+                                                self.r_intf[bi,0,sp, sm,de,du,sc] += self.b_intf[bi,ds,sp, sm,de,du,sc] / self.b_count[bi,ds,sp, sm,de,du,sc]
+                                                
+                self.r_intf /= n_ds
+
+
+                for bi in range(self.r_n[1]): # bins where t1>0              
+                    for sp in range(self.b_n[3]):
+                        for sm in range(self.b_n[4]):
+                            for de in range(self.b_n[5]):
+                                for du in range(self.b_n[6]):
+                                    for sc in range(self.b_n[7]):
+                                        for ds in range(n_ds):
+                        
+                                            if self.b_count[s+bi,ds,sp, sm,de,du,sc] > 0:
+                                                if self.add_ds:
+                                                
+                                                    if self.b[0,s+bi,2*ds,sp, sm,de,du,sc] == 0:
+                                                        print(bi, 2*ds, sp, sm, de, du, sc, self.b_count[bi,ds,sp, sm,de,du,sc])
+                                                    if self.b[0,s+bi,2*ds+1,sp, sm,de,du,sc] == 0:
+                                                        print(bi, 2*ds+1, sp, sm, de, du, sc, self.b_count[bi,ds,sp, sm,de,du,sc])
+
+                                                    N = numpy.zeros(self.r_n[0])
+                                                    D = numpy.zeros(self.r_n[0])
+
+                                                    N_count = 0
+                                                    D_count = 0
+                                                    
+                                                    if self.b_axes[2][ds] == 1:
+                                                        N += self.b[:,s+bi,2*ds,sp, sm,de,du,sc] / self.b[:,s+bi,2*ds+1,sp, sm,de,du,sc]
+                                                        N_count += 1
+                                                    else:
+                                                        D += self.b[:,s+bi,2*ds,sp, sm,de,du,sc] / self.b[:,s+bi,2*ds+1,sp, sm,de,du,sc]
+                                                        D_count += 1 
+
+                                        if self.add_ds:
+                                            if N_count > 0 and D_count > 0:
+                                                self.r[:,bi,0,sp, sm,de,du,sc] = (N / N_count) / (D / D_count)
+                                            elif N_count == 0 and D_count > 0:
+                                                self.r[:,bi,0,sp, sm,de,du,sc] = 1 / (D / D_count)
+                                            elif N_count > 0 and D_count == 0:
+                                                self.r[:,bi,0,sp, sm,de,du,sc] = (N / N_count)
+                                            else:
+                                                pass                                            
+
+
+#                 
+#                 # data, add datastates
+#                 if self.add_ds:
+#             
+#                     N = numpy.zeros(self.r_n)
+#                     D = numpy.zeros(self.r_n)
+# 
+#                     N_count = 0
+#                     D_count = 0
+#                     arange(s,e):
+#                     for ds in range(self.r_n[2]):
+#                         if self.b_axes[2][ds] == 1:
+#                             N[:,:,0,:,:,:,:,:] += self.b[:,s:e,2*ds,:,:,:,:,:] / self.b[:,s:e,2*ds+1,:, :,:,:,:]
+#                             N_count += 1
+#                         else:
+#                             D[:,:,0,:,:,:,:,:] += self.b[:,s:e,2*ds,:,:,:,:,:] / self.b[:,s:e,2*ds+1,:, :,:,:,:]
+#                             D_count += 1                
+# 
+#                     if N_count > 0 and D_count > 0:
+#                         self.r = (N / N_count) / (D / D_count)
+#                     elif N_count == 0 and D_count > 0:
+#                         self.r = 1 / (D / D_count)
+#                     elif N_count > 0 and D_count == 0:
+#                         self.r = (N / N_count)
+#                     else:
+#                         pass                
+#                 
+#                 else:
+# 
+#                     N = numpy.ones(self.r_n)
+#                     D = numpy.ones(self.r_n)
+# 
+# 
+#                     for ds in range(self.r_n[2]):
+#                         if self.b_axes[2][ds] == 1:
+#                             N[:,:,0,:, :,:,:,:] *= self.b[:,s:e,2*ds,:, :,:,:,:] / self.b[:,s:e,2*ds+1,:, :,:,:,:]
+#                         else:
+#                             D[:,:,0,:, :,:,:,:] *= self.b[:,s:e,2*ds,:, :,:,:,:] / self.b[:,s:e,2*ds+1,:, :,:,:,:]
+# 
+#                     self.r = N / D
+# 
+# 
+#        
+
+
+#         else:
+# #             DEBUG.
+#             pass
+# 
+# 
+#         nan_warning = 0
+#         for bi in range(self.b_count_n[0]):
+#             
+#             if numpy.all(self.b_count[bi,:,:, :,:,:,:] > 0):
+#                 self.r_intf[bi,:,:, :,:,:,:] = self.b_intf[bi,:,:, :,:,:,:] / self.b_count[bi,:,:, :,:,:,:]
+#             else:
+#                 self.r_intf[bi,:,:, :,:,:,:] = numpy.nan
+#                 nan_warning += 1
+#                 
+#         if nan_warning:
+#             mean = numpy.nanmean(self.r_intf)
+#             ix = numpy.where(numpy.isnan(self.r_intf[:,0,0, 0,0,0,0]))[0]
+#             self.r_intf[ix] = mean
+#         
+#         if nan_warning > 0:
+#             print("nan warning:", nan_warning)
+#         else:
+#             self.verbose("MosquitoHelper.b_to_r: no NaN problems", self.flag_verbose)
+#         
+#         self.verbose("DONE: MosquitoHelper.b_to_r", self.flag_verbose)
         
 
     def calculate_phase(self, **kwargs):
@@ -893,6 +1031,9 @@ class MosquitoHelperMethods(DCC.dataclass):
         n_points = 4: [2,5,4,3]
         
         """
+        
+        self.verbose("MosquitoHelper.calculate_phase()", self.flag_verbose)
+        
         if "n_points" in kwargs:
             n_points = kwargs["n_points"]
         else:
@@ -1003,6 +1144,8 @@ class MosquitoHelperMethods(DCC.dataclass):
         
         """
         
+        self.verbose("MosquitoHelper.find_phase()", self.flag_verbose)
+        
         # find the maximum value
         y = numpy.abs(f)
         i_max = numpy.argmax(y[i_range[0]:i_range[1]])
@@ -1069,6 +1212,8 @@ class MosquitoHelperMethods(DCC.dataclass):
     
 
         """
+
+        self.verbose("MosquitoHelper.make_fft()", self.flag_verbose)
 
         if "phase_cheat_deg" in kwargs:
             phase_cheat_deg = kwargs["phase_cheat_deg"]
