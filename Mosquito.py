@@ -440,7 +440,7 @@ class FT2DIR(MH.MosquitoHelperMethods):
         """
         
         pi, bish, sp, ds, sm, de, du, sc = self.multiplot_ranges(**kwargs)
-        
+
         flag_make_title = False
         if "title" not in kwargs:
             flag_make_title = True
@@ -458,7 +458,6 @@ class FT2DIR(MH.MosquitoHelperMethods):
                     for _du in du:
                         for _sc in sc:
 
-#                             if "ax" not in kwargs:
                             if flag_create_fig:
                                 fig = plt.figure()
                                 ax = fig.add_subplot(111)  
