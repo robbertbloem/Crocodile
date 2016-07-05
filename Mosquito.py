@@ -525,7 +525,8 @@ class FT2DIR(MH.MosquitoHelperMethods):
                     for _du in du:
                         for _sc in sc:
                             
-                            title = "{name}\nsp {spx}, sm {smx}, de {dex} fs".format(name = self._basename, spx = self.s_axes[3][_sp], smx = self.s_axes[4][:,_sm], dex = self.s_axes[5][_de])
+                            title = "{name}\nsp {spx}, sm {smx}, de {dex} fs".format(name = self._basename, spx = self.s_axes[3][_sp], smx = "x",#self.s_axes[4][:,_sm], 
+                            dex = self.s_axes[5][_de])
                             
                             if "flip_spectrum" in kwargs and kwargs["flip_spectrum"]:
                                 PL.contourplot(self.s[:, :, 0, _sp, _sm, _de, _du, _sc], self.s_axes[1], self.s_axes[0], x_label = "w1 (cm-1)", y_label = "w3 (cm-1)", ax = ax[ax_i], title = title, **kwargs)
