@@ -1750,25 +1750,70 @@ class MosquitoHelperMethods(DCC.dataclass):
 
     def average_scans(self, scans):
         
+#         temp_scans = scans[:]
+        
         if len(scans) > 1 and self.s_n[7] > 1:
             self.s_n[7] = 1
             self.r_n[7] = 1
+            self.b_n[7] = 1
+            self.b_count_n[6] = 1
             
             self.s_axes[7] = numpy.arange(1)
             self.r_axes[7] = numpy.arange(1)
+            self.b_axes[7] = numpy.arange(1)
             
-            s = numpy.zeros(self.s_n)
-            r = numpy.zeros(self.r_n)
+            print(numpy.shape(self.b))
             
-            for sc in scans:        
-                s[:,:,:,:, :,:,:,0] += self.s[:,:,:,:, :,:,:,sc]
-                r[:,:,:,:, :,:,:,0] += self.r[:,:,:,:, :,:,:,sc]
+            if self.measurement_method in ["FT_2DIR"]:
+            
+                if self.measurement_type == "intensity":
+                    
+                    b = numpy.zeros(self.b_n)
+                    b_count = numpy.zeros(self.b_count_n)
+                    
+                    for pi in range(self.b_n[0]):
+                                                    
+                        for sc in scans:
 
-            s /= len(scans)
-            r /= len(scans)
+                            b[pi,:,:,:, :,:,:,0] += self.b[pi,:,:,:, :,:,:,sc] 
+                            b_count[:,:,:, :,:,:,0] += self.b_count[:,:,:, :,:,:,sc]
 
-            self.s = s
-            self.r = r
+                    self.b = b
+                    self.b_count = b_count
+                    
+                    self.b_to_r()
+                    
+                    
+                else:
+            
+                    s = numpy.zeros(self.s_n)
+                    r = numpy.zeros(self.r_n)
+            
+                    for sc in scans:        
+                        s[:,:,:,:, :,:,:,0] += self.s[:,:,:,:, :,:,:,sc]
+                        r[:,:,:,:, :,:,:,0] += self.r[:,:,:,:, :,:,:,sc]
+
+                    s /= len(scans)
+                    r /= len(scans)
+
+                    self.s = s
+                    self.r = r
+            
+            
+            
+            else:            
+                s = numpy.zeros(self.s_n)
+                r = numpy.zeros(self.r_n)
+            
+                for sc in scans:        
+                    s[:,:,:,:, :,:,:,0] += self.s[:,:,:,:, :,:,:,sc]
+                    r[:,:,:,:, :,:,:,0] += self.r[:,:,:,:, :,:,:,sc]
+
+                s /= len(scans)
+                r /= len(scans)
+
+                self.s = s
+                self.r = r
 
             if self.measurement_method in ["Show Spectrum"]:
                 s_noise = numpy.zeros(self.s_n)
