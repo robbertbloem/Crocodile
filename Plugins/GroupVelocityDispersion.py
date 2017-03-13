@@ -40,11 +40,15 @@ import numpy
 import matplotlib 
 import matplotlib.pyplot as plt
 
+import imp
+
 import Crocodile.Plugins.GVD_Materials as GVDM
 import Crocodile.Resources.Constants as C
 import Crocodile.Resources.Equations as E
 import Crocodile.Resources.Mathematics as M
 import Crocodile.Resources.Functions as F
+
+imp.reload(E)
 
 
 def calculate_gvd(range_L, n_steps, SC):
@@ -284,6 +288,9 @@ def n_function_wavelength(material, plot_range_um = [3,7], print_for_um = [], fl
     ax (0 or axis instance): if zero, a new plot will be generated. If a pyplot axis instance, it will be added to that particular axis.  
     n_steps (int): the number of steps to be calculated. A larger number will give a higher resolution, especially when calculating VG and GVD. 
     
+    CHANGELOG:
+    20161205: the Sellmeier function takes the square root now, so I removed it here.  
+    
     """
     
     [n, SC] = GVDM.MaterialProperties(material)
@@ -293,7 +300,7 @@ def n_function_wavelength(material, plot_range_um = [3,7], print_for_um = [], fl
     if SC != []:
         
         if print_for_um != []:        
-            n = numpy.sqrt(E.Sellmeier(SC, numpy.array(print_for_um)))
+            n = E.Sellmeier(SC, numpy.array(print_for_um))
             print("Material: %s" % (material))
             print(" um        n")
             for i in range(len(print_for_um)):
@@ -309,7 +316,7 @@ def n_function_wavelength(material, plot_range_um = [3,7], print_for_um = [], fl
                 own_plot = False
 
             x = numpy.linspace(plot_range_um[0], plot_range_um[1], n_steps)
-            n = numpy.sqrt(E.Sellmeier(SC, x))
+            n = E.Sellmeier(SC, x)
   
             label = "Index of refraction of %s" % (material)
             

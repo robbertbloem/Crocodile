@@ -119,6 +119,17 @@ def MaterialProperties(material):
     
         return n, SellmeierCoefficients
 
+# BK7 ###################          
+    elif material == 'bk7':
+        # BK7
+        n = []
+    
+        # BK7, RI, Schott
+        SellmeierCoefficients = [1.03961212, 0.00600069867, 0.231792344, 0.0200179144, 1.01046945, 103.560653, 1]
+    
+        return n, SellmeierCoefficients
+
+
     
 # do not add stuff after this point ########
     else:
